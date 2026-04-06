@@ -5,7 +5,7 @@ from app.database.db import lista_ganhos, contador_ganhos
 router = APIRouter(prefix='/ganhos', tags=['Ganhos'])
 
 @router.post(
-    '/adicionar',
+    '/',
     summary='Cadastra um novo ganho',
     description='Rota para cadastrar um novo ganho ao banco de dados'
 )
@@ -23,27 +23,27 @@ def add_ganho(dado_ganho: CriarGanho):
 
     return ganho
 
-@router.get('/listar',
+@router.get('/',
     summary='Listas todos os ganhos cadastrados',
     description='Essa rota retorna todos os ganhos do banco de dados'
 )
 def view_ganhos():
     return lista_ganhos
 
-@router.put('/atualizar/{id}',
+@router.put('/{id}',
     summary='Atualizar um ganho',
     description='Essa rota atualiza um ganho cadastrado no banco de dados'
 )
 def atualizar(id: int, dado: AtualizarGanho):
     for ganho in lista_ganhos:
         if ganho['id'] == id:
-            ganho['plataforma'] = dado.plataforma
+            ganho['plataforma'] = dado.plataforma.upper()
             ganho['valor'] = dado.valor
             return ganho
     return {'ERRO': 'ID não encontrado'}
             
 @router.delete(
-    '/deletar/{id}',
+    '/{id}',
     summary='Deletar ganho',
     description='Essa rota deleta um ganho cadastrado no banco de dados.'
 )
