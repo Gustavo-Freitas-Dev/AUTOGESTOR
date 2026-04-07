@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Controle de Gastos</title>
+
+<style>
+    body {
+        font-family: 'Segoe UI', sans-serif;
+        background: #0f172a;
+        color: white;
+        display: flex;
+        justify-content: center;
+        padding: 30px;
+    }
+
+    .app {
+        width: 500px;
+    }
+
+    h1 {
+        text-align: center;
+    }
+
+    .card {
+        background: #1e293b;
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+    }
+
+    input, select, button {
+        width: 100%;
+        padding: 10px;
+        margin-top: 10px;
+        border-radius: 8px;
+        border: none;
+    }
+
+    input, select {
+        background: #334155;
+        color: white;
+    }
+
+    button {
+        background: #22c55e;
+        color: white;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background: #16a34a;
+    }
+
+    .gasto {
+        background: #334155;
+        padding: 12px;
+        margin-top: 10px;
+        border-radius: 8px;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .badge {
+        font-size: 12px;
+        padding: 3px 8px;
+        border-radius: 6px;
+        background: #475569;
+    }
+
+    .delete {
+        background: #ef4444;
+        padding: 5px 10px;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+
+    .resumo {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 10px;
+        font-weight: bold;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+    <h1>💰 AutoGestor</h1>
+
+    <!-- FORM -->
+    <div class="card">
+        <input type="text" id="descricao" placeholder="Descrição">
+        
+        <select id="categoria">
+            <option value="COMBUSTIVEL">Combustível</option>
+            <option value="MANUTENCAO">Manutenção</option>
+            <option value="OPERACIONAL">Operacional</option>
+            <option value="PESSOAL">Pessoal</option>
+            <option value="OUTROS">Outros</option>
+        </select>
+
+        <input type="number" id="valor" placeholder="Valor">
+
+        <button onclick="salvar()">Salvar</button>
+    </div>
+
+    <!-- FILTRO -->
+    <div class="card">
+        <select id="filtro" onchange="carregar()">
+            <option value="">Todas categorias</option>
+            <option value="COMBUSTIVEL">Combustível</option>
+            <option value="MANUTENCAO">Manutenção</option>
+            <option value="OPERACIONAL">Operacional</option>
+            <option value="PESSOAL">Pessoal</option>
+        </select>
+    </div>
+
+    <!-- RESUMO -->
+    <div class="card resumo">
+        <span id="total">Total: R$ 0</span>
+        <span id="qtd">0 itens</span>
+    </div>
+
+    <!-- LISTA -->
+    <div id="lista"></div>
+
+</div>
+
+<script>
+const API = 'http://127.0.0.1:8000/gastos';
+
+async function salvar() {
+    const descricao = document.getElementById('descricao').value;
+    const categoria = document.getElementById('categoria').value;
+    const valor = parseFloat(document.getElementById('valor').value);
+
+    if (!descricao || !valor) {
+        alert("Preencha tudo!");
+        return;
+    }
+
+    await fetch(API, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ descricao, categoria, valor })
+    });
+
+    document.getElementById('descricao').value = '';
+    document.getElementById('valor').value = '';
+
+    carregar();
+}
+
+async function carregar() {
+    const res = await fetch(API);
+    let dados = await res.json();
+
+    const filtro = document.getElementById('filtro').value;
+    if (filtro) {
+        dados = dados.filter(g => g.categoria === filtro);
+    }
+
+    const lista = document.getElementById('lista');
+    lista.innerHTML = '';
+
+    let total = 0;
+
+    dados.forEach(g => {
+        total += g.valor;
+
+        const div = document.createElement('div');
+        div.className = 'gasto';
+
+        div.innerHTML = `
+            <div>
+                <strong>${g.descricao}</strong><br>
+                <span class="badge">${g.categoria}</span>
+            </div>
+            <div>
+                R$ ${g.valor.toFixed(2)} <br>
+                <span class="delete" onclick="deletar(${g.id})">X</span>
+            </div>
+        `;
+
+        lista.appendChild(div);
+    });
+
+    document.getElementById('total').innerText = `Total: R$ ${total.toFixed(2)}`;
+    document.getElementById('qtd').innerText = `${dados.length} itens`;
+}
+
+async function deletar(id) {
+    await fetch(`${API}/${id}`, { method: 'DELETE' });
+    carregar();
+}
+
+carregar();
+</script>
+
+</body>
+</html>
