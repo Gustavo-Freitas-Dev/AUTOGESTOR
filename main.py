@@ -3,6 +3,13 @@ from app.routes.ganhos import router as rota_ganhos
 from app.routes.gastos import router as rota_gastos
 from app.routes.relatorio import router as rota_relatorios
 from fastapi.staticfiles import StaticFiles
+from app.database.db import engine
+from app.database.base import Base
+
+# Importar os models
+from app.models.gastos import Gasto
+
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
