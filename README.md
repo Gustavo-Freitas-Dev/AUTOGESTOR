@@ -221,4 +221,4 @@ Este projeto foi desenvolvido para aprofundar conhecimentos em:
 
 Desenvolvedor Python focado em Backend, automação de processos e desenvolvimento de APIs.
 
-GitHub: https://github.com/Gustavo-python
+Linkedin: https://www.linkedin.com/in/gustavo-freitas-dev/
