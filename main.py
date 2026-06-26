@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from app.routes.movimentacoes import router as movimentacoes_router
+from app.routes.dashboard import router as dashboard_router
 from fastapi.staticfiles import StaticFiles
 from app.database.db import engine
 from app.database.base import Base
@@ -12,6 +13,7 @@ app = FastAPI()
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 app.include_router(movimentacoes_router)
+app.include_router(dashboard_router)
 
 @app.get(
     '/',

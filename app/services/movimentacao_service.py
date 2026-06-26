@@ -1,5 +1,6 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 
 from app.models.movimentacao import Movimentacao
 from app.schemas.movimentacao_schemas import (
@@ -64,3 +65,26 @@ def deletar_movimentacao(db: Session, id: int):
     return {
         "message": "Movimentação deletada com sucesso"
     }
+
+def saldo_total(db: Session):
+
+    ganhos = db.query(func.sum(Movimentacao.valor)).filter(Movimentacao.tipo == "GANHO").scalar() or 0
+    gastos = db.query(func.sum(Movimentacao.valor)).filter(Movimentacao.tipo == "GASTO").scalar() or 0
+    
+    return {"Saldo": ganhos - gastos}         
+
+def total_ganhos(db: Session):
+
+    total = db.query(func.sum(Movimentacao.valor))\
+        .filter(Movimentacao.tipo == "GANHO")\
+        .scalar() or 0
+
+    return {"total_ganhos": total}
+
+def total_gastos(db: Session):
+
+    total = db.query(func.sum(Movimentacao.valor))\
+        .filter(Movimentacao.tipo == "GASTO")\
+        .scalar() or 0
+
+    return {"total_gastos": total}

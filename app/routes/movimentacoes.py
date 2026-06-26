@@ -10,7 +10,7 @@ from app.services.movimentacao_service import (
     criar_movimentacao,
     listar_movimentacoes,
     atualizar_movimentacao,
-    deletar_movimentacao
+    deletar_movimentacao,
 )
 
 router = APIRouter(prefix="/movimentacoes", tags=["Movimentações"])
@@ -50,3 +50,5 @@ def update(id: int, dado: AtualizarMovimentacao, db: Session = Depends(get_db)):
 )
 def delete(id: int, db: Session = Depends(get_db)):
     return deletar_movimentacao(db, id)
+
+
