@@ -1,13 +1,10 @@
 from fastapi import FastAPI
-from app.routes.ganhos import router as rota_ganhos
-from app.routes.gastos import router as rota_gastos
-from app.routes.relatorio import router as rota_relatorios
+from app.routes.movimentacoes import router as movimentacoes_router
+from app.routes.dashboard import router as dashboard_router
 from fastapi.staticfiles import StaticFiles
 from app.database.db import engine
 from app.database.base import Base
 
-# Importar os models
-from app.models.gastos import Gasto
 
 Base.metadata.create_all(bind=engine)
 
@@ -15,9 +12,8 @@ app = FastAPI()
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
-app.include_router(rota_ganhos)
-app.include_router(rota_gastos)
-app.include_router(rota_relatorios)
+app.include_router(movimentacoes_router)
+app.include_router(dashboard_router)
 
 @app.get(
     '/',
@@ -26,4 +22,4 @@ app.include_router(rota_relatorios)
     description='Rota inicial para testar se a API está funcionando corretamente'
 )
 def home():
-    return {'message': 'A API está no ar.'}
+    return {'message': 'A API está no ar 🚀'}
