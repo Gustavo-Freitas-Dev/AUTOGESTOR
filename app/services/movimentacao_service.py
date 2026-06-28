@@ -88,3 +88,19 @@ def total_gastos(db: Session):
         .scalar() or 0
 
     return {"total_gastos": total}
+
+def buscar_id(db: Session, id: int):
+
+    movimentacao = (
+        db.query(Movimentacao)
+        .filter(Movimentacao.id == id)
+        .first()
+    )
+
+    if not movimentacao:
+        raise HTTPException(
+            status_code=404,
+            detail="Movimentação não encontrada"
+        )
+
+    return movimentacao

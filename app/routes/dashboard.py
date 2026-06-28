@@ -5,7 +5,8 @@ from app.database.dependencies import get_db
 from app.services.movimentacao_service import (
     saldo_total,
     total_gastos as service_total_gastos,
-    total_ganhos as service_total_ganhos
+    total_ganhos as service_total_ganhos,
+    buscar_id as service_buscar_id
 )
 
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
@@ -24,3 +25,7 @@ def total_gastos(db: Session = Depends(get_db)):
 @router.get("/total_ganhos")
 def total_ganhos(db: Session = Depends(get_db)):
     return service_total_ganhos(db)
+
+@router.get("/{id}")
+def buscar_id(id: int, db: Session = Depends(get_db)):
+    return service_buscar_id(db, id)
