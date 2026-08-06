@@ -2,108 +2,591 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Login - AutoGestor</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AutoGestor — Entrar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-    body {
-        margin: 0;
-        font-family: 'Segoe UI', sans-serif;
-        background: linear-gradient(135deg, #0f172a, #1e293b);
-        height: 100vh;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        color: white;
-    }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    .login-box {
-        background: #1e293b;
-        padding: 30px;
-        border-radius: 16px;
-        width: 350px;
-        box-shadow: 0 0 30px rgba(0,0,0,0.5);
-        text-align: center;
-    }
+  :root {
+    --bg:      #0A0A0F;
+    --surface: #111118;
+    --card:    #16161F;
+    --border:  #1E1E2E;
+    --border2: #2A2A3C;
+    --text:    #F1F1F5;
+    --muted:   #6B6B80;
+    --dim:     #3A3A50;
+    --accent:  #6366F1;
+    --accent2: #818CF8;
+    --green:   #10B981;
+    --amber:   #F59E0B;
+    --red:     #EF4444;
+  }
 
-    h1 {
-        margin-bottom: 20px;
-    }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
 
-    input {
-        width: 100%;
-        padding: 12px;
-        margin-top: 10px;
-        border-radius: 8px;
-        border: none;
-        background: #334155;
-        color: white;
-    }
+  /*
+    BACKGROUND DECORATIVO
+    ───────────────────────
+    Dois círculos grandes, desfocados, com a cor de accent/green
+    em baixa opacidade — dão profundidade ao fundo escuro sem
+    distrair do formulário. Posicionados fora da área central.
+  */
+  .bg-glow {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(120px);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .bg-glow.one {
+    width: 480px; height: 480px;
+    background: var(--accent);
+    opacity: 0.12;
+    top: -120px; left: -120px;
+  }
+  .bg-glow.two {
+    width: 420px; height: 420px;
+    background: var(--green);
+    opacity: 0.08;
+    bottom: -100px; right: -100px;
+  }
 
-    input::placeholder {
-        color: #94a3b8;
-    }
+  /* ── CONTAINER PRINCIPAL ── */
+  .auth-wrap {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 380px;
+  }
 
-    button {
-        width: 100%;
-        padding: 12px;
-        margin-top: 15px;
-        border: none;
-        border-radius: 8px;
-        background: #22c55e;
-        color: white;
-        font-size: 16px;
-        cursor: pointer;
-        transition: 0.3s;
-    }
+  .brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+  .brand-icon {
+    width: 52px;
+    height: 52px;
+    background: var(--accent);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    box-shadow: 0 8px 24px rgba(99,102,241,0.35);
+  }
+  .brand-name {
+    font-size: 19px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+  }
+  .brand-sub {
+    font-size: 12px;
+    color: var(--muted);
+  }
 
-    button:hover {
-        background: #16a34a;
-    }
+  .auth-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 32px 28px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  }
 
-    .erro {
-        color: #ef4444;
-        margin-top: 10px;
-        display: none;
-    }
+  /* ── TOGGLE LOGIN / CADASTRO ── */
+  .auth-toggle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 11px;
+    padding: 4px;
+    margin-bottom: 24px;
+  }
+  .auth-toggle button {
+    padding: 9px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--muted);
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .auth-toggle button.active {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  /* ── CAMPOS ── */
+  .field { margin-bottom: 14px; position: relative; }
+  .field label {
+    display: block;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted);
+    margin-bottom: 6px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .field input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    padding: 12px 14px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .field input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+  }
+  .field input::placeholder { color: var(--dim); }
+
+  /* Botão de mostrar/ocultar senha — ícone dentro do campo */
+  .field.password-field input { padding-right: 42px; }
+  .toggle-password {
+    position: absolute;
+    right: 12px;
+    top: 33px;
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 15px;
+    padding: 4px;
+    line-height: 1;
+  }
+  .toggle-password:hover { color: var(--text); }
+
+  /* ── FORÇA DA SENHA (só aparece no cadastro) ── */
+  .strength-wrap {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .strength-wrap.show { display: flex; }
+  .strength-bars {
+    display: flex;
+    gap: 4px;
+    flex: 1;
+  }
+  .strength-bar {
+    height: 4px;
+    flex: 1;
+    border-radius: 99px;
+    background: var(--border2);
+    transition: background 0.2s;
+  }
+  .strength-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--muted);
+    min-width: 52px;
+    text-align: right;
+  }
+
+  /* ── BOTÃO PRINCIPAL ── */
+  .btn-submit {
+    width: 100%;
+    padding: 12px;
+    background: var(--accent);
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: filter 0.15s, transform 0.1s;
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .btn-submit:hover { filter: brightness(1.1); }
+  .btn-submit:active { transform: scale(0.98); }
+  .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  /* Spinner de carregamento dentro do botão, durante o fetch */
+  .spinner {
+    width: 14px; height: 14px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    display: none;
+  }
+  .spinner.show { display: inline-block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── MENSAGEM DE ERRO ── */
+  .auth-error {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    background: rgba(239,68,68,0.1);
+    border: 1px solid rgba(239,68,68,0.3);
+    border-radius: 9px;
+    padding: 10px 12px;
+    margin-bottom: 16px;
+    font-size: 12px;
+    color: var(--red);
+  }
+  .auth-error.show { display: flex; }
+
+  .auth-footer {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 12px;
+    color: var(--muted);
+  }
 </style>
 </head>
-
 <body>
 
-<div class="login-box">
-    <h1>🔐 AutoGestor</h1>
+<div class="bg-glow one"></div>
+<div class="bg-glow two"></div>
 
-    <input type="text" id="usuario" placeholder="Usuário">
-    <input type="password" id="senha" placeholder="Senha">
+<div class="auth-wrap">
 
-    <button onclick="login()">Entrar</button>
+  <div class="brand">
+    <div class="brand-icon">💼</div>
+    <div class="brand-name">AutoGestor</div>
+    <div class="brand-sub">Controle financeiro pessoal</div>
+  </div>
 
-    <div class="erro" id="erro">Usuário ou senha inválidos</div>
+  <div class="auth-card">
+
+    <!-- Toggle Entrar / Criar conta -->
+    <div class="auth-toggle">
+      <button type="button" class="active" id="tab-login" onclick="trocarAba('login')">Entrar</button>
+      <button type="button" id="tab-cadastro" onclick="trocarAba('cadastro')">Criar conta</button>
+    </div>
+
+    <!-- Mensagem de erro genérica, reaproveitada pelos dois formulários -->
+    <div class="auth-error" id="auth-error">
+      <span>⚠</span>
+      <span id="auth-error-text">Erro</span>
+    </div>
+
+    <!-- ═══════════════ FORMULÁRIO DE LOGIN ═══════════════ -->
+    <form id="form-login" onsubmit="return false;">
+      <div class="field">
+        <label>E-mail</label>
+        <input type="email" id="login-email" placeholder="seu@email.com" autocomplete="email">
+      </div>
+      <div class="field password-field">
+        <label>Senha</label>
+        <input type="password" id="login-senha" placeholder="••••••••" autocomplete="current-password">
+        <button type="button" class="toggle-password" onclick="alternarSenha('login-senha', this)">👁</button>
+      </div>
+
+      <button type="button" class="btn-submit" id="btn-login" onclick="fazerLogin()">
+        <span class="spinner" id="spinner-login"></span>
+        <span id="btn-login-text">Entrar</span>
+      </button>
+    </form>
+
+    <!-- ═══════════════ FORMULÁRIO DE CADASTRO ═══════════════ -->
+    <form id="form-cadastro" style="display:none;" onsubmit="return false;">
+      <div class="field">
+        <label>Nome</label>
+        <input type="text" id="cad-nome" placeholder="Seu nome completo" autocomplete="name">
+      </div>
+      <div class="field">
+        <label>E-mail</label>
+        <input type="email" id="cad-email" placeholder="seu@email.com" autocomplete="email">
+      </div>
+      <div class="field password-field">
+        <label>Senha</label>
+        <input type="password" id="cad-senha" placeholder="Mínimo 6 caracteres" autocomplete="new-password" oninput="atualizarForcaSenha(this.value)">
+        <button type="button" class="toggle-password" onclick="alternarSenha('cad-senha', this)">👁</button>
+
+        <!-- Indicador de força da senha — aparece ao digitar -->
+        <div class="strength-wrap" id="strength-wrap">
+          <div class="strength-bars">
+            <div class="strength-bar" id="bar-1"></div>
+            <div class="strength-bar" id="bar-2"></div>
+            <div class="strength-bar" id="bar-3"></div>
+          </div>
+          <span class="strength-label" id="strength-label">Fraca</span>
+        </div>
+      </div>
+
+      <button type="button" class="btn-submit" id="btn-cadastro" onclick="fazerCadastro()">
+        <span class="spinner" id="spinner-cadastro"></span>
+        <span id="btn-cadastro-text">Criar conta</span>
+      </button>
+    </form>
+
+  </div>
+
+  <div class="auth-footer">
+    AutoGestor © 2026 — seus dados ficam só com você
+  </div>
+
 </div>
 
 <script>
-async function login() {
-    const usuario = document.getElementById('usuario').value;
-    const senha = document.getElementById('senha').value;
+/*
+  URL DA API — mesma lógica do dashboard principal:
+  usa window.location.origin para funcionar automaticamente
+  em qualquer ambiente (localhost, rede local, ngrok), desde
+  que esta página seja servida PELA PRÓPRIA API
+  (ex: app/static/login.html).
+*/
+const API_BASE = window.location.origin;
 
-    const res = await fetch('http://127.0.0.1:8000/login', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ usuario, senha })
+/*
+  trocarAba(aba)
+  ─────────────────
+  Alterna visualmente entre os formulários de Login e Cadastro.
+  Também limpa qualquer mensagem de erro visível, para não
+  mostrar um erro do login enquanto o usuário preenche o cadastro.
+*/
+function trocarAba(aba) {
+  const isLogin = aba === 'login';
+
+  document.getElementById('tab-login').classList.toggle('active', isLogin);
+  document.getElementById('tab-cadastro').classList.toggle('active', !isLogin);
+  document.getElementById('form-login').style.display = isLogin ? 'block' : 'none';
+  document.getElementById('form-cadastro').style.display = isLogin ? 'none' : 'block';
+
+  esconderErro();
+}
+
+function mostrarErro(mensagem) {
+  document.getElementById('auth-error-text').textContent = mensagem;
+  document.getElementById('auth-error').classList.add('show');
+}
+function esconderErro() {
+  document.getElementById('auth-error').classList.remove('show');
+}
+
+/*
+  alternarSenha(idCampo, botao)
+  ────────────────────────────────
+  Alterna o type do input entre 'password' e 'text', e troca
+  o ícone do olho para indicar o estado atual.
+*/
+function alternarSenha(idCampo, botao) {
+  const campo = document.getElementById(idCampo);
+  const oculto = campo.type === 'password';
+  campo.type = oculto ? 'text' : 'password';
+  botao.textContent = oculto ? '🙈' : '👁';
+}
+
+/*
+  atualizarForcaSenha(senha)
+  ─────────────────────────────
+  Indicador visual simples de força de senha, baseado em:
+  comprimento, presença de números e presença de caractere especial.
+  Não é uma análise criptográfica séria — é só feedback de UX
+  para incentivar senhas melhores.
+*/
+function atualizarForcaSenha(senha) {
+  const wrap = document.getElementById('strength-wrap');
+
+  if (!senha) {
+    wrap.classList.remove('show');
+    return;
+  }
+  wrap.classList.add('show');
+
+  let pontos = 0;
+  if (senha.length >= 6) pontos++;
+  if (senha.length >= 10 && /[0-9]/.test(senha)) pontos++;
+  if (/[^a-zA-Z0-9]/.test(senha) || (senha.length >= 12)) pontos++;
+
+  const bars = [document.getElementById('bar-1'), document.getElementById('bar-2'), document.getElementById('bar-3')];
+  const cores = ['var(--red)', 'var(--amber)', 'var(--green)'];
+  const labels = ['Fraca', 'Média', 'Forte'];
+
+  bars.forEach((bar, i) => {
+    bar.style.background = i < pontos ? cores[pontos - 1] : 'var(--border2)';
+  });
+
+  document.getElementById('strength-label').textContent = labels[Math.max(pontos - 1, 0)];
+  document.getElementById('strength-label').style.color = cores[Math.max(pontos - 1, 0)];
+}
+
+/*
+  salvarSessao(resposta)
+  ──────────────────────────
+  Guarda o token JWT e os dados do usuário no localStorage.
+  O dashboard principal (autogestor.html) vai ler essa mesma
+  chave para saber se o usuário está logado e montar o header
+  Authorization em cada requisição.
+*/
+function salvarSessao(resposta) {
+  localStorage.setItem('autogestor_token', resposta.access_token);
+  localStorage.setItem('autogestor_usuario', JSON.stringify(resposta.usuario));
+}
+
+/*
+  setCarregando(botaoId, spinnerId, textoId, carregando, textoOriginal)
+  ─────────────────────────────────────────────────────────────────────
+  Liga/desliga o estado de loading visual do botão: desabilita,
+  mostra o spinner, troca o texto.
+*/
+function setCarregando(botaoId, spinnerId, textoId, carregando, textoOriginal) {
+  document.getElementById(botaoId).disabled = carregando;
+  document.getElementById(spinnerId).classList.toggle('show', carregando);
+  document.getElementById(textoId).textContent = carregando ? 'Aguarde…' : textoOriginal;
+}
+
+/*
+  fazerLogin()
+  ──────────────
+  Envia email+senha para POST /auth/login.
+  Se a API responder com erro (401 = credenciais inválidas),
+  mostra a mensagem retornada. Se der certo, salva a sessão e
+  redireciona para o dashboard.
+*/
+async function fazerLogin() {
+  esconderErro();
+
+  const email = document.getElementById('login-email').value.trim();
+  const senha = document.getElementById('login-senha').value;
+
+  if (!email || !senha) {
+    mostrarErro('Preencha e-mail e senha.');
+    return;
+  }
+
+  setCarregando('btn-login', 'spinner-login', 'btn-login-text', true, 'Entrar');
+
+  try {
+    const res = await fetch(`${API_BASE}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, senha }),
     });
 
-    if (res.status === 200) {
-        const data = await res.json();
+    const corpo = await res.json();
 
-        // salva token (simulação)
-        localStorage.setItem('token', data.token);
-
-        window.location.href = "index.html";
-    } else {
-        document.getElementById('erro').style.display = 'block';
+    if (!res.ok) {
+      // FastAPI/Pydantic normalmente retorna o erro em `detail`
+      mostrarErro(corpo.detail || 'E-mail ou senha incorretos.');
+      return;
     }
+
+    salvarSessao(corpo);
+
+    // Redireciona para o dashboard principal após login bem-sucedido.
+    // Ajuste o caminho abaixo se o nome do arquivo for diferente.
+    window.location.href = 'index.html';
+
+  } catch (e) {
+    mostrarErro('Erro ao conectar com a API. Verifique se o servidor está rodando.');
+    console.error('Erro de rede no login:', e);
+  } finally {
+    setCarregando('btn-login', 'spinner-login', 'btn-login-text', false, 'Entrar');
+  }
+}
+
+/*
+  fazerCadastro()
+  ──────────────────
+  Envia nome+email+senha para POST /auth/cadastro.
+  A API já retorna um token (login automático após cadastro),
+  então o fluxo é igual ao login: salva sessão e redireciona.
+*/
+async function fazerCadastro() {
+  esconderErro();
+
+  const nome  = document.getElementById('cad-nome').value.trim();
+  const email = document.getElementById('cad-email').value.trim();
+  const senha = document.getElementById('cad-senha').value;
+
+  if (!nome || !email || !senha) {
+    mostrarErro('Preencha todos os campos.');
+    return;
+  }
+  if (senha.length < 6) {
+    mostrarErro('A senha precisa ter pelo menos 6 caracteres.');
+    return;
+  }
+
+  setCarregando('btn-cadastro', 'spinner-cadastro', 'btn-cadastro-text', true, 'Criar conta');
+
+  try {
+    const res = await fetch(`${API_BASE}/auth/cadastro`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nome, email, senha }),
+    });
+
+    const corpo = await res.json();
+
+    if (!res.ok) {
+      // Erro de validação do Pydantic vem como array em alguns casos
+      let mensagem = corpo.detail || 'Não foi possível criar a conta.';
+      if (Array.isArray(mensagem)) {
+        mensagem = mensagem.map(d => d.msg).join(', ');
+      }
+      mostrarErro(mensagem);
+      return;
+    }
+
+    salvarSessao(corpo);
+    window.location.href = 'index.html';
+
+  } catch (e) {
+    mostrarErro('Erro ao conectar com a API. Verifique se o servidor está rodando.');
+    console.error('Erro de rede no cadastro:', e);
+  } finally {
+    setCarregando('btn-cadastro', 'spinner-cadastro', 'btn-cadastro-text', false, 'Criar conta');
+  }
+}
+
+// Permite enviar o formulário de login apertando Enter no campo de senha
+document.getElementById('login-senha').addEventListener('keydown', e => {
+  if (e.key === 'Enter') fazerLogin();
+});
+document.getElementById('cad-senha').addEventListener('keydown', e => {
+  if (e.key === 'Enter') fazerCadastro();
+});
+
+/*
+  Se o usuário já tem um token válido salvo, redireciona
+  direto para o dashboard — evita mostrar a tela de login
+  para quem já está autenticado.
+
+  NOTA: isso não valida o token contra a API (não checa se
+  expirou), só checa se existe. A validação real acontece
+  quando o dashboard tenta usar o token numa requisição —
+  se tiver expirado, a API retorna 401 e o dashboard deve
+  redirecionar de volta pra cá (ver instruções no chat).
+*/
+if (localStorage.getItem('autogestor_token')) {
+  window.location.href = 'index.html';
 }
 </script>
-
 </body>
 </html>

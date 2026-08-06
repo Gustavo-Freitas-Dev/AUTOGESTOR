@@ -1,7 +1,7 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-
+from datetime import date
 from app.models.movimentacao import Movimentacao
 from app.schemas.movimentacao_schemas import (
     CriarMovimentacao,
@@ -9,9 +9,15 @@ from app.schemas.movimentacao_schemas import (
 )
 
 
-def criar_movimentacao(db: Session, dado: CriarMovimentacao):
-
+def service_criar_movimentacao(db: Session, dado: CriarMovimentacao, usuario_id: int, espaco_id: int):
+    """
+    MUDANÇA: agora recebe usuario_id e grava ele na movimentação
+    criada. Sem isso, o registro ficaria "órfão" (sem dono),
+    e voltaria a aparecer pra todo mundo.
+    """
     movimentacao = Movimentacao(
+        espaco_id=espaco_id,
+        criado_por_id=usuario_id,
         tipo=dado.tipo,
         categoria=dado.categoria,
         descricao=dado.descricao,
@@ -26,13 +32,32 @@ def criar_movimentacao(db: Session, dado: CriarMovimentacao):
     return movimentacao
 
 
-def listar_movimentacoes(db: Session):
-    return db.query(Movimentacao).all()
+def service_listar_movimentacoes(db: Session, espaco_id: int):
+    """
+    MUDANÇA PRINCIPAL: antes fazia .all() — trazia TUDO, de TODOS
+    os usuários, sempre. Agora filtra por Movimentacao.usuario_id,
+    então cada usuário só vê o que é dele.
+    """
+    return (
+        db.query(Movimentacao)
+        .filter(Movimentacao.espaco_id == espaco_id)
+        .all()
+    )
 
 
-def atualizar_movimentacao(db: Session, id: int, dado: AtualizarMovimentacao):
-
-    movimentacao = db.query(Movimentacao).filter(Movimentacao.id == id).first()
+def service_atualizar_movimentacao(db: Session, id: int, dado: AtualizarMovimentacao, espaco_id: int):
+    """
+    MUDANÇA: o filtro agora exige id E usuario_id batendo juntos.
+    Isso impede que o Usuário A edite uma movimentação que
+    pertence ao Usuário B, mesmo sabendo o ID dela (ex: tentando
+    na mão pela URL/Swagger). Sem essa segunda condição, qualquer
+    pessoa logada poderia editar dados de qualquer outra.
+    """
+    movimentacao = (
+        db.query(Movimentacao)
+        .filter(Movimentacao.id == id, Movimentacao.espaco_id == espaco_id)
+        .first()
+    )
 
     if not movimentacao:
         raise HTTPException(status_code=404, detail="Movimentação não encontrada")
@@ -52,9 +77,16 @@ def atualizar_movimentacao(db: Session, id: int, dado: AtualizarMovimentacao):
     }
 
 
-def deletar_movimentacao(db: Session, id: int):
-
-    movimentacao = db.query(Movimentacao).filter(Movimentacao.id == id).first()
+def service_deletar_movimentacao(db: Session, id: int, espaco_id: int):
+    """
+    Mesma proteção do update: só deleta se a movimentação
+    pertencer ao usuário que está fazendo a requisição.
+    """
+    movimentacao = (
+        db.query(Movimentacao)
+        .filter(Movimentacao.id == id, Movimentacao.espaco_id == espaco_id)
+        .first()
+    )
 
     if not movimentacao:
         raise HTTPException(status_code=404, detail="Movimentação não encontrada")
@@ -66,34 +98,15 @@ def deletar_movimentacao(db: Session, id: int):
         "message": "Movimentação deletada com sucesso"
     }
 
-def saldo_total(db: Session):
 
-    ganhos = db.query(func.sum(Movimentacao.valor)).filter(Movimentacao.tipo == "GANHO").scalar() or 0
-    gastos = db.query(func.sum(Movimentacao.valor)).filter(Movimentacao.tipo == "GASTO").scalar() or 0
-    
-    return {"Saldo": ganhos - gastos}         
-
-def total_ganhos(db: Session):
-
-    total = db.query(func.sum(Movimentacao.valor))\
-        .filter(Movimentacao.tipo == "GANHO")\
-        .scalar() or 0
-
-    return {"total_ganhos": total}
-
-def total_gastos(db: Session):
-
-    total = db.query(func.sum(Movimentacao.valor))\
-        .filter(Movimentacao.tipo == "GASTO")\
-        .scalar() or 0
-
-    return {"total_gastos": total}
-
-def buscar_id(db: Session, id: int):
-
+def service_buscar_id(db: Session, id: int, espaco_id: int):
+    """
+    Mesma proteção: busca por id, mas só dentro das movimentações
+    daquele usuário.
+    """
     movimentacao = (
         db.query(Movimentacao)
-        .filter(Movimentacao.id == id)
+        .filter(Movimentacao.id == id, Movimentacao.espaco_id == espaco_id)
         .first()
     )
 
