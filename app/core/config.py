@@ -1,3 +1,4 @@
+import os
 from functools import lru_cache
 
 from pydantic import Field
@@ -30,7 +31,10 @@ class Settings(BaseSettings):
 
     @property
     def effective_database_url(self) -> str:
-        return self.autogestor_database_url or self.database_url
+        url = self.autogestor_database_url or self.database_url
+        if os.getenv("VERCEL") and url == "sqlite:///autogestor.db":
+            return "sqlite:////tmp/autogestor.db"
+        return url
 
     @property
     def cors_origins_list(self) -> list[str]:
