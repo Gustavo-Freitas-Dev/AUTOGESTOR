@@ -72,9 +72,9 @@ def health() -> dict[str, str]:
         connection.execute(text("SELECT 1"))
     return {"status": "ok", "environment": settings.app_env}
 
-@app.get('/', tags=['Sistema'], summary='Verifica se a API está online')
-def home() -> dict[str, str]:
-    return {'message': 'A API esta no ar'}
+@app.get('/', include_in_schema=False)
+def home() -> RedirectResponse:
+    return RedirectResponse(url='/static/login.html', status_code=307)
 
 
 @app.get('/docs/', include_in_schema=False)
