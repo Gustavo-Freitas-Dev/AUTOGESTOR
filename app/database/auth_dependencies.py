@@ -26,15 +26,15 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
 from app.database.dependencies import get_db
-from app.services.auth_service import decodificar_token, buscar_usuario_por_id
 from app.models.usuario_model import Usuario
+from app.services.auth_service import buscar_usuario_por_id, decodificar_token
 
 # OAuth2PasswordBearer só define DE ONDE o token deve ser lido
 # (header "Authorization: Bearer <token>") e gera automaticamente
 # o cadeado 🔒 nas rotas protegidas dentro do Swagger (/docs).
 # tokenUrl aponta para a rota de login, usada pelo Swagger para
 # o botão "Authorize" funcionar — não afeta o frontend HTML.
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
 def obter_usuario_atual(

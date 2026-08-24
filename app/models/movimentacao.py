@@ -1,5 +1,6 @@
-from sqlalchemy import Column, Integer, String, Numeric, Date, Enum, ForeignKey
+from sqlalchemy import Column, Date, Enum, ForeignKey, Integer, Numeric, String
 from sqlalchemy.orm import relationship
+
 from app.database.base import Base
 from app.schemas.movimentacao_schemas import TipoMovimentacao
 

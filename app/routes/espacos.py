@@ -4,16 +4,24 @@ from sqlalchemy.orm import Session
 from app.database.auth_dependencies import obter_usuario_atual
 from app.database.dependencies import get_db
 from app.models.enums import PapelMembro, TipoEspaco
-from app.models.espaco_financeiro import EspacoFinanceiro
 from app.models.membro_espaco import MembroEspaco
 from app.models.usuario_model import Usuario
 from app.schemas.espaco_schemas import (
-    AtualizarEspaco, CodigoRegenerado, CriarEspacoCompartilhado,
-    EntrarEspaco, EspacoDetalhe, EspacoResumo, MembroResposta,
+    AtualizarEspaco,
+    CodigoRegenerado,
+    CriarEspacoCompartilhado,
+    EntrarEspaco,
+    EspacoDetalhe,
+    EspacoResumo,
+    MembroResposta,
 )
 from app.services.espaco_service import (
-    criar_espaco_compartilhado, entrar_por_codigo, listar_espacos,
-    regenerar_codigo, serializar_espaco, verificar_acesso_espaco,
+    criar_espaco_compartilhado,
+    entrar_por_codigo,
+    listar_espacos,
+    regenerar_codigo,
+    serializar_espaco,
+    verificar_acesso_espaco,
     verificar_administrador,
 )
 

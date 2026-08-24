@@ -1,0 +1,14 @@
+.git
+.gitignore
+.venv
+__pycache__
+.pytest_cache
+.mypy_cache
+.ruff_cache
+*.db
+*.db-journal
+*.backup_*.db
+.env
+.env.local
+autogestor.backup_*.db
+debug.log

@@ -7,6 +7,12 @@ def espaco_pessoal(client, headers):
     return next(e for e in resposta.json() if e["tipo"] == "PESSOAL")
 
 
+def test_healthcheck(client):
+    resposta = client.get("/health")
+    assert resposta.status_code == 200
+    assert resposta.json()["status"] == "ok"
+
+
 def criar_compartilhado(client, headers, nome="Casa", limite=5):
     resposta = client.post("/espacos/compartilhados", json={"nome": nome, "limite_membros": limite}, headers=headers)
     assert resposta.status_code == 201, resposta.text
@@ -29,8 +35,21 @@ def test_cadastro_cria_usuario_espaco_pessoal_e_dono(client):
     assert membros[0]["usuario_id"] == usuario["usuario"]["id"]
 
 
+def test_obter_usuario_atual(client):
+    usuario, headers = cadastrar(client, "Ana", "ana_me@example.com")
+    resposta = client.get("/auth/me", headers=headers)
+    assert resposta.status_code == 200
+    assert resposta.json()["email"] == usuario["usuario"]["email"]
+
+
 def test_nao_autenticado_recebe_401(client):
     assert client.get("/espacos").status_code == 401
+
+
+def test_token_invalido_recebe_401(client):
+    headers = {"Authorization": "Bearer token-invalido"}
+    resposta = client.get("/espacos", headers=headers)
+    assert resposta.status_code == 401
 
 
 def test_outro_usuario_nao_acessa_pessoal(client, dois_usuarios):
@@ -146,3 +165,69 @@ def test_dashboard_isolado_por_espaco(client, dois_usuarios):
     client.post(f"/espacos/{pb['id']}/movimentacoes/", json=movimento(999), headers=hb)
     resumo = client.get(f"/espacos/{pa['id']}/dashboard/resumo", headers=ha).json()
     assert float(resumo["Saldo"]) == 150
+
+
+def test_filtros_ordenacao_e_paginacao_movimentacoes(client):
+    _, headers = cadastrar(client, "Ana", "ana_filtros@example.com")
+    espaco = espaco_pessoal(client, headers)
+
+    payloads = [
+        {"tipo": "GANHO", "categoria": "Salario", "descricao": "Agosto", "valor": 3000, "data": "2026-08-01"},
+        {"tipo": "GASTO", "categoria": "Mercado", "descricao": "Compra", "valor": 250, "data": "2026-08-02"},
+        {"tipo": "GASTO", "categoria": "Transporte", "descricao": "Uber", "valor": 40, "data": "2026-08-03"},
+    ]
+    for payload in payloads:
+        resposta = client.post(f"/espacos/{espaco['id']}/movimentacoes/", json=payload, headers=headers)
+        assert resposta.status_code == 200
+
+    resposta = client.get(
+        f"/espacos/{espaco['id']}/movimentacoes/?tipo=GASTO&categoria=mercado",
+        headers=headers,
+    )
+    assert resposta.status_code == 200
+    dados = resposta.json()
+    assert len(dados) == 1
+    assert dados[0]["categoria"] == "Mercado"
+
+    resposta = client.get(
+        f"/espacos/{espaco['id']}/movimentacoes/?ordenar_por=valor&ordem=asc&limite=1&offset=0",
+        headers=headers,
+    )
+    assert resposta.status_code == 200
+    dados = resposta.json()
+    assert len(dados) == 1
+    assert float(dados[0]["valor"]) == 40.0
+
+
+def test_periodo_invertido_retorna_400(client):
+    _, headers = cadastrar(client, "Ana", "ana_periodo@example.com")
+    espaco = espaco_pessoal(client, headers)
+
+    resposta = client.get(
+        f"/espacos/{espaco['id']}/movimentacoes/?data_inicio=2026-08-10&data_fim=2026-08-01",
+        headers=headers,
+    )
+    assert resposta.status_code == 400
+
+    resposta = client.get(
+        f"/espacos/{espaco['id']}/dashboard/periodo?data_inicio=2026-08-10&data_fim=2026-08-01",
+        headers=headers,
+    )
+    assert resposta.status_code == 400
+
+
+def test_resumo_por_categoria(client):
+    _, headers = cadastrar(client, "Ana", "ana_resumo@example.com")
+    espaco = espaco_pessoal(client, headers)
+    client.post(f"/espacos/{espaco['id']}/movimentacoes/", json=movimento(400, "GANHO"), headers=headers)
+    client.post(
+        f"/espacos/{espaco['id']}/movimentacoes/",
+        json={"tipo": "GASTO", "categoria": "Alimentacao", "descricao": "Mercado", "valor": 100, "data": "2026-08-05"},
+        headers=headers,
+    )
+
+    resposta = client.get(f"/espacos/{espaco['id']}/movimentacoes/resumo-por-categoria", headers=headers)
+    assert resposta.status_code == 200
+    categorias = {item["categoria"]: item["total"] for item in resposta.json()}
+    assert "Teste" in categorias
+    assert "Alimentacao" in categorias

@@ -12,3 +12,16 @@ wheels/
 *.db
 *.backup_*.db
 .env
+.env.local
+debug.log
+.venv/
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+alembic/versions/__pycache__/
+.vscode/
+.neon
+*.db-journal

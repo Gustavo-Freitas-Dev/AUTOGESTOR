@@ -16,7 +16,7 @@ CAMPOS:
                     auditoria e para exibir "membro desde" no futuro
 """
 
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, DateTime, Integer, String
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 

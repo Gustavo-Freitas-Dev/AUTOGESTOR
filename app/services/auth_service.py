@@ -10,42 +10,19 @@ DEPENDÊNCIAS NOVAS que você precisa instalar:
   python-jose[cryptography] → criação e validação de tokens JWT
 """
 
-import os
-import secrets
-import warnings
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
+from app.core.config import get_settings
 from app.models.usuario_model import Usuario
 
-# ── CONFIGURAÇÃO DO JWT ──────────────────────────────────────
-#
-# SECRET_KEY: chave usada para assinar o token. Quem não tiver
-# essa chave não consegue forjar um token válido.
-#
-# IMPORTANTE: em produção, NUNCA deixe a chave hardcoded no código.
-# Use uma variável de ambiente:
-#   export AUTOGESTOR_SECRET_KEY="uma-chave-bem-grande-e-aleatoria"
-# Aqui usamos os.getenv com um valor padrão só para o projeto
-# funcionar imediatamente em desenvolvimento.
-SECRET_KEY = os.getenv("AUTOGESTOR_SECRET_KEY")
-if not SECRET_KEY:
-    SECRET_KEY = secrets.token_urlsafe(32)
-    warnings.warn(
-        "AUTOGESTOR_SECRET_KEY não definida; usando chave temporária. "
-        "Os logins serão invalidados quando o servidor reiniciar.",
-        RuntimeWarning,
-        stacklevel=2,
-    )
-ALGORITHM = "HS256"
-
-# Tempo de validade do token. Depois disso, o usuário precisa
-# fazer login de novo. 7 dias é um valor razoável para um app
-# pessoal — ajuste conforme sua necessidade de segurança.
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 dias
+settings = get_settings()
+SECRET_KEY = settings.jwt_secret_key
+ALGORITHM = settings.jwt_algorithm
+ACCESS_TOKEN_EXPIRE_MINUTES = settings.jwt_expire_minutes
 
 # Contexto do passlib configurado para usar bcrypt — algoritmo
 # de hash padrão da indústria para senhas (lento de propósito,
@@ -77,7 +54,7 @@ def criar_access_token(dados: dict) -> str:
     o dono do token.
     """
     to_encode = dados.copy()
-    expira_em = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    expira_em = datetime.now(UTC) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expira_em})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 

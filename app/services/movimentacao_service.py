@@ -1,20 +1,20 @@
-from fastapi import HTTPException
-from sqlalchemy.orm import Session
-from sqlalchemy import func
 from datetime import date
+from decimal import Decimal
+
+from fastapi import HTTPException, status
+from sqlalchemy import Select, asc, desc, select
+from sqlalchemy.orm import Session
+
 from app.models.movimentacao import Movimentacao
-from app.schemas.movimentacao_schemas import (
-    CriarMovimentacao,
-    AtualizarMovimentacao
-)
+from app.schemas.movimentacao_schemas import AtualizarMovimentacao, CriarMovimentacao
 
 
-def service_criar_movimentacao(db: Session, dado: CriarMovimentacao, usuario_id: int, espaco_id: int):
-    """
-    MUDANÇA: agora recebe usuario_id e grava ele na movimentação
-    criada. Sem isso, o registro ficaria "órfão" (sem dono),
-    e voltaria a aparecer pra todo mundo.
-    """
+def service_criar_movimentacao(
+    db: Session,
+    dado: CriarMovimentacao,
+    usuario_id: int,
+    espaco_id: int,
+) -> Movimentacao:
     movimentacao = Movimentacao(
         espaco_id=espaco_id,
         criado_por_id=usuario_id,
@@ -32,27 +32,67 @@ def service_criar_movimentacao(db: Session, dado: CriarMovimentacao, usuario_id:
     return movimentacao
 
 
-def service_listar_movimentacoes(db: Session, espaco_id: int):
-    """
-    MUDANÇA PRINCIPAL: antes fazia .all() — trazia TUDO, de TODOS
-    os usuários, sempre. Agora filtra por Movimentacao.usuario_id,
-    então cada usuário só vê o que é dele.
-    """
-    return (
-        db.query(Movimentacao)
-        .filter(Movimentacao.espaco_id == espaco_id)
-        .all()
-    )
+def _apply_filters(
+    stmt: Select[tuple[Movimentacao]],
+    tipo: str | None,
+    categoria: str | None,
+    descricao: str | None,
+    data_inicio: date | None,
+    data_fim: date | None,
+) -> Select[tuple[Movimentacao]]:
+    if tipo:
+        stmt = stmt.where(Movimentacao.tipo == tipo)
+    if categoria:
+        stmt = stmt.where(Movimentacao.categoria.ilike(f"%{categoria.strip()}%"))
+    if descricao:
+        stmt = stmt.where(Movimentacao.descricao.ilike(f"%{descricao.strip()}%"))
+    if data_inicio:
+        stmt = stmt.where(Movimentacao.data >= data_inicio)
+    if data_fim:
+        stmt = stmt.where(Movimentacao.data <= data_fim)
+    return stmt
 
 
-def service_atualizar_movimentacao(db: Session, id: int, dado: AtualizarMovimentacao, espaco_id: int):
-    """
-    MUDANÇA: o filtro agora exige id E usuario_id batendo juntos.
-    Isso impede que o Usuário A edite uma movimentação que
-    pertence ao Usuário B, mesmo sabendo o ID dela (ex: tentando
-    na mão pela URL/Swagger). Sem essa segunda condição, qualquer
-    pessoa logada poderia editar dados de qualquer outra.
-    """
+def _apply_ordering(stmt: Select[tuple[Movimentacao]], ordenar_por: str, ordem: str) -> Select[tuple[Movimentacao]]:
+    direcao = desc if ordem == "desc" else asc
+    if ordenar_por == "valor":
+        return stmt.order_by(direcao(Movimentacao.valor), desc(Movimentacao.id))
+    return stmt.order_by(direcao(Movimentacao.data), desc(Movimentacao.id))
+
+
+def service_listar_movimentacoes(
+    db: Session,
+    espaco_id: int,
+    tipo: str | None = None,
+    categoria: str | None = None,
+    descricao: str | None = None,
+    data_inicio: date | None = None,
+    data_fim: date | None = None,
+    ordenar_por: str = "data",
+    ordem: str = "desc",
+    limite: int = 100,
+    offset: int = 0,
+) -> list[Movimentacao]:
+    if data_inicio and data_fim and data_inicio > data_fim:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="A data inicial nao pode ser maior que a data final.",
+        )
+
+    stmt = select(Movimentacao).where(Movimentacao.espaco_id == espaco_id)
+    stmt = _apply_filters(stmt, tipo, categoria, descricao, data_inicio, data_fim)
+    stmt = _apply_ordering(stmt, ordenar_por, ordem)
+    stmt = stmt.offset(offset).limit(limite)
+
+    return list(db.execute(stmt).scalars().all())
+
+
+def service_atualizar_movimentacao(
+    db: Session,
+    id: int,
+    dado: AtualizarMovimentacao,
+    espaco_id: int,
+) -> dict[str, str | Movimentacao]:
     movimentacao = (
         db.query(Movimentacao)
         .filter(Movimentacao.id == id, Movimentacao.espaco_id == espaco_id)
@@ -77,11 +117,7 @@ def service_atualizar_movimentacao(db: Session, id: int, dado: AtualizarMoviment
     }
 
 
-def service_deletar_movimentacao(db: Session, id: int, espaco_id: int):
-    """
-    Mesma proteção do update: só deleta se a movimentação
-    pertencer ao usuário que está fazendo a requisição.
-    """
+def service_deletar_movimentacao(db: Session, id: int, espaco_id: int) -> dict[str, str]:
     movimentacao = (
         db.query(Movimentacao)
         .filter(Movimentacao.id == id, Movimentacao.espaco_id == espaco_id)
@@ -117,3 +153,40 @@ def service_buscar_id(db: Session, id: int, espaco_id: int):
         )
 
     return movimentacao
+
+
+def service_resumo_por_categoria(
+    db: Session,
+    espaco_id: int,
+    data_inicio: date | None = None,
+    data_fim: date | None = None,
+) -> list[dict[str, Decimal | str]]:
+    if data_inicio and data_fim and data_inicio > data_fim:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="A data inicial nao pode ser maior que a data final.",
+        )
+
+    stmt = select(
+        Movimentacao.categoria,
+        Movimentacao.tipo,
+        Movimentacao.valor,
+    ).where(Movimentacao.espaco_id == espaco_id)
+
+    if data_inicio:
+        stmt = stmt.where(Movimentacao.data >= data_inicio)
+    if data_fim:
+        stmt = stmt.where(Movimentacao.data <= data_fim)
+
+    agregados: dict[str, Decimal] = {}
+    for categoria, tipo, valor in db.execute(stmt).all():
+        atual = agregados.get(categoria, Decimal("0.00"))
+        if str(tipo) == "GASTO":
+            agregados[categoria] = atual - Decimal(valor)
+        else:
+            agregados[categoria] = atual + Decimal(valor)
+
+    return [
+        {"categoria": categoria, "total": total.quantize(Decimal("0.01"))}
+        for categoria, total in sorted(agregados.items(), key=lambda item: item[1], reverse=True)
+    ]

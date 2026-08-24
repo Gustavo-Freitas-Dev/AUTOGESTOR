@@ -1813,9 +1813,16 @@ if (!TOKEN) {
 }
 
 function deslogar() {
-  localStorage.removeItem('autogestor_token');
-  localStorage.removeItem('autogestor_usuario');
-  window.location.replace('/static/login.html');
+  const finalizar = () => {
+    localStorage.removeItem('autogestor_token');
+    localStorage.removeItem('autogestor_usuario');
+    window.location.replace('/static/login.html');
+  };
+
+  fetch(window.location.origin + '/auth/logout', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${TOKEN}` },
+  }).finally(finalizar);
 }
 
 function iniciaisDoNome(nome) {
@@ -2355,6 +2362,12 @@ function aplicarPeriodoCustom() {
   if (!inicio || !fim) {
     if (!inicio) document.getElementById('data-inicio').focus();
     else document.getElementById('data-fim').focus();
+    return;
+  }
+
+  if (inicio > fim) {
+    toast('A data inicial não pode ser maior que a data final.', 'error');
+    document.getElementById('data-inicio').focus();
     return;
   }
 
@@ -3031,6 +3044,10 @@ async function carregar() {
     if (!res.ok) throw new Error(`Erro HTTP ${res.status}`);
     todos = await res.json();
     if (!Array.isArray(todos)) throw new Error('Resposta inválida da API');
+    todos = todos.map((item) => ({
+      ...item,
+      valor: Number.parseFloat(item.valor ?? 0) || 0,
+    }));
 
     // Revela a UI real e esconde os skeletons (só tem efeito na 1ª chamada;
     // nas chamadas seguintes os elementos já estão no estado correto)

@@ -1,15 +1,5 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+"""Compatibilidade para importações antigas da conexão do banco."""
 
-DATABASE_URL = "sqlite:///autogestor.db"
+from app.database.db import DATABASE_URL, SessionLocal, engine
 
-engine = create_engine(
-    DATABASE_URL,
-    connect_args={"check_same_thread": False}
-)
-
-SessionLocal = sessionmaker(
-    autocommit=False,
-    autoflush=False,
-    bind=engine
-)
+__all__ = ["DATABASE_URL", "SessionLocal", "engine"]

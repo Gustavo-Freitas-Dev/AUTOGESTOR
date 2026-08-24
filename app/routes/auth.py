@@ -6,18 +6,24 @@ movimentacoes.py (APIRouter com prefix, tags, summary, description).
 """
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
 
-from app.database.dependencies import get_db
-from app.schemas.usuario_schemas import AtualizarUsuario, CriarUsuario, LoginUsuario, Token, UsuarioResposta
 from app.database.auth_dependencies import obter_usuario_atual
+from app.database.dependencies import get_db
 from app.models.usuario_model import Usuario
+from app.schemas.usuario_schemas import (
+    AtualizarUsuario,
+    CriarUsuario,
+    LoginUsuario,
+    Token,
+    UsuarioResposta,
+)
 from app.services.auth_service import (
-    hash_senha,
-    criar_access_token,
     autenticar_usuario,
     buscar_usuario_por_email,
+    criar_access_token,
+    hash_senha,
 )
 from app.services.espaco_service import criar_espaco_pessoal
 
@@ -138,3 +144,8 @@ def atualizar_perfil(
 @router.get("/me", response_model=UsuarioResposta, summary="Retorna o usuário autenticado")
 def obter_perfil(usuario: Usuario = Depends(obter_usuario_atual)):
     return usuario
+
+
+@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT, summary="Invalida a sessão no cliente")
+def logout(_: Usuario = Depends(obter_usuario_atual)) -> None:
+    return None

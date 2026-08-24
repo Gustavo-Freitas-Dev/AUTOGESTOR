@@ -1,12 +1,13 @@
+from datetime import date
+from decimal import Decimal
 from enum import Enum
+
+from pydantic import BaseModel, ConfigDict, Field
+
 
 class TipoMovimentacao(str, Enum):
     GANHO = "GANHO"
     GASTO = "GASTO"
-
-from pydantic import BaseModel, ConfigDict, Field
-from decimal import Decimal
-from datetime import date
 
 class CriarMovimentacao(BaseModel):
     tipo: TipoMovimentacao
@@ -35,4 +36,16 @@ class MovimentacaoResposta(BaseModel):
     descricao: str | None
     valor: Decimal
     data: date
+
+
+class ResumoFinanceiro(BaseModel):
+    saldo: Decimal
+    total_ganhos: Decimal
+    total_gastos: Decimal
+    quantidade_movimentacoes: int
+
+
+class ResumoCategoria(BaseModel):
+    categoria: str
+    total: Decimal
 
