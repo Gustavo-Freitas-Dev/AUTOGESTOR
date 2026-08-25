@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AutoGestor - Redefinir senha</title>
+<style>
+  body { font-family: Arial, sans-serif; background: #0f111a; color: #f3f3f3; margin: 0; }
+  .wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 16px; }
+  .card { width: 100%; max-width: 430px; background: #171a24; border: 1px solid #2d3248; border-radius: 14px; padding: 22px; }
+  h1 { margin: 0 0 8px; font-size: 22px; }
+  .sub { color: #a8afc2; font-size: 14px; margin-bottom: 16px; }
+  .field { margin-bottom: 12px; position: relative; }
+  label { display: block; margin-bottom: 6px; font-size: 13px; color: #c7cce0; }
+  input { width: 100%; box-sizing: border-box; padding: 11px 12px; border-radius: 10px; border: 1px solid #39405a; background: #10131d; color: #f3f3f3; }
+  .toggle { position: absolute; right: 10px; top: 31px; background: none; border: 0; color: #b8bfd8; cursor: pointer; }
+  .error { display: none; color: #ff7a7a; font-size: 12px; margin-top: 6px; }
+  .error.show { display: block; }
+  .strength { font-size: 12px; color: #a8afc2; margin-top: 4px; }
+  .btn { width: 100%; margin-top: 8px; padding: 12px; border: none; border-radius: 10px; background: #4461ff; color: #fff; cursor: pointer; }
+  .btn:disabled { opacity: 0.65; cursor: not-allowed; }
+  .msg { margin-top: 12px; font-size: 13px; }
+  .msg.ok { color: #70d48a; }
+  .msg.err { color: #ff7a7a; }
+  .links { margin-top: 14px; display: flex; justify-content: space-between; }
+  a { color: #91a4ff; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <h1>Redefinir senha</h1>
+    <div class="sub">Digite sua nova senha e confirme para concluir a recuperação.</div>
+
+    <div class="field">
+      <label for="nova-senha">Nova senha</label>
+      <input id="nova-senha" type="password" autocomplete="new-password" placeholder="Mínimo 6 caracteres">
+      <button class="toggle" type="button" aria-label="Mostrar ou ocultar nova senha" onclick="toggleSenha('nova-senha', this)">👁</button>
+      <div class="strength" id="strength-text">Força: fraca</div>
+    </div>
+
+    <div class="field">
+      <label for="confirmar-senha">Confirmar senha</label>
+      <input id="confirmar-senha" type="password" autocomplete="new-password" placeholder="Repita a nova senha">
+      <button class="toggle" type="button" aria-label="Mostrar ou ocultar confirmacao de senha" onclick="toggleSenha('confirmar-senha', this)">👁</button>
+      <div class="error" id="erro-confirmacao" role="alert">As senhas não coincidem.</div>
+    </div>
+
+    <button id="btn-redefinir" class="btn" type="button" onclick="redefinirSenha()">Redefinir senha</button>
+    <div class="msg" id="mensagem" aria-live="polite"></div>
+
+    <div class="links">
+      <a href="login.html">Voltar ao login</a>
+      <a href="login.html" onclick="localStorage.removeItem('autogestor_token')">Solicitar nova recuperação</a>
+    </div>
+  </div>
+</div>
+
+<script>
+const API_BASE = window.location.origin;
+const REQUEST_TIMEOUT_MS = 15000;
+
+function getTokenDaUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('token') || '';
+  if (token) {
+    history.replaceState({}, document.title, window.location.pathname);
+  }
+  return token;
+}
+
+const resetToken = getTokenDaUrl();
+
+function toggleSenha(id, botao) {
+  const campo = document.getElementById(id);
+  const oculto = campo.type === 'password';
+  campo.type = oculto ? 'text' : 'password';
+  botao.textContent = oculto ? '🙈' : '👁';
+}
+
+function forcaSenha(senha) {
+  let score = 0;
+  if (senha.length >= 6) score++;
+  if (senha.length >= 10 && /[0-9]/.test(senha)) score++;
+  if (/[^a-zA-Z0-9]/.test(senha) || senha.length >= 12) score++;
+  if (score <= 1) return 'fraca';
+  if (score === 2) return 'media';
+  return 'forte';
+}
+
+function validarConfirmacao() {
+  const senha = document.getElementById('nova-senha').value;
+  const confirmar = document.getElementById('confirmar-senha').value;
+  const erro = document.getElementById('erro-confirmacao');
+  if (!confirmar) {
+    erro.classList.remove('show');
+    return false;
+  }
+  if (senha !== confirmar) {
+    erro.classList.add('show');
+    return false;
+  }
+  erro.classList.remove('show');
+  return true;
+}
+
+function setMensagem(texto, tipo) {
+  const el = document.getElementById('mensagem');
+  el.textContent = texto;
+  el.className = `msg ${tipo}`;
+}
+
+async function fetchComTimeout(url, options) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function redefinirSenha() {
+  const btn = document.getElementById('btn-redefinir');
+  const nova = document.getElementById('nova-senha').value;
+  const confirmar = document.getElementById('confirmar-senha').value;
+
+  if (!resetToken) {
+    setMensagem('Token inválido ou ausente. Solicite uma nova recuperação.', 'err');
+    return;
+  }
+  if (nova.length < 6) {
+    setMensagem('A senha precisa ter pelo menos os requisitos informados.', 'err');
+    return;
+  }
+  if (!validarConfirmacao()) {
+    setMensagem('As senhas não coincidem.', 'err');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Redefinindo...';
+  setMensagem('', '');
+
+  try {
+    const res = await fetchComTimeout(`${API_BASE}/auth/redefinir-senha`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: resetToken, nova_senha: nova, confirmar_senha: confirmar }),
+    });
+
+    const body = await res.json();
+    if (!res.ok) {
+      if (body.detail === 'token_expired') {
+        setMensagem('Este link expirou. Solicite uma nova recuperação.', 'err');
+      } else if (body.detail === 'token_invalid') {
+        setMensagem('Token inválido ou já utilizado. Solicite uma nova recuperação.', 'err');
+      } else {
+        setMensagem(body.detail || 'Não foi possível redefinir a senha.', 'err');
+      }
+      return;
+    }
+
+    setMensagem('Senha redefinida com sucesso. Você já pode entrar com a nova senha.', 'ok');
+    setTimeout(() => {
+      window.location.href = 'login.html';
+    }, 1200);
+  } catch (e) {
+    if (e.name === 'AbortError') {
+      setMensagem('Tempo limite excedido. Tente novamente em instantes.', 'err');
+    } else {
+      setMensagem('Erro ao conectar com a API.', 'err');
+    }
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Redefinir senha';
+  }
+}
+
+document.getElementById('nova-senha').addEventListener('input', (e) => {
+  document.getElementById('strength-text').textContent = `Força: ${forcaSenha(e.target.value)}`;
+  validarConfirmacao();
+});
+document.getElementById('confirmar-senha').addEventListener('input', validarConfirmacao);
+document.getElementById('confirmar-senha').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') redefinirSenha();
+});
+</script>
+</body>
+</html>

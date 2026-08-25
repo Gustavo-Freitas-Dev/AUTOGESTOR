@@ -2,203 +2,3613 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Controle de Gastos</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AutoGestor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-    body {
-        font-family: 'Segoe UI', sans-serif;
-        background: #0f172a;
-        color: white;
-        display: flex;
-        justify-content: center;
-        padding: 30px;
-    }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    .app {
-        width: 500px;
-    }
+  :root {
+    --bg:      #0A0A0F;
+    --surface: #111118;
+    --card:    #16161F;
+    --border:  #1E1E2E;
+    --border2: #2A2A3C;
+    --text:    #F1F1F5;
+    --muted:   #6B6B80;
+    --dim:     #3A3A50;
+    --accent:  #6366F1;
+    --accent2: #818CF8;
+    --green:   #10B981;
+    --amber:   #F59E0B;
+    --red:     #EF4444;
+    --radius:  14px;
 
-    h1 {
-        text-align: center;
-    }
+    /* ── SKELETON ─────────────────────────────────────────────
+       Duas variáveis controlam toda a aparência dos skeletons:
+       --sk-base  → cor base do bloco "fantasma"
+       --sk-shine → cor do brilho que passa por cima (shimmer)
+    ──────────────────────────────────────────────────────── */
+    --sk-base:  #1C1C28;
+    --sk-shine: #252535;
+  }
 
-    .card {
-        background: #1e293b;
-        padding: 20px;
-        border-radius: 12px;
-        margin-bottom: 20px;
-    }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
-    input, select, button {
-        width: 100%;
-        padding: 10px;
-        margin-top: 10px;
-        border-radius: 8px;
-        border: none;
-    }
+  /* HEADER */
+  header {
+    min-height: 64px; background: rgba(17,17,24,.94); border-bottom: 1px solid var(--border);
+    padding: 10px 28px; display: grid; grid-template-columns: minmax(150px,1fr) auto minmax(150px,1fr); align-items: center; gap: 20px;
+    position: sticky; top: 0; z-index: 100; backdrop-filter: blur(14px);
+  }
+  .logo { display: flex; align-items: center; gap: 9px; font-weight: 700; font-size: 15px; letter-spacing: -0.3px; }
+  .logo-icon { width: 30px; height: 30px; background: linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight:800; }
+  .logo-icon svg { width: 17px; height: 17px; stroke: currentColor; }
+  .header-actions { display:flex; align-items:center; justify-content:flex-end; gap:9px; }
+  .space-switcher { position: relative; display: flex; align-items: stretch; border: 1px solid var(--border2); border-radius: 10px; background: var(--card); transition: border-color .15s, box-shadow .15s; }
+  .space-switcher:focus-within, .space-switcher:hover { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,.08); }
+  .space-select-wrap { position: relative; display: flex; flex-direction: column; justify-content: center; min-width: 220px; padding: 4px 10px 4px 34px; }
+  .space-select-wrap::before { content: '◇'; position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--accent2); font-size: 15px; }
+  .space-select-label { color: var(--muted); font-size: 8px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; pointer-events: none; }
+  .space-select-trigger { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 2px 0 1px; border: 0; outline: 0; background: transparent; color: var(--text); font: 650 11px 'Inter', sans-serif; cursor: pointer; text-align: left; }
+  .space-select-chevron { color: var(--muted); font-size: 8px; transition: transform .18s; }
+  .space-select-trigger[aria-expanded="true"] .space-select-chevron { transform: rotate(180deg); }
+  .space-picker-dropdown { display: none; position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%); width: 290px; padding: 7px; border: 1px solid var(--border2); border-radius: 12px; background: var(--card); box-shadow: 0 20px 55px rgba(0,0,0,.42); z-index: 350; }
+  .space-picker-dropdown.open { display: grid; gap: 4px; animation: picker-open .14s ease-out; }
+  @keyframes picker-open { from { opacity:0; transform:translateX(-50%) translateY(-5px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
+  .space-picker-option { width: 100%; display: flex; align-items: center; gap: 10px; padding: 10px; border: 0; border-radius: 9px; background: transparent; color: var(--text); cursor: pointer; text-align: left; }
+  .space-picker-option:hover { background: var(--surface); }
+  .space-picker-option.active { background: rgba(99,102,241,.1); }
+  .space-picker-icon { width: 30px; height: 30px; flex: 0 0 30px; display: grid; place-items: center; border-radius: 8px; border: 1px solid var(--border2); background: var(--surface); color: var(--accent2); font-size: 11px; }
+  .space-picker-copy { min-width: 0; flex: 1; }
+  .space-picker-name { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:11px; font-weight:650; }
+  .space-picker-meta { display:block; color:var(--muted); font-size:8px; margin-top:3px; }
+  .space-picker-check { color: var(--accent2); font-size: 12px; }
+  .space-manage { width: 38px; border: 0; border-left: 1px solid var(--border2); background: transparent; color: var(--muted); cursor: pointer; font-size: 14px; transition: background .15s, color .15s; }
+  .space-manage:hover { background: rgba(99,102,241,.12); color: #fff; }
+  .space-list { display: grid; gap: 8px; max-height: 250px; overflow: auto; margin: 15px 0; }
+  .space-item { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 11px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
+  .space-item-title { font-size: 12px; font-weight: 650; }
+  .space-item-meta { color: var(--muted); font-size: 9px; margin-top: 3px; }
+  .space-item-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 5px; }
+  .space-mini-button { border: 1px solid var(--border2); border-radius: 6px; background: var(--card); color: var(--text); padding: 6px 7px; font-size: 9px; cursor: pointer; }
+  .space-mini-button.danger { color: var(--red); }
+  .space-mini-button.danger:hover { border-color: var(--red); background: rgba(239,68,68,.08); }
+  .space-forms { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .space-form-box { border: 1px solid var(--border); border-radius: 10px; padding: 11px; }
+  .space-form-title { font-size: 11px; font-weight: 650; margin-bottom: 8px; }
+  .space-inline { display: flex; gap: 6px; }
+  .space-inline input { min-width: 0; flex: 1; }
+  .spaces-dialog { width: min(720px, calc(100% - 32px)); max-height: min(760px, calc(100vh - 32px)); overflow: hidden; box-shadow: 0 28px 90px rgba(0,0,0,.55); }
+  .spaces-dialog[open] { animation: spaces-open .18s ease-out; }
+  @keyframes spaces-open { from { opacity: 0; transform: translateY(12px) scale(.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
+  .spaces-modal { display: flex; flex-direction: column; max-height: inherit; }
+  .spaces-modal-header { display: flex; align-items: center; gap: 13px; padding: 22px 24px 18px; border-bottom: 1px solid var(--border); }
+  .spaces-modal-icon { width: 40px; height: 40px; flex: 0 0 40px; display: grid; place-items: center; border-radius: 11px; background: rgba(99,102,241,.13); color: var(--accent2); font-size: 19px; }
+  .spaces-modal-heading { flex: 1; }
+  .spaces-modal-title { font-size: 16px; font-weight: 700; letter-spacing: -.2px; }
+  .spaces-modal-subtitle { color: var(--muted); font-size: 10px; margin-top: 4px; }
+  .spaces-modal-close { width: 30px; height: 30px; border: 0; border-radius: 8px; background: transparent; color: var(--muted); font-size: 17px; cursor: pointer; }
+  .spaces-modal-close:hover { background: var(--surface); color: var(--text); }
+  .spaces-modal-body { padding: 20px 24px 24px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--border2) transparent; }
+  .spaces-section-label { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; color: var(--muted); font-size: 10px; font-weight: 650; letter-spacing: .06em; text-transform: uppercase; }
+  .spaces-counter { padding: 3px 7px; border-radius: 99px; background: var(--surface); color: var(--accent2); }
+  .space-list { max-height: 290px; margin: 0 0 20px; gap: 9px; }
+  .space-item { position: relative; padding: 13px 14px; border-color: var(--border2); transition: border-color .15s, background .15s, transform .15s; }
+  .space-item:hover { border-color: var(--accent); background: rgba(99,102,241,.035); transform: translateY(-1px); }
+  .space-item.current { border-color: var(--accent); background: rgba(99,102,241,.07); }
+  .space-item-main { display: flex; align-items: center; min-width: 0; gap: 11px; }
+  .space-item-icon { width: 34px; height: 34px; flex: 0 0 34px; display: grid; place-items: center; border-radius: 9px; background: var(--card); border: 1px solid var(--border2); font-size: 14px; }
+  .space-item-copy { min-width: 0; }
+  .space-item-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .space-current-badge { display: inline-block; margin-left: 6px; padding: 2px 5px; border-radius: 4px; background: var(--accent); color: #fff; font-size: 7px; vertical-align: 1px; }
+  .space-mini-button { padding: 7px 9px; border-radius: 7px; transition: border-color .15s, background .15s, color .15s; }
+  .space-mini-button.primary { border-color: var(--accent); background: var(--accent); color: white; }
+  .space-forms { gap: 12px; }
+  .space-form-box { padding: 14px; background: var(--surface); border-color: var(--border2); }
+  .space-form-title { display: flex; align-items: center; gap: 7px; font-size: 12px; margin-bottom: 4px; }
+  .space-form-description { color: var(--muted); font-size: 9px; margin-bottom: 11px; line-height: 1.45; }
+  .space-inline input { background: var(--bg); border: 1px solid var(--border2); border-radius: 8px; padding: 9px 10px; color: var(--text); outline: none; font: 11px 'Inter', sans-serif; }
+  .space-inline input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,.1); }
+  .space-limit-input { flex: 0 0 64px !important; width: 64px; text-align: center; }
+  .space-limit-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 10px; }
+  .space-limit-copy { color: var(--muted); font-size: 9px; line-height: 1.4; }
+  .space-members-panel { display: none; margin: -10px 0 20px; padding: 13px; border: 1px solid var(--border2); border-radius: 10px; background: var(--surface); }
+  .space-members-panel.open { display: block; }
+  .space-members-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 9px; font-size: 11px; font-weight: 650; }
+  .space-members-list { display: grid; gap: 6px; }
+  .space-member { display: flex; align-items: center; gap: 9px; padding: 8px; border-radius: 8px; background: var(--card); }
+  .space-member-avatar { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 8px; background: rgba(99,102,241,.12); color: var(--accent2); font-size: 9px; font-weight: 700; }
+  .space-member-name { font-size: 10px; font-weight: 600; }
+  .space-member-email { color: var(--muted); font-size: 8px; margin-top: 2px; }
+  .space-member-role { margin-left: auto; color: var(--accent2); font-size: 8px; }
+  .header-meta { font-size: 12px; color: var(--muted); }
+  .profile-menu { position: relative; }
+  .profile-trigger {
+    display: flex; align-items: center; gap: 10px; min-width: 190px;
+    border: 1px solid var(--border2); border-radius: 12px; padding: 6px 9px 6px 7px;
+    background: var(--card); color: var(--text); cursor: pointer; text-align: left;
+    transition: border-color .15s, background .15s, transform .15s;
+  }
+  .profile-trigger:hover, .profile-trigger[aria-expanded="true"] { border-color: var(--accent); background: rgba(99,102,241,.08); }
+  .profile-avatar {
+    width: 34px; height: 34px; flex: 0 0 34px; display: grid; place-items: center;
+    border-radius: 10px; color: white; font-size: 12px; font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    box-shadow: 0 5px 14px rgba(99,102,241,.25);
+  }
+  .profile-avatar img { width: 100%; height: 100%; border-radius: inherit; object-fit: cover; }
+  .profile-copy { min-width: 0; flex: 1; }
+  .profile-name { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 600 12px 'Inter', sans-serif; }
+  .profile-email { display: block; max-width: 125px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); font: 400 10px 'Inter', sans-serif; margin-top: 2px; }
+  .profile-chevron { color: var(--muted); font-size: 11px; transition: transform .18s; }
+  .profile-trigger[aria-expanded="true"] .profile-chevron { transform: rotate(180deg); }
+  .profile-dropdown {
+    display: none; position: absolute; right: 0; top: calc(100% + 8px); width: 210px;
+    padding: 7px; border: 1px solid var(--border2); border-radius: 12px;
+    background: var(--card); box-shadow: 0 18px 50px rgba(0,0,0,.38); z-index: 300;
+  }
+  .profile-dropdown.open { display: block; animation: profile-in .14s ease-out; }
+  @keyframes profile-in { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+  .profile-option {
+    width: 100%; display: flex; align-items: center; gap: 10px; padding: 10px;
+    border: 0; border-radius: 8px; background: transparent; color: var(--text);
+    font: 500 12px 'Inter', sans-serif; cursor: pointer; text-align: left;
+  }
+  .profile-option:hover { background: var(--surface); }
+  .profile-option.danger { color: var(--red); }
+  .profile-divider { height: 1px; background: var(--border); margin: 5px 3px; }
+  .btn-logout { background: transparent; border: 1px solid var(--border2); color: var(--muted); border-radius: 8px; padding: 8px 11px; font: 600 12px 'Inter', sans-serif; cursor: pointer; }
+  .account-dialog { position: fixed; inset: 0; margin: auto; width: min(420px, calc(100% - 32px)); border: 1px solid var(--border2); border-radius: 16px; padding: 0; background: var(--card); color: var(--text); }
+  .account-dialog::backdrop { background: rgba(0,0,0,.72); backdrop-filter: blur(3px); }
+  .account-form { padding: 24px; }
+  .account-title { font-size: 18px; margin-bottom: 6px; }
+  .account-help { color: var(--muted); font-size: 12px; margin-bottom: 20px; }
+  .account-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+  .account-actions .btn-primary { width: auto; margin: 0; padding: 9px 14px; }
+  .photo-editor { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; padding: 13px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+  .photo-preview { width: 58px; height: 58px; flex: 0 0 58px; display: grid; place-items: center; overflow: hidden; border-radius: 15px; background: linear-gradient(135deg, var(--accent), var(--accent2)); color: white; font-size: 16px; font-weight: 800; }
+  .photo-preview img { width: 100%; height: 100%; object-fit: cover; }
+  .photo-controls { display: flex; flex-wrap: wrap; gap: 7px; }
+  .photo-button { padding: 7px 9px; border: 1px solid var(--border2); border-radius: 7px; background: var(--card); color: var(--text); font: 500 11px 'Inter', sans-serif; cursor: pointer; }
+  .photo-button:hover { border-color: var(--accent); }
+  .photo-button.remove { color: var(--red); }
+  .photo-hint { width: 100%; color: var(--muted); font-size: 9px; }
 
-    input, select {
-        background: #334155;
-        color: white;
-    }
+  /* LAYOUT */
+  .container { max-width: 1060px; margin: 0 auto; padding: 28px 24px; display: grid; grid-template-columns: 360px 1fr; gap: 24px; align-items: start; }
 
-    button {
-        background: #22c55e;
-        color: white;
-        cursor: pointer;
-    }
+  /* CARD */
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+  .card-label { font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
 
-    button:hover {
-        background: #16a34a;
-    }
+  /* TIPO TOGGLE */
+  .tipo-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 14px; }
+  .tipo-btn {
+    padding: 9px; border-radius: 9px; border: 1px solid var(--border2);
+    background: transparent; color: var(--muted); font-family: 'Inter', sans-serif;
+    font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s; text-align: center;
+  }
+  .tipo-btn.ganho.active { background: rgba(16,185,129,0.15); border-color: var(--green); color: var(--green); }
+  .tipo-btn.gasto.active { background: rgba(239,68,68,0.15); border-color: var(--red); color: var(--red); }
+  .tipo-btn:not(.active):hover { border-color: var(--border2); color: var(--text); }
 
-    .gasto {
-        background: #334155;
-        padding: 12px;
-        margin-top: 10px;
-        border-radius: 8px;
-        display: flex;
-        justify-content: space-between;
-    }
+  /* FORM */
+  .sidebar { display: flex; flex-direction: column; gap: 16px; }
+  .field { margin-bottom: 10px; }
+  .field label { display: block; font-size: 11px; font-weight: 500; color: var(--muted); margin-bottom: 5px; letter-spacing: 0.04em; text-transform: uppercase; }
+  .field input, .field select {
+    width: 100%; background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 9px; padding: 10px 13px; color: var(--text);
+    font-family: 'Inter', sans-serif; font-size: 14px; outline: none; transition: border-color 0.15s;
+    -webkit-appearance: none; appearance: none;
+  }
+  .field input:focus, .field select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
+  .field input::placeholder { color: var(--dim); }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .field input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.5); cursor: pointer; }
 
-    .badge {
-        font-size: 12px;
-        padding: 3px 8px;
-        border-radius: 6px;
-        background: #475569;
-    }
+  .btn-primary {
+    width: 100%; padding: 11px; border: none; border-radius: 9px;
+    color: #fff; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: filter 0.15s, transform 0.1s; margin-top: 4px;
+  }
+  .btn-primary.ganho { background: var(--green); }
+  .btn-primary.gasto { background: var(--red); }
+  .btn-primary:hover { filter: brightness(1.1); }
+  .btn-primary:active { transform: scale(0.98); }
 
-    .delete {
-        background: #ef4444;
-        padding: 5px 10px;
-        border-radius: 6px;
-        cursor: pointer;
-    }
+  /* SALDO CARDS */
+  .saldo-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .saldo-card { background: var(--card); border: 1px solid var(--border); border-radius: 11px; padding: 14px 16px; }
+  .saldo-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 6px; }
+  .saldo-value { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.4px; }
+  .saldo-value.green { color: var(--green); }
+  .saldo-value.red   { color: var(--red); }
+  .saldo-value.neutral { color: var(--text); }
+  .saldo-value.positive { color: var(--green); }
+  .saldo-value.negative { color: var(--red); }
 
-    .resumo {
-        display: flex;
-        justify-content: space-between;
-        margin-top: 10px;
-        font-weight: bold;
-    }
+  /* STATS */
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+  .stat-card.full { grid-column: 1 / -1; }
+  .stat-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 6px; }
+  .stat-value { font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .stat-value.green { color: var(--green); }
+  .stat-value.red   { color: var(--red); }
+  .stat-value.accent { color: var(--accent2); }
+  .stat-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  /* CHART */
+  .chart-area { margin-top: 4px; }
+  .chart-row { display: flex; align-items: center; gap: 10px; margin-bottom: 9px; }
+  .chart-cat { font-size: 10px; font-weight: 500; color: var(--muted); width: 80px; flex-shrink: 0; }
+  .chart-bar-bg { flex: 1; height: 7px; background: var(--border); border-radius: 99px; overflow: hidden; }
+  .chart-bar-fill { height: 100%; border-radius: 99px; width: 0; transition: width 0.6s cubic-bezier(0.16,1,0.3,1); }
+  .chart-pct { font-size: 10px; font-weight: 600; color: var(--muted); width: 28px; text-align: right; flex-shrink: 0; }
+
+  /* MAIN */
+  .main { display: flex; flex-direction: column; gap: 14px; }
+
+  /* FILTER */
+  .top-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .filter-bar { display: flex; gap: 6px; flex-wrap: wrap; }
+  .filter-btn {
+    padding: 5px 13px; border: 1px solid var(--border2); border-radius: 99px;
+    background: transparent; color: var(--muted); font-family: 'Inter', sans-serif;
+    font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.15s;
+  }
+  .filter-btn:hover { color: var(--text); border-color: var(--accent); }
+  .filter-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .filter-btn.active.ganho-filter { background: var(--green); border-color: var(--green); }
+  .filter-btn.active.gasto-filter { background: var(--red); border-color: var(--red); }
+
+  .list-header { display: flex; justify-content: space-between; align-items: center; }
+  .list-title { font-size: 13px; font-weight: 600; }
+  .list-count { font-size: 12px; color: var(--muted); }
+
+  /* ITEM */
+  .mov-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px; background: var(--card); border: 1px solid var(--border);
+    border-radius: 11px; margin-bottom: 8px; transition: border-color 0.15s;
+    animation: fadeUp 0.2s ease;
+  }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+  .mov-item:hover { border-color: var(--border2); }
+  .mov-item.ganho-item { border-left: 3px solid var(--green); }
+  .mov-item.gasto-item { border-left: 3px solid var(--red); }
+
+  .mov-left { display: flex; align-items: center; gap: 13px; }
+  .mov-icon { width: 36px; height: 36px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+  .mov-desc { font-size: 14px; font-weight: 500; margin-bottom: 3px; }
+  .mov-meta { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .mov-badge { display: inline-block; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; padding: 2px 7px; border-radius: 5px; background: var(--surface); color: var(--muted); border: 1px solid var(--border2); }
+  .mov-date { font-size: 11px; color: var(--dim); }
+
+  .mov-right { display: flex; align-items: center; gap: 14px; }
+  .mov-value { font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; }
+  .mov-value.green { color: var(--green); }
+  .mov-value.red   { color: var(--red); }
+  .mov-value-label { font-size: 10px; color: var(--muted); text-align: right; margin-top: 2px; }
+
+  .btn-delete {
+    width: 30px; height: 30px; border: 1px solid var(--border2); border-radius: 7px;
+    background: transparent; color: var(--muted); cursor: pointer; font-size: 13px;
+    display: flex; align-items: center; justify-content: center; transition: all 0.15s; flex-shrink: 0;
+  }
+  .btn-delete:hover { background: rgba(239,68,68,0.1); border-color: var(--red); color: var(--red); }
+
+  /* EMPTY */
+  .empty { text-align: center; padding: 48px 20px; color: var(--muted); }
+  .empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.4; }
+  .empty-text { font-size: 13px; }
+
+  /* ════════════════════════════════════════════════════════════
+     SKELETON LOADING
+     ════════════════════════════════════════════════════════════
+
+     CONCEITO:
+     Um skeleton é um bloco com a mesma forma e posição do
+     conteúdo real, mas preenchido com uma cor neutra + animação
+     de "shimmer" (brilho que varre da esquerda pra direita).
+
+     COMO FUNCIONA A ANIMAÇÃO:
+     Usamos background-image com um gradiente linear em ângulo.
+     A posição desse gradiente é animada via background-position:
+       - começa em -200% (fora da tela, à esquerda)
+       - termina em  200% (fora da tela, à direita)
+     Isso cria o efeito de luz passando sobre o bloco.
+
+     background-size: 200% 100%  → gradiente é 2x mais largo
+                                    que o elemento, dando espaço
+                                    para a animação percorrer.
+  ════════════════════════════════════════════════════════════ */
+
+  @keyframes shimmer {
+    0%   { background-position: -200% 0; }
+    100% { background-position:  200% 0; }
+  }
+
+  /* Classe base aplicada em qualquer bloco skeleton */
+  .sk {
+    border-radius: 6px;
+    background-image: linear-gradient(
+      90deg,
+      var(--sk-base)  25%,   /* cor sólida → */
+      var(--sk-shine) 50%,   /* pico do brilho → */
+      var(--sk-base)  75%    /* cor sólida de novo */
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.4s ease-in-out infinite;
+    /* 1.4s é o ponto doce: rápido o suficiente pra parecer
+       "vivo", lento o suficiente pra não irritar */
+  }
+
+  /* Variantes de altura prontas pra usar */
+  .sk-text   { height: 12px; }   /* linha de texto pequeno  */
+  .sk-title  { height: 20px; }   /* título / valor grande   */
+  .sk-circle { border-radius: 50%; }  /* ícone circular      */
+  .sk-badge  { height: 20px; border-radius: 99px; }
+
+  /* ── Skeleton dos cards de saldo (topo da área principal) ── */
+  .sk-saldo-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* ── Skeleton de cada item da lista ───────────────────────
+     Replica exatamente o layout de .mov-item:
+     ícone (quadrado) | linha larga + linha curta | valor | botão
+  ─────────────────────────────────────────────────────────── */
+  .sk-item {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 14px 16px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    margin-bottom: 8px;
+  }
+
+  .sk-item-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .sk-item-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+  }
+
+  /* ── Skeleton dos stat-cards da sidebar ───────────────────
+     Dois blocos empilhados (label + valor)
+  ─────────────────────────────────────────────────────────── */
+  .sk-stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* Delay escalonado nos itens da lista:
+     cada item começa o shimmer um pouco depois do anterior.
+     Isso cria uma onda visual descendente → muito mais elegante
+     do que todos piscando ao mesmo tempo. */
+  .sk-item:nth-child(1) { animation-delay: 0s;    }
+  .sk-item:nth-child(2) { animation-delay: 0.1s;  }
+  .sk-item:nth-child(3) { animation-delay: 0.2s;  }
+  .sk-item:nth-child(4) { animation-delay: 0.3s;  }
+  .sk-item:nth-child(5) { animation-delay: 0.4s;  }
+  /* Nota: o delay vai no container .sk-item, não no .sk interno,
+     porque queremos atrasar o item inteiro, não cada bloco */
+
+  /* ════════════════════════════════════════════════════════════
+     MODAL DE CONFIRMAÇÃO
+     ════════════════════════════════════════════════════════════
+
+     ANATOMIA:
+       .modal-overlay  → fundo escuro que cobre a página inteira
+         .modal-box    → painel branco/escuro centralizado
+           .modal-icon → ícone de alerta
+           .modal-title / .modal-desc → textos informativos
+           .modal-actions → botões Cancelar + Confirmar
+
+     DUAS CAMADAS DE ANIMAÇÃO:
+       1. O overlay faz fade-in (opacity 0 → 1)
+       2. O box sobe levemente (translateY 12px → 0) + fade-in
+     As duas animações acontecem ao mesmo tempo mas são
+     independentes — isso cria profundidade visual.
+
+     ESTADO ABERTO/FECHADO:
+     O modal começa com display:none no HTML.
+     Para abrir:  adicionamos a classe .open ao overlay
+     Para fechar: removemos a classe .open
+     Usamos classe em vez de display:block direto porque
+     assim podemos animar a saída também se quisermos no futuro.
+  ════════════════════════════════════════════════════════════ */
+
+  /* O overlay cobre 100% da viewport por cima de tudo (z-index alto).
+     Usamos position:fixed para que não role com a página. */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;                          /* top:0 right:0 bottom:0 left:0 */
+    background: rgba(0, 0, 0, 0.6);   /* preto semitransparente */
+    backdrop-filter: blur(4px);        /* desfoca o conteúdo atrás */
+    z-index: 1000;
+    display: none;                     /* escondido por padrão */
+    align-items: center;
+    justify-content: center;
+
+    /* Animação de entrada do overlay */
+    animation: overlayIn 0.2s ease;
+  }
+
+  @keyframes overlayIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  /* Quando a classe .open é adicionada via JS, o overlay aparece */
+  .modal-overlay.open {
+    display: flex;   /* flex para centralizar o .modal-box */
+  }
+
+  /* O painel central */
+  .modal-box {
+    background: var(--card);
+    border: 1px solid var(--border2);
+    border-radius: 16px;
+    padding: 28px 28px 24px;
+    width: 100%;
+    max-width: 380px;
+    margin: 0 16px;
+    text-align: center;
+
+    /* Animação de entrada do box — sobe + aparece */
+    animation: boxIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    /*
+      cubic-bezier(0.16, 1, 0.3, 1) é uma curva "spring":
+      começa rápido e desacelera suavemente no final.
+      É a mesma curva usada no iOS e no Framer Motion.
+    */
+  }
+
+  @keyframes boxIn {
+    from { opacity: 0; transform: translateY(12px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0)    scale(1);    }
+  }
+
+  /* Ícone de alerta no topo do modal */
+  .modal-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: rgba(239, 68, 68, 0.12);  /* vermelho bem suave */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    margin: 0 auto 16px;
+  }
+
+  .modal-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 8px;
+    letter-spacing: -0.2px;
+  }
+
+  .modal-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+    margin-bottom: 24px;
+  }
+
+  /* Linha com os dois botões — Cancelar e Confirmar */
+  .modal-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .btn-modal {
+    padding: 10px;
+    border-radius: 9px;
+    border: none;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: filter 0.15s, transform 0.1s;
+  }
+  .btn-modal:active { transform: scale(0.97); }
+
+  /* Cancelar: discreto, sem cor forte */
+  .btn-modal.cancelar {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    color: var(--muted);
+  }
+  .btn-modal.cancelar:hover { color: var(--text); border-color: var(--dim); }
+
+  /* Confirmar: vermelho — ação destrutiva */
+  .btn-modal.confirmar {
+    background: var(--red);
+    color: #fff;
+  }
+  .btn-modal.confirmar:hover { filter: brightness(1.1); }
+
+  /* Detalhe do item sendo deletado — mostrado dentro do modal */
+  .modal-item-preview {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 10px 14px;
+    margin-bottom: 20px;
+    text-align: left;
+  }
+  .modal-item-preview .preview-desc {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 3px;
+  }
+  .modal-item-preview .preview-valor {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  /* ════════════════════════════════════════════════════════════
+     MODAL DE EDIÇÃO
+     ════════════════════════════════════════════════════════════
+     Reutiliza o mesmo sistema de overlay/box/animação do modal
+     de deletar — mesma classe .modal-overlay e .modal-box.
+     A diferença é o conteúdo interno: formulário em vez de preview.
+
+     O modal de edição é um segundo overlay independente (#modal-edit),
+     assim os dois podem coexistir no HTML sem conflito de estado.
+  ════════════════════════════════════════════════════════════ */
+
+  /* Toggle de tipo dentro do modal de edição — mesmo estilo do form principal */
+  .modal-tipo-toggle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+
+  /* Campos do formulário dentro do modal */
+  .modal-field { margin-bottom: 10px; }
+  .modal-field label {
+    display: block;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted);
+    margin-bottom: 5px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .modal-field input {
+    width: 100%;
+    background: var(--bg);         /* um tom mais escuro que o modal-box */
+    border: 1px solid var(--border2);
+    border-radius: 9px;
+    padding: 10px 13px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .modal-field input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+  }
+  .modal-field input::placeholder { color: var(--dim); }
+  .modal-field input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.5); cursor: pointer; }
+  .modal-field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  /* Botão salvar do modal — muda de cor conforme o tipo selecionado (via JS) */
+  .btn-modal.salvar-ganho { background: var(--green); color: #fff; }
+  .btn-modal.salvar-gasto { background: var(--accent); color: #fff; }
+  .btn-modal.salvar-ganho:hover,
+  .btn-modal.salvar-gasto:hover { filter: brightness(1.1); }
+
+  /* Botão de editar em cada item da lista */
+  .btn-edit {
+    width: 30px; height: 30px;
+    border: 1px solid var(--border2);
+    border-radius: 7px;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 13px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .btn-edit:hover {
+    background: rgba(99,102,241,0.1);
+    border-color: var(--accent);
+    color: var(--accent2);
+  }
+
+  /* ════════════════════════════════════════════════════════════
+     FILTRO POR PERÍODO
+     ════════════════════════════════════════════════════════════
+     Reaproveita a classe .filter-btn já existente (mesmo visual
+     dos filtros de tipo), mas em uma linha separada — assim os
+     dois filtros (tipo + período) ficam visualmente distintos
+     sem precisar de CSS novo para os botões em si.
+
+     O período customizado fica escondido por padrão e só aparece
+     quando o usuário clica em "Personalizado". Isso evita poluir
+     a tela com dois campos de data que a maioria nunca vai usar.
+  ════════════════════════════════════════════════════════════ */
+
+  .filter-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .filter-divider {
+    width: 1px;
+    height: 18px;
+    background: var(--border2);
+    margin: 0 2px;
+  }
+
+  /* Linha do período customizado — escondida por padrão via display:none.
+     O JS troca para 'flex' quando o usuário clica em "Personalizado". */
+  .custom-range {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+  }
+  .custom-range.show { display: flex; }
+
+  .custom-range input[type="date"] {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 7px 10px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    outline: none;
+  }
+  .custom-range input[type="date"]:focus { border-color: var(--accent); }
+  .custom-range input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.5); cursor: pointer; }
+
+  .custom-range-label {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  .custom-range-apply {
+    padding: 6px 14px;
+    border: none;
+    border-radius: 8px;
+    background: var(--accent);
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: filter 0.15s;
+  }
+  .custom-range-apply:hover { filter: brightness(1.1); }
+
+  @media (max-width: 760px) {
+    .container { grid-template-columns: 1fr; }
+    .saldo-grid { grid-template-columns: 1fr; }
+    header { min-height: 58px; padding: 9px 14px; grid-template-columns: auto minmax(110px,1fr) auto; gap: 8px; }
+    .header-meta { display: none; }
+    .profile-trigger { min-width: 0; }
+    .profile-copy { display: none; }
+    .space-switcher { min-width: 0; }
+    .space-select-wrap { min-width: 0; flex: 1; }
+    .space-picker-dropdown { position: fixed; top: 66px; left: 14px; right: 14px; width: auto; transform: none; }
+    .space-picker-dropdown.open { animation: profile-in .14s ease-out; }
+    .space-forms { grid-template-columns: 1fr; }
+    .space-item { align-items: flex-start; flex-direction: column; }
+    .space-item-actions { width: 100%; justify-content: flex-start; padding-left: 45px; }
+    .logo { font-size: 0; }
+    .header-actions { gap: 6px; }
+    .export-group { display: none; }
+  }
+
+  /* ════════════════════════════════════════════════════════════
+     BOTÕES DE EXPORTAR (CSV / Excel)
+     ════════════════════════════════════════════════════════════ */
+  .export-group { position: relative; }
+
+  .btn-export {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border2);
+    background: var(--surface);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-export:hover {
+    border-color: var(--accent);
+    color: var(--accent2);
+    background: rgba(99,102,241,0.08);
+  }
+  .btn-export:active { transform: scale(0.97); }
+  .btn-export[aria-expanded="true"] { border-color: var(--accent); color: var(--accent2); background: rgba(99,102,241,0.08); }
+  .export-chevron { font-size: 9px; color: var(--muted); transition: transform .18s; }
+  .btn-export[aria-expanded="true"] .export-chevron { transform: rotate(180deg); }
+  .export-dropdown {
+    display: none; position: absolute; right: 0; top: calc(100% + 8px); width: 205px;
+    padding: 7px; border: 1px solid var(--border2); border-radius: 12px;
+    background: var(--card); box-shadow: 0 18px 50px rgba(0,0,0,.38); z-index: 300;
+  }
+  .export-dropdown.open { display: block; animation: profile-in .14s ease-out; }
+  .export-option {
+    width: 100%; display: flex; align-items: center; gap: 10px; padding: 10px;
+    border: 0; border-radius: 8px; background: transparent; color: var(--text);
+    font: 500 12px 'Inter', sans-serif; cursor: pointer; text-align: left;
+  }
+  .export-option:hover { background: var(--surface); }
+  .export-format { display: block; }
+  .export-description { display: block; color: var(--muted); font-size: 9px; margin-top: 2px; }
+
+  /* ════════════════════════════════════════════════════════════
+     TOAST NOTIFICATIONS
+     ════════════════════════════════════════════════════════════
+     Substitui o alert() nativo por uma notificação flutuante
+     no canto da tela, que aparece, fica alguns segundos e some
+     sozinha — sem travar a interação do usuário com a página
+     (alert() trava o JS inteiro até o usuário clicar OK).
+
+     EMPILHAMENTO: múltiplos toasts podem aparecer ao mesmo tempo
+     (ex: salvar rápido várias vezes). O container usa flex-column
+     para empilhá-los verticalmente, do mais novo embaixo.
+  ════════════════════════════════════════════════════════════ */
+
+  .toast-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 2000;          /* acima até dos modais */
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;   /* não bloqueia cliques na página atrás */
+  }
+
+  .toast {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 260px;
+    max-width: 360px;
+    padding: 13px 16px;
+    background: var(--card);
+    border: 1px solid var(--border2);
+    border-left: 3px solid var(--accent);
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    pointer-events: auto;   /* o toast em si recebe cliques (botão fechar) */
+
+    /* Animação de entrada: desliza da direita + fade in */
+    animation: toastIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* Variantes de cor por tipo de mensagem */
+  .toast.success { border-left-color: var(--green); }
+  .toast.error   { border-left-color: var(--red); }
+  .toast.info    { border-left-color: var(--accent); }
+
+  @keyframes toastIn {
+    from { opacity: 0; transform: translateX(30px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  /* Classe aplicada via JS pouco antes de remover o toast do DOM */
+  .toast.toast-out {
+    animation: toastOut 0.2s ease forwards;
+  }
+  @keyframes toastOut {
+    from { opacity: 1; transform: translateX(0); }
+    to   { opacity: 0; transform: translateX(30px); }
+  }
+
+  .toast-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .toast-text {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    flex: 1;
+    line-height: 1.4;
+  }
+
+  .toast-close {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 14px;
+    cursor: pointer;
+    flex-shrink: 0;
+    padding: 2px;
+    line-height: 1;
+  }
+  .toast-close:hover { color: var(--text); }
+
+  /* ════════════════════════════════════════════════════════════
+     GRÁFICO DE EVOLUÇÃO DO SALDO (linha do tempo)
+     ════════════════════════════════════════════════════════════
+     SVG simples desenhado via JS, sem biblioteca externa de
+     gráficos — controle total do visual e zero dependência extra.
+
+     A ideia: para cada dia com movimentação, calculamos o saldo
+     ACUMULADO até aquele dia, e plotamos como uma linha contínua.
+     Pontos acima do eixo zero = saldo positivo (verde).
+     Pontos abaixo = saldo negativo (vermelho).
+  ════════════════════════════════════════════════════════════ */
+
+  .evolucao-svg-wrap {
+    width: 100%;
+    overflow: visible;
+  }
+
+  .evolucao-tooltip {
+    position: absolute;
+    background: var(--bg);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 8px 11px;
+    font-size: 11px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.1s;
+    white-space: nowrap;
+    z-index: 10;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+  .evolucao-tooltip.show { opacity: 1; }
+  .evolucao-tooltip .tt-data { color: var(--muted); margin-bottom: 2px; }
+  .evolucao-tooltip .tt-valor { font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  .evolucao-wrap { position: relative; }
+
+  /* ════════════════════════════════════════════════════════════
+     METAS DE GASTO POR CATEGORIA
+     ════════════════════════════════════════════════════════════
+     Cada meta = uma categoria + um valor limite mensal.
+     Guardadas no localStorage (chave 'autogestor_metas'), já que
+     a API atual não tem endpoint para isso — ver explicação no
+     chat sobre como evoluir isso para o backend futuramente.
+  ════════════════════════════════════════════════════════════ */
+
+  .meta-item {
+    margin-bottom: 14px;
+  }
+  .meta-item:last-child { margin-bottom: 0; }
+
+  .meta-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 6px;
+  }
+
+  .meta-nome {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .meta-valores {
+    font-size: 11px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .meta-bar-bg {
+    height: 8px;
+    background: var(--surface);
+    border-radius: 99px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  .meta-bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    width: 0;
+    transition: width 0.6s cubic-bezier(0.16,1,0.3,1);
+  }
+  /* Cores progressivas conforme o percentual usado da meta */
+  .meta-bar-fill.ok       { background: var(--green); }
+  .meta-bar-fill.atencao  { background: var(--amber); }
+  .meta-bar-fill.estourou { background: var(--red); }
+
+  .meta-pct-label {
+    font-size: 10px;
+    font-weight: 700;
+    margin-top: 4px;
+  }
+  .meta-pct-label.ok       { color: var(--green); }
+  .meta-pct-label.atencao  { color: var(--amber); }
+  .meta-pct-label.estourou { color: var(--red); }
+
+  .meta-add-row {
+    display: grid;
+    grid-template-columns: 1fr 90px auto;
+    gap: 6px;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+  }
+  .meta-add-row input {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 8px 10px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    outline: none;
+  }
+  .meta-add-row input:focus { border-color: var(--accent); }
+  .meta-add-row button {
+    background: var(--accent);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    width: 34px;
+  }
+  .meta-add-row button:hover { filter: brightness(1.1); }
+
+  .meta-delete {
+    background: none;
+    border: none;
+    color: var(--dim);
+    font-size: 11px;
+    cursor: pointer;
+    margin-left: 6px;
+  }
+  .meta-delete:hover { color: var(--red); }
+
+  .meta-empty {
+    font-size: 12px;
+    color: var(--muted);
+    text-align: center;
+    padding: 12px 0;
+  }
+
+  /* ════════════════════════════════════════════════════════════
+     ORDENAÇÃO (dropdown)
+     ════════════════════════════════════════════════════════════
+     Select estilizado para combinar com o resto da UI — o
+     <select> nativo é feio por padrão, então removemos a
+     aparência padrão (appearance:none) e desenhamos uma seta
+     customizada via SVG inline no background.
+  ════════════════════════════════════════════════════════════ */
+
+  .sort-select {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 7px 32px 7px 12px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+
+    /* Seta customizada (chevron-down) como background SVG */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6' fill='none'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%236B6B80' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+  }
+  .sort-select:focus { border-color: var(--accent); }
+
+  /* ════════════════════════════════════════════════════════════
+     PAGINAÇÃO
+     ════════════════════════════════════════════════════════════
+     Controles ficam abaixo da lista: botão anterior, números de
+     página clicáveis (com reticências quando há muitas páginas),
+     e botão próximo. Página ativa fica destacada.
+  ════════════════════════════════════════════════════════════ */
+
+  .pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 16px;
+  }
+
+  .page-btn {
+    min-width: 30px;
+    height: 30px;
+    padding: 0 8px;
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--muted);
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .page-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent2); }
+  .page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  .page-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  .page-ellipsis {
+    color: var(--dim);
+    font-size: 12px;
+    padding: 0 4px;
+  }
 </style>
-</head>
 
+<!--
+  SheetJS (biblioteca "xlsx")
+  ────────────────────────────
+  Usada para gerar arquivos .xlsx (Excel) reais no navegador,
+  sem precisar de backend. O mesmo objeto de dados também serve
+  para gerar CSV, então reaproveitamos a mesma estrutura para
+  os dois formatos de exportação.
+-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
 <body>
 
-<div class="app">
+<header>
+  <div class="logo">
+    <div class="logo-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 7.5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a3 3 0 0 1-3-3v-11a3 3 0 0 1 3-3h11v5"/>
+        <path d="M15 12h5v4h-5a2 2 0 0 1 0-4Z"/>
+        <path d="M16.5 14h.01"/>
+      </svg>
+    </div>
+    AutoGestor
+  </div>
 
-    <h1>💰 AutoGestor</h1>
+  <div class="space-switcher">
+    <div class="space-select-wrap">
+      <span class="space-select-label">Espaço atual</span>
+      <button type="button" class="space-select-trigger" id="seletor-espaco" onclick="alternarSeletorEspacos(event)" aria-expanded="false" aria-haspopup="listbox">
+        <span id="seletor-espaco-nome">Carregando...</span><span class="space-select-chevron">▼</span>
+      </button>
+    </div>
+    <button type="button" class="space-manage" onclick="abrirEspacos()" title="Gerenciar espaços" aria-label="Gerenciar espaços">⚙</button>
+    <div class="space-picker-dropdown" id="seletor-espaco-menu" role="listbox"></div>
+  </div>
 
-    <!-- FORM -->
+  <!--
+    Grupo de botões de exportação + data de hoje.
+    Cada botão chama uma função JS diferente, mas ambas usam
+    a mesma fonte de dados: getDadosFiltrados() — ou seja,
+    o usuário exporta exatamente o que está vendo na tela
+    (respeitando os filtros de tipo e período ativos).
+  -->
+  <div class="header-actions">
+    <span class="header-meta" id="data-hoje" hidden></span>
+    <div class="export-group" id="export-menu">
+      <button type="button" class="btn-export" id="export-trigger" onclick="alternarMenuExportacao(event)" aria-expanded="false" aria-haspopup="true">
+        <span>⇩</span><span>Exportar</span><span class="export-chevron">▼</span>
+      </button>
+      <div class="export-dropdown" id="export-dropdown" role="menu">
+        <button type="button" class="export-option" onclick="escolherExportacao('csv')" role="menuitem">
+          <span>📄</span>
+          <span><strong class="export-format">Arquivo CSV</strong><small class="export-description">Compatível com vários sistemas</small></span>
+        </button>
+        <button type="button" class="export-option" onclick="escolherExportacao('excel')" role="menuitem">
+          <span>📊</span>
+          <span><strong class="export-format">Planilha Excel</strong><small class="export-description">Arquivo formatado em .xlsx</small></span>
+        </button>
+      </div>
+    </div>
+    <div class="profile-menu" id="profile-menu">
+      <button type="button" class="profile-trigger" id="profile-trigger" onclick="alternarMenuPerfil(event)" aria-expanded="false" aria-haspopup="true">
+        <span class="profile-avatar" id="profile-avatar"><span id="profile-iniciais">AG</span><img id="profile-foto" alt="Foto do perfil" hidden></span>
+        <span class="profile-copy">
+          <span class="profile-name" id="usuario-logado"></span>
+          <span class="profile-email" id="usuario-email"></span>
+        </span>
+        <span class="profile-chevron">▼</span>
+      </button>
+      <div class="profile-dropdown" id="profile-dropdown" role="menu">
+        <button type="button" class="profile-option" onclick="abrirMinhaConta()" role="menuitem">
+          <span>✎</span><span>Editar perfil</span>
+        </button>
+        <div class="profile-divider"></div>
+        <button type="button" class="profile-option danger" onclick="deslogar()" role="menuitem">
+          <span>↪</span><span>Sair da conta</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<dialog class="account-dialog spaces-dialog" id="dialog-espacos">
+  <div class="spaces-modal">
+    <div class="spaces-modal-header">
+      <div class="spaces-modal-icon">◇</div>
+      <div class="spaces-modal-heading">
+        <h2 class="spaces-modal-title">Gerenciar espaços</h2>
+        <p class="spaces-modal-subtitle">Organize suas finanças pessoais e compartilhadas</p>
+      </div>
+      <button type="button" class="spaces-modal-close" onclick="fecharEspacos()" aria-label="Fechar">✕</button>
+    </div>
+    <div class="spaces-modal-body">
+      <div class="spaces-section-label"><span>Seus espaços</span><span class="spaces-counter" id="contador-espacos">0</span></div>
+      <div class="space-list" id="lista-espacos"></div>
+      <div class="space-members-panel" id="painel-membros">
+        <div class="space-members-header"><span id="titulo-membros">Membros</span><button class="spaces-modal-close" onclick="fecharMembros()">✕</button></div>
+        <div class="space-members-list" id="lista-membros"></div>
+      </div>
+      <div class="spaces-section-label"><span>Adicionar espaço</span></div>
+    <div class="space-forms">
+      <div class="space-form-box">
+        <div class="space-form-title"><span>＋</span><span>Criar compartilhado</span></div>
+        <div class="space-form-description">Crie um ambiente financeiro e convide outra pessoa usando um código.</div>
+        <div class="space-inline"><input id="novo-espaco-nome" maxlength="80" placeholder="Ex.: Finanças da casa"></div>
+        <div class="space-limit-row"><span class="space-limit-copy">Limite de participantes</span><div class="space-inline"><input class="space-limit-input" id="novo-espaco-limite" type="number" min="2" max="20" value="5"><button class="space-mini-button primary" onclick="criarEspaco()">Criar</button></div></div>
+      </div>
+      <div class="space-form-box">
+        <div class="space-form-title"><span>⌁</span><span>Entrar com código</span></div>
+        <div class="space-form-description">Use o código enviado por um administrador para participar do espaço.</div>
+        <div class="space-inline"><input id="codigo-espaco" maxlength="8" placeholder="A7K9P2X4"><button class="space-mini-button primary" onclick="entrarEspaco()">Entrar</button></div>
+      </div>
+    </div>
+    </div>
+  </div>
+</dialog>
+
+<dialog class="account-dialog" id="dialog-editar-espaco">
+  <form class="account-form" onsubmit="salvarEdicaoEspaco(event)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+      <div>
+        <h2 class="account-title" style="margin:0;">Editar espaço</h2>
+        <p class="account-help" id="editar-espaco-tipo" style="margin:4px 0 0;"></p>
+      </div>
+      <button type="button" class="spaces-modal-close" onclick="fecharEdicaoEspaco()" aria-label="Fechar">✕</button>
+    </div>
+    <div class="modal-field">
+      <label for="editar-espaco-nome">Nome do ambiente</label>
+      <input id="editar-espaco-nome" type="text" minlength="2" maxlength="80" required placeholder="Nome do espaço">
+    </div>
+    <label id="editar-codigo-wrap" style="display:none;align-items:center;gap:9px;margin-top:14px;padding:11px;border:1px solid var(--border);border-radius:9px;background:var(--surface);font-size:11px;cursor:pointer;">
+      <input id="editar-codigo-ativo" type="checkbox" style="accent-color:var(--accent);">
+      <span><strong style="display:block;font-size:11px;">Código de entrada ativo</strong><small style="display:block;color:var(--muted);font-size:9px;margin-top:3px;">Permite que outras pessoas entrem usando o código atual.</small></span>
+    </label>
+    <div class="modal-field" id="editar-limite-wrap" style="display:none;margin-top:14px;">
+      <label for="editar-espaco-limite">Limite de participantes</label>
+      <input id="editar-espaco-limite" type="number" min="2" max="20" required>
+      <small style="display:block;color:var(--muted);font-size:9px;margin-top:5px;">Escolha um valor entre 2 e 20.</small>
+    </div>
+    <div class="modal-actions" style="margin-top:20px;">
+      <button type="button" class="btn-modal cancelar" onclick="fecharEdicaoEspaco()">Cancelar</button>
+      <button type="submit" class="btn-modal salvar-ganho" id="btn-salvar-espaco">Salvar alterações</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog class="account-dialog" id="dialog-conta">
+  <form class="account-form" id="form-conta" onsubmit="salvarMinhaConta(event)">
+    <h2 class="account-title">Minha conta</h2>
+    <p class="account-help">Confirme sua senha atual para salvar as alterações.</p>
+    <div class="photo-editor">
+      <div class="photo-preview" id="foto-preview"><span id="foto-preview-iniciais">AG</span><img id="foto-preview-img" alt="Prévia da foto" hidden></div>
+      <div class="photo-controls">
+        <label class="photo-button" for="conta-foto">Escolher foto</label>
+        <input id="conta-foto" type="file" accept="image/jpeg,image/png,image/webp" hidden onchange="selecionarFoto(event)">
+        <button type="button" class="photo-button remove" onclick="removerFoto()">Remover</button>
+        <small class="photo-hint">JPG, PNG ou WebP de até 2 MB.</small>
+      </div>
+    </div>
+    <div class="field">
+      <label for="conta-nome">Nome</label>
+      <input id="conta-nome" type="text" minlength="2" maxlength="80" required autocomplete="name">
+    </div>
+    <div class="field">
+      <label for="conta-email">E-mail</label>
+      <input id="conta-email" type="email" required autocomplete="email">
+    </div>
+    <div class="field">
+      <label for="conta-senha-atual">Senha atual</label>
+      <input id="conta-senha-atual" type="password" required maxlength="72" autocomplete="current-password">
+    </div>
+    <div class="field">
+      <label for="conta-nova-senha">Nova senha (opcional)</label>
+      <input id="conta-nova-senha" type="password" minlength="6" maxlength="72" autocomplete="new-password">
+    </div>
+    <div class="account-actions">
+      <button type="button" class="btn-logout" onclick="fecharMinhaConta()">Cancelar</button>
+      <button type="submit" class="btn-primary ganho" id="btn-salvar-conta">Salvar alterações</button>
+    </div>
+  </form>
+</dialog>
+
+<!--
+  CONTAINER DE TOASTS
+  ════════════════════
+  Fica fixo no canto da tela. O JS injeta/remove toasts aqui
+  dinamicamente via criarToast(). Começa vazio.
+-->
+<div class="toast-container" id="toast-container"></div>
+
+<!--
+  MODAL DE CONFIRMAÇÃO
+  ════════════════════
+  Fica no HTML mas invisível (display:none via CSS base).
+  O JS adiciona/remove a classe .open para mostrar/esconder.
+
+  Colocamos FORA do .container para garantir que o z-index
+  funcione corretamente — elementos dentro de um grid/flex
+  podem ter o stacking context afetado pelo pai.
+
+  A função confirmarDeletar(id) recebe o id via data attribute
+  do botão confirmar, não via closure — isso evita problemas
+  com referências antigas se o modal for reutilizado.
+-->
+<div class="modal-overlay" id="modal">
+  <div class="modal-box">
+
+    <!-- Ícone visual de alerta -->
+    <div class="modal-icon">🗑️</div>
+
+    <div class="modal-title">Excluir movimentação?</div>
+    <div class="modal-desc">Esta ação não pode ser desfeita.</div>
+
+    <!--
+      Preview do item que será deletado.
+      Preenchido dinamicamente pelo JS antes de abrir o modal.
+      Mostrar o item que será excluído é uma boa prática de UX:
+      o usuário confirma que está excluindo a coisa certa.
+    -->
+    <div class="modal-item-preview" id="modal-preview">
+      <div class="preview-desc" id="modal-preview-desc">—</div>
+      <div class="preview-valor" id="modal-preview-valor">—</div>
+    </div>
+
+    <div class="modal-actions">
+      <!--
+        Cancelar: fecha o modal sem fazer nada.
+        Também fechamos ao clicar no overlay (ver JS).
+      -->
+      <button class="btn-modal cancelar" onclick="fecharModal()">Cancelar</button>
+
+      <!--
+        Confirmar: data-id é preenchido pelo JS antes de abrir.
+        Ao clicar, lemos esse atributo para saber qual ID deletar.
+        Isso é mais limpo do que uma variável global.
+      -->
+      <button class="btn-modal confirmar" id="btn-confirmar-delete" data-id="" onclick="confirmarDeletar()">
+        Sim, excluir
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!--
+  MODAL DE EDIÇÃO
+  ═══════════════
+  Mesmo padrão do modal de deletar: overlay fixo + box centralizado.
+  ID diferente (#modal-edit) para ter estado independente.
+
+  O formulário aqui espelha o da sidebar, mas opera em modo PUT:
+  ao salvar, chama PATCH/PUT na API com o id gravado em data-id
+  no botão de salvar.
+-->
+<div class="modal-overlay" id="modal-edit">
+  <div class="modal-box" style="max-width:420px; text-align:left;">
+
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;">
+      <div style="font-size:16px; font-weight:700; letter-spacing:-0.2px;">Editar movimentação</div>
+      <!-- Botão X no canto — alternativa ao Escape/overlay para fechar -->
+      <button onclick="fecharModalEdit()" style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;line-height:1;">✕</button>
+    </div>
+
+    <!-- Toggle GANHO / GASTO — preenchido pelo JS ao abrir -->
+    <div class="modal-tipo-toggle">
+      <button class="tipo-btn ganho" id="edit-btn-ganho" onclick="setTipoEdit('GANHO')">↑ Ganho</button>
+      <button class="tipo-btn gasto" id="edit-btn-gasto" onclick="setTipoEdit('GASTO')">↓ Gasto</button>
+    </div>
+
+    <div class="modal-field">
+      <label>Categoria</label>
+      <input type="text" id="edit-categoria" placeholder="Ex: Freelance, Alimentação…">
+    </div>
+
+    <div class="modal-field">
+      <label>Descrição <span style="color:var(--dim)">(opcional)</span></label>
+      <input type="text" id="edit-descricao" placeholder="Detalhe a movimentação">
+    </div>
+
+    <div class="modal-field-row">
+      <div class="modal-field">
+        <label>Valor (R$)</label>
+        <input type="number" id="edit-valor" placeholder="0,00" step="0.01" min="0">
+      </div>
+      <div class="modal-field">
+        <label>Data</label>
+        <input type="date" id="edit-data">
+      </div>
+    </div>
+
+    <div id="edit-error" style="display:none;margin-top:12px;padding:9px 10px;border-radius:8px;border:1px solid rgba(239,68,68,.35);background:rgba(239,68,68,.1);color:#fecaca;font-size:12px;"></div>
+
+    <div class="modal-actions" style="margin-top:20px;">
+      <button class="btn-modal cancelar" onclick="fecharModalEdit()">Cancelar</button>
+      <!--
+        data-id preenchido pelo JS antes de abrir.
+        id dinâmico para o JS atualizar a classe de cor (ganho/gasto).
+      -->
+      <button class="btn-modal salvar-ganho" id="btn-salvar-edit" data-id="" onclick="confirmarEdicao()">
+        Salvar alterações
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+
+    <!-- FORM (nunca tem skeleton — o form é local, não depende da API) -->
     <div class="card">
-        <input type="text" id="descricao" placeholder="Descrição">
-        
-        <select id="categoria">
-            <option value="COMBUSTIVEL">Combustível</option>
-            <option value="MANUTENCAO">Manutenção</option>
-            <option value="OPERACIONAL">Operacional</option>
-            <option value="PESSOAL">Pessoal</option>
-            <option value="OUTROS">Outros</option>
+      <div class="card-label">Nova movimentação</div>
+      <div class="tipo-toggle">
+        <button class="tipo-btn ganho active" id="btn-ganho" onclick="setTipo('GANHO')">↑ Ganho</button>
+        <button class="tipo-btn gasto" id="btn-gasto" onclick="setTipo('GASTO')">↓ Gasto</button>
+      </div>
+      <div class="field">
+        <label>Categoria</label>
+        <input type="text" id="categoria" placeholder="Ex: Freelance, Alimentação…">
+      </div>
+      <div class="field">
+        <label>Descrição <span style="color:var(--dim)">(opcional)</span></label>
+        <input type="text" id="descricao" placeholder="Detalhe a movimentação">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Valor (R$)</label>
+          <input type="number" id="valor" placeholder="0,00" step="0.01" min="0">
+        </div>
+        <div class="field">
+          <label>Data</label>
+          <input type="date" id="data">
+        </div>
+      </div>
+      <button class="btn-primary ganho" id="btn-salvar" onclick="salvar()">Registrar ganho</button>
+    </div>
+
+    <!--
+      SKELETON da sidebar:
+      Mostramos enquanto a API não responde.
+      Quando os dados chegam, removemos este bloco e
+      mostramos os cards reais de stats + chart.
+    -->
+    <div id="sk-sidebar">
+
+      <!-- Simula o card de "Visão geral" com 3 stat-cards -->
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-label">Visão geral</div>
+        <div class="stats-grid">
+          <div class="sk-stat">
+            <div class="sk sk-text" style="width:55%"></div>
+            <div class="sk sk-title" style="width:75%"></div>
+            <div class="sk sk-text" style="width:40%"></div>
+          </div>
+          <div class="sk-stat">
+            <div class="sk sk-text" style="width:55%"></div>
+            <div class="sk sk-title" style="width:75%"></div>
+            <div class="sk sk-text" style="width:40%"></div>
+          </div>
+          <div class="sk-stat" style="grid-column:1/-1">
+            <div class="sk sk-text" style="width:50%"></div>
+            <div class="sk sk-title" style="width:60%"></div>
+            <div class="sk sk-text" style="width:45%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Simula o card do gráfico de barras -->
+      <div class="card">
+        <div class="card-label">Gastos por categoria</div>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px;">
+          <!-- Cada linha = uma barra do gráfico -->
+          <!-- larguras diferentes = parecem categorias reais -->
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="sk sk-text" style="width:70px;flex-shrink:0"></div>
+            <div class="sk" style="flex:1;height:7px;border-radius:99px;"></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="sk sk-text" style="width:70px;flex-shrink:0"></div>
+            <div class="sk" style="width:70%;height:7px;border-radius:99px;"></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="sk sk-text" style="width:70px;flex-shrink:0"></div>
+            <div class="sk" style="width:50%;height:7px;border-radius:99px;"></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="sk sk-text" style="width:70px;flex-shrink:0"></div>
+            <div class="sk" style="width:35%;height:7px;border-radius:99px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Skeleton simplificado para os cards de evolução e metas -->
+      <div class="card" style="margin-top:16px;">
+        <div class="card-label">Evolução do saldo</div>
+        <div class="sk" style="height:90px;border-radius:8px;"></div>
+      </div>
+      <div class="card" style="margin-top:16px;">
+        <div class="card-label">Metas de gasto (mensal)</div>
+        <div class="sk sk-text" style="width:100%;margin-bottom:8px;"></div>
+        <div class="sk sk-text" style="width:100%;"></div>
+      </div>
+
+    </div>
+    <!-- /sk-sidebar -->
+
+    <!-- Cards reais: ocultos até a API responder -->
+    <div id="real-sidebar" style="display:none; flex-direction:column; gap:16px;">
+      <div class="card">
+        <div class="card-label">Visão geral</div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Total ganhos</div>
+            <div class="stat-value green" id="total-ganhos">R$ 0</div>
+            <div class="stat-sub" id="qtd-ganhos">0 itens</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Total gastos</div>
+            <div class="stat-value red" id="total-gastos">R$ 0</div>
+            <div class="stat-sub" id="qtd-gastos">0 itens</div>
+          </div>
+          <div class="stat-card full">
+            <div class="stat-label">Média por movimentação</div>
+            <div class="stat-value accent" id="media-geral">—</div>
+            <div class="stat-sub">sobre todos os lançamentos</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">Gastos por categoria</div>
+        <div class="chart-area" id="chart-area">
+          <div style="color:var(--muted);font-size:12px;text-align:center;padding:12px 0;">Sem dados</div>
+        </div>
+      </div>
+
+      <!--
+        CARD: Evolução do saldo
+        ─────────────────────────
+        SVG gerado dinamicamente pelo JS (função renderEvolucao).
+        evolucao-wrap precisa de position:relative para o tooltip
+        flutuante se posicionar corretamente sobre o gráfico.
+      -->
+      <div class="card">
+        <div class="card-label">Evolução do saldo</div>
+        <div class="evolucao-wrap" id="evolucao-wrap">
+          <div style="color:var(--muted);font-size:12px;text-align:center;padding:20px 0;">Sem dados suficientes</div>
+        </div>
+      </div>
+
+      <!--
+        CARD: Metas de gasto por categoria
+        ─────────────────────────────────────
+        Dados guardados em localStorage (ver função salvarMetas()).
+        O formulário no fim do card permite adicionar uma nova meta:
+        categoria + valor limite mensal.
+      -->
+      <div class="card">
+        <div class="card-label">Metas de gasto (mensal)</div>
+        <div id="metas-lista">
+          <div class="meta-empty">Nenhuma meta cadastrada ainda</div>
+        </div>
+        <div class="meta-add-row">
+          <input type="text" id="meta-categoria" placeholder="Categoria">
+          <input type="number" id="meta-valor" placeholder="Limite R$" step="0.01" min="0">
+          <button onclick="adicionarMeta()" title="Adicionar meta">+</button>
+        </div>
+      </div>
+    </div>
+    <!-- /real-sidebar -->
+
+  </div>
+  <!-- /sidebar -->
+
+
+  <!-- ÁREA PRINCIPAL -->
+  <div class="main">
+
+    <!--
+      SKELETON dos saldo-cards:
+      3 blocos que simulam Entradas / Saídas / Saldo Líquido.
+      Ficam visíveis até a API responder.
+    -->
+    <div id="sk-saldo" class="saldo-grid">
+      <div class="sk-saldo-card">
+        <div class="sk sk-text" style="width:50%"></div>
+        <div class="sk sk-title" style="width:80%"></div>
+      </div>
+      <div class="sk-saldo-card">
+        <div class="sk sk-text" style="width:50%"></div>
+        <div class="sk sk-title" style="width:80%"></div>
+      </div>
+      <div class="sk-saldo-card">
+        <div class="sk sk-text" style="width:55%"></div>
+        <div class="sk sk-title" style="width:75%"></div>
+      </div>
+    </div>
+
+    <!-- Saldo real: oculto até a API responder -->
+    <div id="real-saldo" class="saldo-grid" style="display:none;">
+      <div class="saldo-card">
+        <div class="saldo-label">↑ Entradas</div>
+        <div class="saldo-value green" id="saldo-ganhos">R$ 0,00</div>
+      </div>
+      <div class="saldo-card">
+        <div class="saldo-label">↓ Saídas</div>
+        <div class="saldo-value red" id="saldo-gastos">R$ 0,00</div>
+      </div>
+      <div class="saldo-card">
+        <div class="saldo-label">Saldo líquido</div>
+        <div class="saldo-value neutral" id="saldo-liquido">R$ 0,00</div>
+      </div>
+    </div>
+
+    <!-- Filtros e cabeçalho da lista -->
+    <div class="top-bar" style="flex-direction:column; align-items:stretch; gap:10px;">
+
+      <!-- Linha 1: filtro por TIPO (já existia) -->
+      <div class="filter-bar" id="filtros">
+        <button class="filter-btn active" onclick="setFiltro('TODOS', this)">Todos</button>
+        <button class="filter-btn ganho-filter" onclick="setFiltro('GANHO', this)">↑ Ganhos</button>
+        <button class="filter-btn gasto-filter" onclick="setFiltro('GASTO', this)">↓ Gastos</button>
+      </div>
+
+      <!--
+        Linha 2: filtro por PERÍODO.
+        Cada botão chama setPeriodo(chave, elemento).
+        A chave ('hoje', '7d', 'mes', 'tudo', 'custom') é usada
+        em filtrarPorPeriodo() para calcular o intervalo de datas.
+      -->
+      <div class="filter-row" id="filtros-periodo">
+        <button class="filter-btn active" onclick="setPeriodo('tudo', this)">Tudo</button>
+        <button class="filter-btn" onclick="setPeriodo('hoje', this)">Hoje</button>
+        <button class="filter-btn" onclick="setPeriodo('7d', this)">7 dias</button>
+        <button class="filter-btn" onclick="setPeriodo('mes', this)">Mês atual</button>
+        <div class="filter-divider"></div>
+        <button class="filter-btn" onclick="setPeriodo('custom', this)">📅 Personalizado</button>
+      </div>
+
+      <!--
+        Intervalo customizado: dois inputs de data + botão aplicar.
+        Só aparece (classe .show) quando "Personalizado" é clicado.
+      -->
+      <div class="custom-range" id="custom-range">
+        <span class="custom-range-label">De</span>
+        <input type="date" id="data-inicio">
+        <span class="custom-range-label">até</span>
+        <input type="date" id="data-fim">
+        <button class="custom-range-apply" onclick="aplicarPeriodoCustom()">Aplicar</button>
+      </div>
+
+    </div>
+
+    <div class="list-header">
+      <span class="list-title">Movimentações</span>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span class="list-count" id="list-count"></span>
+        <!--
+          Dropdown de ordenação. onchange chama setOrdenacao()
+          que atualiza o estado e re-renderiza a lista.
+        -->
+        <select class="sort-select" id="sort-select" onchange="setOrdenacao(this.value)">
+          <option value="recente">Mais recente</option>
+          <option value="antigo">Mais antigo</option>
+          <option value="maior">Maior valor</option>
+          <option value="menor">Menor valor</option>
         </select>
-
-        <input type="number" id="valor" placeholder="Valor">
-
-        <button onclick="salvar()">Salvar</button>
+      </div>
     </div>
 
-    <!-- FILTRO -->
-    <div class="card">
-        <select id="filtro" onchange="carregar()">
-            <option value="">Todas categorias</option>
-            <option value="COMBUSTIVEL">Combustível</option>
-            <option value="MANUTENCAO">Manutenção</option>
-            <option value="OPERACIONAL">Operacional</option>
-            <option value="PESSOAL">Pessoal</option>
-        </select>
-    </div>
+    <!--
+      SKELETON da lista:
+      5 itens falsos que replicam o layout de .mov-item:
+        [ícone quadrado] [linha larga / linha curta + badge] [valor / label]
 
-    <!-- RESUMO -->
-    <div class="card resumo">
-        <span id="total">Total: R$ 0</span>
-        <span id="qtd">0 itens</span>
+      O nth-child com animation-delay nos itens cria a
+      "onda" — cada item começa o shimmer 100ms depois do anterior.
+      Isso é definido no CSS com .sk-item:nth-child(N).
+    -->
+    <div id="sk-lista">
+      <!-- Geramos 5 itens skeleton idênticos em estrutura -->
+      <!-- O CSS cuida do delay de cada um via nth-child  -->
+      <div class="sk-item">
+        <div class="sk sk-circle" style="width:36px;height:36px;flex-shrink:0;"></div>
+        <div class="sk-item-body">
+          <div class="sk sk-text" style="width:60%"></div>
+          <div style="display:flex;gap:6px;">
+            <div class="sk sk-badge" style="width:64px;"></div>
+            <div class="sk sk-badge" style="width:48px;"></div>
+          </div>
+        </div>
+        <div class="sk-item-right">
+          <div class="sk sk-text" style="width:72px;"></div>
+          <div class="sk sk-text" style="width:36px;"></div>
+        </div>
+      </div>
+      <div class="sk-item">
+        <div class="sk sk-circle" style="width:36px;height:36px;flex-shrink:0;"></div>
+        <div class="sk-item-body">
+          <div class="sk sk-text" style="width:45%"></div>
+          <div style="display:flex;gap:6px;">
+            <div class="sk sk-badge" style="width:56px;"></div>
+            <div class="sk sk-badge" style="width:44px;"></div>
+          </div>
+        </div>
+        <div class="sk-item-right">
+          <div class="sk sk-text" style="width:72px;"></div>
+          <div class="sk sk-text" style="width:36px;"></div>
+        </div>
+      </div>
+      <div class="sk-item">
+        <div class="sk sk-circle" style="width:36px;height:36px;flex-shrink:0;"></div>
+        <div class="sk-item-body">
+          <div class="sk sk-text" style="width:70%"></div>
+          <div style="display:flex;gap:6px;">
+            <div class="sk sk-badge" style="width:72px;"></div>
+            <div class="sk sk-badge" style="width:40px;"></div>
+          </div>
+        </div>
+        <div class="sk-item-right">
+          <div class="sk sk-text" style="width:72px;"></div>
+          <div class="sk sk-text" style="width:36px;"></div>
+        </div>
+      </div>
+      <div class="sk-item">
+        <div class="sk sk-circle" style="width:36px;height:36px;flex-shrink:0;"></div>
+        <div class="sk-item-body">
+          <div class="sk sk-text" style="width:50%"></div>
+          <div style="display:flex;gap:6px;">
+            <div class="sk sk-badge" style="width:60px;"></div>
+            <div class="sk sk-badge" style="width:48px;"></div>
+          </div>
+        </div>
+        <div class="sk-item-right">
+          <div class="sk sk-text" style="width:72px;"></div>
+          <div class="sk sk-text" style="width:36px;"></div>
+        </div>
+      </div>
+      <div class="sk-item">
+        <div class="sk sk-circle" style="width:36px;height:36px;flex-shrink:0;"></div>
+        <div class="sk-item-body">
+          <div class="sk sk-text" style="width:55%"></div>
+          <div style="display:flex;gap:6px;">
+            <div class="sk sk-badge" style="width:52px;"></div>
+            <div class="sk sk-badge" style="width:44px;"></div>
+          </div>
+        </div>
+        <div class="sk-item-right">
+          <div class="sk sk-text" style="width:72px;"></div>
+          <div class="sk sk-text" style="width:36px;"></div>
+        </div>
+      </div>
     </div>
+    <!-- /sk-lista -->
 
-    <!-- LISTA -->
-    <div id="lista"></div>
+    <!-- Lista real: oculta até a API responder -->
+    <div id="lista" style="display:none;"></div>
+
+    <!--
+      Controles de paginação.
+      Gerados dinamicamente pelo JS (função renderPaginacao),
+      ficam escondidos quando há só 1 página de resultados.
+    -->
+    <div class="pagination" id="paginacao"></div>
+
+  </div>
+  <!-- /main -->
 
 </div>
 
 <script>
-const API = 'http://127.0.0.1:8000/gastos';
+/*
+  URL DA API — DINÂMICA, NÃO MAIS FIXA
+  ════════════════════════════════════════
+  ANTES: const API = 'http://127.0.0.1:8000/movimentacoes';
 
-async function salvar() {
-    const descricao = document.getElementById('descricao').value;
-    const categoria = document.getElementById('categoria').value;
-    const valor = parseFloat(document.getElementById('valor').value);
+  PROBLEMA: 127.0.0.1 significa "esta mesma máquina". No PC
+  funcionava porque navegador e API estavam no mesmo lugar.
+  No celular, 127.0.0.1 aponta pro PRÓPRIO CELULAR — que não
+  tem a API rodando nele. Por isso o fetch falhava sempre,
+  mesmo com o ngrok ativo e funcionando.
 
-    if (!descricao || !valor) {
-        alert("Preencha tudo!");
-        return;
+  SOLUÇÃO: usar window.location.origin, que pega automaticamente
+  o protocolo + domínio + porta de onde ESTA PÁGINA foi carregada.
+
+  Isso só funciona de forma 100% confiável se o HTML for servido
+  PELA PRÓPRIA API (ex: app/static/autogestor.html, acessado via
+  http://SEU-NGROK.ngrok.io/static/autogestor.html) — assim a
+  origem da página e a origem da API são exatamente a mesma,
+  sem precisar de CORS nem de configurar URL nenhuma na mão.
+
+  Se você abrir o HTML como arquivo local (file://) em vez de
+  servido pela API, window.location.origin não vai funcionar
+  (vira "null" ou "file://") — nesse caso, descomente a linha
+  FALLBACK_MANUAL abaixo e troque pela URL do seu ngrok atual.
+*/
+// FALLBACK_MANUAL: const API = 'https://SEU-LINK-NGROK.ngrok-free.app/movimentacoes';
+let API = '';
+let ESPACOS = [];
+let ESPACO_ATUAL = null;
+let ESPACO_EM_EDICAO = null;
+let TOKEN = localStorage.getItem('autogestor_token');
+let USUARIO = null;
+let FOTO_TEMP = null;
+try {
+  USUARIO = JSON.parse(localStorage.getItem('autogestor_usuario') || 'null');
+} catch (_) {
+  localStorage.removeItem('autogestor_usuario');
+}
+if (USUARIO?.id) {
+  USUARIO.foto = localStorage.getItem(`autogestor_foto_${USUARIO.id}`) || null;
+}
+
+if (!TOKEN) {
+  window.location.replace('/static/login.html');
+}
+
+const AUTH_FAILURE_DETAILS = new Set(['token_missing', 'token_invalid', 'token_expired', 'user_not_found']);
+
+function tokenAtualSessao() {
+  return localStorage.getItem('autogestor_token') || TOKEN || '';
+}
+
+function limparSessaoAutogestor() {
+  localStorage.removeItem('autogestor_token');
+  localStorage.removeItem('autogestor_usuario');
+}
+
+function encerrarSessaoExpirada() {
+  localStorage.setItem('autogestor_return_to', window.location.pathname + window.location.search + window.location.hash);
+  limparSessaoAutogestor();
+  window.location.replace('/static/login.html');
+}
+
+function detalheErro(corpo) {
+  if (!corpo) return null;
+  if (typeof corpo.detail === 'string') return corpo.detail;
+  if (Array.isArray(corpo.detail)) {
+    return corpo.detail.map(item => item.msg || JSON.stringify(item)).join(', ');
+  }
+  if (Array.isArray(corpo.errors)) {
+    return corpo.errors.map(item => item.msg || JSON.stringify(item)).join(', ');
+  }
+  return null;
+}
+
+function mensagemHttp(status, corpo, fallback) {
+  const detalhe = detalheErro(corpo);
+  if (detalhe) return detalhe;
+  if (status === 400) return 'Não foi possível concluir a operação.';
+  if (status === 401) return 'Sua sessão expirou. Entre novamente.';
+  if (status === 403) return 'Você não possui permissão para executar esta ação.';
+  if (status === 404) return 'Recurso não encontrado.';
+  if (status === 409) return 'Conflito ao processar a solicitação.';
+  if (status === 422) return 'Dados inválidos. Revise os campos e tente novamente.';
+  if (status >= 500) return 'Erro interno da API. Tente novamente em instantes.';
+  return fallback || `Erro ${status}`;
+}
+
+function deslogar() {
+  const finalizar = () => {
+    limparSessaoAutogestor();
+    window.location.replace('/static/login.html');
+  };
+
+  fetch(window.location.origin + '/auth/logout', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${tokenAtualSessao()}` },
+  }).finally(finalizar);
+}
+
+function iniciaisDoNome(nome) {
+  const partes = String(nome || 'Usuário').trim().split(/\s+/).filter(Boolean);
+  return (partes[0]?.[0] || 'U') + (partes.length > 1 ? partes.at(-1)[0] : '');
+}
+
+function atualizarPerfilNoHeader() {
+  document.getElementById('usuario-logado').textContent = USUARIO?.nome || 'Minha conta';
+  document.getElementById('usuario-email').textContent = USUARIO?.email || '';
+  const foto = document.getElementById('profile-foto');
+  const iniciais = document.getElementById('profile-iniciais');
+  iniciais.textContent = iniciaisDoNome(USUARIO?.nome).toUpperCase();
+  foto.hidden = !USUARIO?.foto;
+  iniciais.hidden = Boolean(USUARIO?.foto);
+  if (USUARIO?.foto) foto.src = USUARIO.foto;
+}
+
+function atualizarPreviaFoto() {
+  const foto = document.getElementById('foto-preview-img');
+  const iniciais = document.getElementById('foto-preview-iniciais');
+  iniciais.textContent = iniciaisDoNome(document.getElementById('conta-nome').value || USUARIO?.nome).toUpperCase();
+  foto.hidden = !FOTO_TEMP;
+  iniciais.hidden = Boolean(FOTO_TEMP);
+  if (FOTO_TEMP) foto.src = FOTO_TEMP;
+}
+
+function selecionarFoto(event) {
+  const arquivo = event.target.files?.[0];
+  if (!arquivo) return;
+  if (!['image/jpeg', 'image/png', 'image/webp'].includes(arquivo.type)) {
+    toast('Escolha uma imagem JPG, PNG ou WebP.', 'error');
+    event.target.value = '';
+    return;
+  }
+  if (arquivo.size > 2 * 1024 * 1024) {
+    toast('A foto deve ter no máximo 2 MB.', 'error');
+    event.target.value = '';
+    return;
+  }
+  const leitor = new FileReader();
+  leitor.onload = () => {
+    FOTO_TEMP = leitor.result;
+    atualizarPreviaFoto();
+  };
+  leitor.readAsDataURL(arquivo);
+}
+
+function removerFoto() {
+  FOTO_TEMP = null;
+  document.getElementById('conta-foto').value = '';
+  atualizarPreviaFoto();
+}
+
+function fecharMenuPerfil() {
+  document.getElementById('profile-dropdown').classList.remove('open');
+  document.getElementById('profile-trigger').setAttribute('aria-expanded', 'false');
+}
+
+function fecharMenuExportacao() {
+  document.getElementById('export-dropdown').classList.remove('open');
+  document.getElementById('export-trigger').setAttribute('aria-expanded', 'false');
+}
+
+function alternarMenuExportacao(event) {
+  event.stopPropagation();
+  fecharMenuPerfil();
+  fecharSeletorEspacos();
+  const menu = document.getElementById('export-dropdown');
+  const aberto = menu.classList.toggle('open');
+  document.getElementById('export-trigger').setAttribute('aria-expanded', String(aberto));
+}
+
+function escolherExportacao(formato) {
+  fecharMenuExportacao();
+  if (formato === 'csv') exportarCSV();
+  if (formato === 'excel') exportarExcel();
+}
+
+function alternarMenuPerfil(event) {
+  event.stopPropagation();
+  fecharMenuExportacao();
+  fecharSeletorEspacos();
+  const menu = document.getElementById('profile-dropdown');
+  const aberto = menu.classList.toggle('open');
+  document.getElementById('profile-trigger').setAttribute('aria-expanded', String(aberto));
+}
+
+function abrirMinhaConta() {
+  fecharMenuPerfil();
+  document.getElementById('conta-nome').value = USUARIO?.nome || '';
+  document.getElementById('conta-email').value = USUARIO?.email || '';
+  document.getElementById('conta-senha-atual').value = '';
+  document.getElementById('conta-nova-senha').value = '';
+  document.getElementById('conta-foto').value = '';
+  FOTO_TEMP = USUARIO?.foto || null;
+  atualizarPreviaFoto();
+  document.getElementById('dialog-conta').showModal();
+}
+
+function fecharMinhaConta() {
+  document.getElementById('dialog-conta').close();
+}
+
+async function salvarMinhaConta(event) {
+  event.preventDefault();
+  const botao = document.getElementById('btn-salvar-conta');
+  const dados = {
+    nome: document.getElementById('conta-nome').value.trim(),
+    email: document.getElementById('conta-email').value.trim(),
+    senha_atual: document.getElementById('conta-senha-atual').value,
+    nova_senha: document.getElementById('conta-nova-senha').value || null,
+  };
+
+  botao.disabled = true;
+  try {
+    const resposta = await apiFetch(window.location.origin + '/auth/me', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(dados),
+    });
+    const corpo = await resposta.json();
+    if (!resposta.ok) {
+      const detalhe = Array.isArray(corpo.detail)
+        ? corpo.detail.map(item => item.msg).join(', ')
+        : corpo.detail || 'Não foi possível atualizar a conta.';
+      toast(detalhe, 'error');
+      return;
     }
 
-    await fetch(API, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ descricao, categoria, valor })
+    TOKEN = corpo.access_token;
+    USUARIO = { ...corpo.usuario, foto: FOTO_TEMP };
+    const chaveFoto = `autogestor_foto_${USUARIO.id}`;
+    if (FOTO_TEMP) localStorage.setItem(chaveFoto, FOTO_TEMP);
+    else localStorage.removeItem(chaveFoto);
+    localStorage.setItem('autogestor_token', TOKEN);
+    localStorage.setItem('autogestor_usuario', JSON.stringify(USUARIO));
+    atualizarPerfilNoHeader();
+    fecharMinhaConta();
+    toast('Dados da conta atualizados.', 'success');
+  } catch (erro) {
+    if (erro.message !== 'Sessão expirada') toast('Erro ao conectar com a API.', 'error');
+  } finally {
+    botao.disabled = false;
+  }
+}
+
+async function apiFetch(url, options = {}) {
+  const { timeoutMs = 12000, ...rest } = options;
+  const headers = new Headers(rest.headers || {});
+  const token = tokenAtualSessao();
+  if (token) {
+    headers.set('Authorization', `Bearer ${token}`);
+  }
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  let response;
+  try {
+    response = await fetch(url, { ...rest, headers, signal: controller.signal });
+  } catch (erro) {
+    if (erro?.name === 'AbortError') throw new Error('request_timeout');
+    throw new Error('network_error');
+  } finally {
+    clearTimeout(timeoutId);
+  }
+
+  if (response.status === 401) {
+    let detail = '';
+    try {
+      const corpo = await response.clone().json();
+      if (typeof corpo?.detail === 'string') detail = corpo.detail;
+    } catch (_) {}
+
+    if (AUTH_FAILURE_DETAILS.has(detail) || detail === 'Não foi possível validar as credenciais') {
+      encerrarSessaoExpirada();
+      throw new Error('Sessão expirada');
+    }
+  }
+
+  return response;
+}
+
+async function carregarEspacos() {
+  const resposta = await apiFetch(window.location.origin + '/espacos');
+  if (!resposta.ok) throw new Error('Não foi possível carregar os espaços.');
+  ESPACOS = await resposta.json();
+  const salvo = Number(localStorage.getItem(`autogestor_espaco_${USUARIO?.id}`));
+  ESPACO_ATUAL = ESPACOS.find(e => e.id === salvo) || ESPACOS.find(e => e.tipo === 'PESSOAL') || ESPACOS[0];
+  if (!ESPACO_ATUAL) throw new Error('Nenhum espaço financeiro disponível.');
+  atualizarSeletorEspacos();
+  definirApiDoEspaco();
+}
+
+function definirApiDoEspaco() {
+  API = `${window.location.origin}/espacos/${ESPACO_ATUAL.id}/movimentacoes`;
+  localStorage.setItem(`autogestor_espaco_${USUARIO?.id}`, String(ESPACO_ATUAL.id));
+}
+
+function atualizarSeletorEspacos() {
+  document.getElementById('seletor-espaco-nome').textContent = ESPACO_ATUAL?.nome || 'Selecionar espaço';
+  const menu = document.getElementById('seletor-espaco-menu');
+  menu.replaceChildren(...ESPACOS.map(espaco => {
+    const opcao = document.createElement('button');
+    opcao.type = 'button';
+    opcao.className = `space-picker-option ${espaco.id === ESPACO_ATUAL?.id ? 'active' : ''}`;
+    opcao.setAttribute('role', 'option');
+    opcao.setAttribute('aria-selected', String(espaco.id === ESPACO_ATUAL?.id));
+    const icone = document.createElement('span');
+    icone.className = 'space-picker-icon';
+    icone.textContent = espaco.tipo === 'PESSOAL' ? '●' : '◆';
+    const copia = document.createElement('span');
+    copia.className = 'space-picker-copy';
+    const nome = document.createElement('span');
+    nome.className = 'space-picker-name'; nome.textContent = espaco.nome;
+    const meta = document.createElement('span');
+    meta.className = 'space-picker-meta';
+    meta.textContent = espaco.tipo === 'PESSOAL' ? 'Espaço pessoal' : `Compartilhado · ${espaco.quantidade_membros} membro(s)`;
+    copia.append(nome, meta);
+    opcao.append(icone, copia);
+    if (espaco.id === ESPACO_ATUAL?.id) {
+      const check = document.createElement('span');
+      check.className = 'space-picker-check'; check.textContent = '✓'; opcao.append(check);
+    }
+    opcao.addEventListener('click', () => selecionarEspaco(espaco.id));
+    return opcao;
+  }));
+}
+
+function fecharSeletorEspacos() {
+  document.getElementById('seletor-espaco-menu').classList.remove('open');
+  document.getElementById('seletor-espaco').setAttribute('aria-expanded', 'false');
+}
+
+function alternarSeletorEspacos(event) {
+  event.stopPropagation();
+  fecharMenuPerfil();
+  fecharMenuExportacao();
+  const menu = document.getElementById('seletor-espaco-menu');
+  const aberto = menu.classList.toggle('open');
+  document.getElementById('seletor-espaco').setAttribute('aria-expanded', String(aberto));
+}
+
+async function selecionarEspaco(id) {
+  fecharSeletorEspacos();
+  ESPACO_ATUAL = ESPACOS.find(e => e.id === Number(id));
+  if (!ESPACO_ATUAL) return;
+  definirApiDoEspaco();
+  atualizarSeletorEspacos();
+  todos = [];
+  paginaAtual = 1;
+  await carregar();
+  toast(`Espaço alterado para ${ESPACO_ATUAL.nome}.`, 'success');
+}
+
+function renderizarEspacos() {
+  const lista = document.getElementById('lista-espacos');
+  document.getElementById('contador-espacos').textContent = ESPACOS.length;
+  lista.innerHTML = ESPACOS.map(espaco => `
+    <div class="space-item ${espaco.id === ESPACO_ATUAL?.id ? 'current' : ''}">
+      <div class="space-item-main">
+        <div class="space-item-icon">${espaco.tipo === 'PESSOAL' ? '●' : '◆'}</div>
+        <div class="space-item-copy"><div class="space-item-title">${escaparHtml(espaco.nome)}${espaco.id === ESPACO_ATUAL?.id ? '<span class="space-current-badge">ATUAL</span>' : ''}</div><div class="space-item-meta">${espaco.tipo === 'PESSOAL' ? 'Espaço pessoal · somente você' : `Compartilhado · ${espaco.quantidade_membros} de ${espaco.limite_membros} membros · ${espaco.papel}`}</div></div>
+      </div>
+      <div class="space-item-actions">
+        ${espaco.id !== ESPACO_ATUAL?.id ? `<button class="space-mini-button primary" onclick="selecionarEspacoPeloDialogo(${espaco.id})">Selecionar</button>` : ''}
+        ${['DONO','ADMIN'].includes(espaco.papel) ? `<button class="space-mini-button" onclick="abrirEdicaoEspaco(${espaco.id})">Editar</button>` : ''}
+        ${espaco.codigo_acesso ? `<button class="space-mini-button" onclick="copiarCodigo('${espaco.codigo_acesso}')" title="${espaco.codigo_acesso}">Copiar código</button>` : ''}
+        ${espaco.tipo === 'COMPARTILHADO' ? `<button class="space-mini-button" onclick="verMembros(${espaco.id})">Membros</button>` : ''}
+        ${espaco.tipo === 'COMPARTILHADO' && ['DONO','ADMIN'].includes(espaco.papel) ? `<button class="space-mini-button danger" onclick="excluirEspaco(${espaco.id})">Excluir</button>` : ''}
+      </div>
+    </div>`).join('');
+}
+
+async function abrirEspacos() {
+  fecharSeletorEspacos();
+  await carregarEspacos();
+  renderizarEspacos();
+  fecharMembros();
+  document.getElementById('dialog-espacos').showModal();
+}
+
+function fecharEspacos() {
+  document.getElementById('dialog-espacos').close();
+}
+
+function abrirEdicaoEspaco(espacoId) {
+  ESPACO_EM_EDICAO = ESPACOS.find(item => item.id === Number(espacoId));
+  if (!ESPACO_EM_EDICAO) return;
+  fecharEspacos();
+  document.getElementById('editar-espaco-nome').value = ESPACO_EM_EDICAO.nome;
+  document.getElementById('editar-espaco-tipo').textContent = ESPACO_EM_EDICAO.tipo === 'PESSOAL' ? 'Espaço pessoal' : 'Espaço compartilhado';
+  const codigoWrap = document.getElementById('editar-codigo-wrap');
+  codigoWrap.style.display = ESPACO_EM_EDICAO.tipo === 'COMPARTILHADO' ? 'flex' : 'none';
+  document.getElementById('editar-limite-wrap').style.display = ESPACO_EM_EDICAO.tipo === 'COMPARTILHADO' ? 'block' : 'none';
+  document.getElementById('editar-espaco-limite').value = ESPACO_EM_EDICAO.limite_membros;
+  document.getElementById('editar-codigo-ativo').checked = Boolean(ESPACO_EM_EDICAO.codigo_ativo);
+  document.getElementById('dialog-editar-espaco').showModal();
+  setTimeout(() => document.getElementById('editar-espaco-nome').focus(), 80);
+}
+
+function fecharEdicaoEspaco() {
+  document.getElementById('dialog-editar-espaco').close();
+  ESPACO_EM_EDICAO = null;
+  abrirEspacos();
+}
+
+async function salvarEdicaoEspaco(event) {
+  event.preventDefault();
+  if (!ESPACO_EM_EDICAO) return;
+  const botao = document.getElementById('btn-salvar-espaco');
+  const dados = { nome: document.getElementById('editar-espaco-nome').value.trim() };
+  if (ESPACO_EM_EDICAO.tipo === 'COMPARTILHADO') {
+    dados.codigo_ativo = document.getElementById('editar-codigo-ativo').checked;
+    dados.limite_membros = Number(document.getElementById('editar-espaco-limite').value);
+  }
+  botao.disabled = true;
+  try {
+    const resposta = await apiFetch(`${window.location.origin}/espacos/${ESPACO_EM_EDICAO.id}`, {
+      method: 'PATCH', headers: {'Content-Type':'application/json'}, body: JSON.stringify(dados),
+    });
+    const corpo = await resposta.json();
+    if (!resposta.ok) return toast(corpo.detail || 'Não foi possível atualizar o espaço.', 'error');
+    document.getElementById('dialog-editar-espaco').close();
+    await carregarEspacos();
+    renderizarEspacos();
+    ESPACO_EM_EDICAO = null;
+    document.getElementById('dialog-espacos').showModal();
+    toast('Espaço atualizado com sucesso.', 'success');
+  } finally {
+    botao.disabled = false;
+  }
+}
+
+async function selecionarEspacoPeloDialogo(id) {
+  await selecionarEspaco(id);
+  document.getElementById('dialog-espacos').close();
+}
+
+async function criarEspaco() {
+  const nome = document.getElementById('novo-espaco-nome').value.trim();
+  const limite_membros = Number(document.getElementById('novo-espaco-limite').value);
+  if (nome.length < 2) return toast('Informe um nome para o espaço.', 'error');
+  if (limite_membros < 2 || limite_membros > 20) return toast('O limite deve ficar entre 2 e 20 membros.', 'error');
+  const resposta = await apiFetch(window.location.origin + '/espacos/compartilhados', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({nome, limite_membros}) });
+  const corpo = await resposta.json();
+  if (!resposta.ok) return toast(corpo.detail || 'Não foi possível criar o espaço.', 'error');
+  document.getElementById('novo-espaco-nome').value = '';
+  await carregarEspacos(); renderizarEspacos(); toast('Espaço compartilhado criado.', 'success');
+}
+
+async function entrarEspaco() {
+  const codigo = document.getElementById('codigo-espaco').value.trim().toUpperCase();
+  const resposta = await apiFetch(window.location.origin + '/espacos/entrar', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({codigo}) });
+  const corpo = await resposta.json();
+  if (!resposta.ok) return toast(corpo.detail || 'Não foi possível entrar no espaço.', 'error');
+  document.getElementById('codigo-espaco').value = '';
+  await carregarEspacos(); renderizarEspacos(); toast('Você entrou no espaço.', 'success');
+}
+
+async function copiarCodigo(codigo) {
+  await navigator.clipboard.writeText(codigo);
+  toast(`Código ${codigo} copiado.`, 'success');
+}
+
+async function verMembros(espacoId) {
+  const resposta = await apiFetch(`${window.location.origin}/espacos/${espacoId}/membros`);
+  const membros = await resposta.json();
+  if (!resposta.ok) return toast(membros.detail || 'Não foi possível listar os membros.', 'error');
+  const espaco = ESPACOS.find(item => item.id === Number(espacoId));
+  document.getElementById('titulo-membros').textContent = `Membros · ${espaco?.nome || 'Espaço'}`;
+  const lista = document.getElementById('lista-membros');
+  lista.replaceChildren(...membros.map(membro => {
+    const item = document.createElement('div');
+    item.className = 'space-member';
+    const avatar = document.createElement('div');
+    avatar.className = 'space-member-avatar';
+    avatar.textContent = iniciaisDoNome(membro.nome).toUpperCase();
+    const copia = document.createElement('div');
+    const nome = document.createElement('div');
+    nome.className = 'space-member-name'; nome.textContent = membro.nome;
+    const email = document.createElement('div');
+    email.className = 'space-member-email'; email.textContent = membro.email;
+    copia.append(nome, email);
+    const papel = document.createElement('div');
+    papel.className = 'space-member-role'; papel.textContent = membro.papel;
+    item.append(avatar, copia, papel);
+    return item;
+  }));
+  document.getElementById('painel-membros').classList.add('open');
+}
+
+function fecharMembros() {
+  document.getElementById('painel-membros').classList.remove('open');
+}
+
+async function excluirEspaco(espacoId) {
+  const espaco = ESPACOS.find(item => item.id === Number(espacoId));
+  if (!espaco) return;
+  const confirmado = window.confirm(
+    `Excluir o espaço "${espaco.nome}"?\n\nTodas as movimentações e vínculos de membros desse espaço serão apagados. Esta ação não pode ser desfeita.`
+  );
+  if (!confirmado) return;
+
+  const resposta = await apiFetch(`${window.location.origin}/espacos/${espacoId}`, { method: 'DELETE' });
+  if (!resposta.ok) {
+    let detalhe = 'Não foi possível excluir o espaço.';
+    try { detalhe = (await resposta.json()).detail || detalhe; } catch (_) {}
+    return toast(detalhe, 'error');
+  }
+
+  const excluiuAtual = ESPACO_ATUAL?.id === Number(espacoId);
+  await carregarEspacos();
+  renderizarEspacos();
+  if (excluiuAtual) await carregar();
+  toast('Espaço excluído com sucesso.', 'success');
+}
+
+async function inicializarAplicacao() {
+  try {
+    await carregarEspacos();
+    await carregar();
+  } catch (erro) {
+    revelarUI();
+    toast(erro.message || 'Não foi possível iniciar o aplicativo.', 'error');
+  }
+}
+
+function escaparHtml(valor) {
+  return String(valor ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
+let todos = [];
+let filtroAtivo = 'TODOS';
+let tipoAtivo = 'GANHO';
+
+// ── ESTADO DO FILTRO DE PERÍODO ──────────────────────────────
+// periodoAtivo guarda qual pill está selecionada: 'tudo' | 'hoje' | '7d' | 'mes' | 'custom'
+let periodoAtivo = 'tudo';
+// Quando periodoAtivo === 'custom', estas duas guardam o intervalo escolhido
+let periodoInicio = null;
+let periodoFim = null;
+
+// ── ESTADO DE ORDENAÇÃO ──────────────────────────────────────
+// 'recente' | 'antigo' | 'maior' | 'menor'
+let ordenacaoAtiva = 'recente';
+
+// ── ESTADO DE PAGINAÇÃO ──────────────────────────────────────
+let paginaAtual = 1;
+const ITENS_POR_PAGINA = 8; // ajustável: quantos itens aparecem por página
+
+function fmt(v) {
+  return 'R$ ' + Math.abs(v).toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+function fmtData(d) {
+  if (!d) return '';
+  const [y, m, dia] = d.split('-');
+  return `${dia}/${m}/${y}`;
+}
+
+/*
+  revelarUI()
+  ───────────
+  Chamada uma única vez quando a API responde com sucesso.
+  Remove todos os skeletons e exibe os elementos reais.
+
+  A troca é feita alterando display:
+    skeleton  → display: none   (some)
+    real      → display: flex/grid/block  (aparece)
+
+  Não usamos opacity ou visibility porque o skeleton
+  ainda ocupa espaço no layout se não for removido de vez.
+*/
+function revelarUI() {
+  // Esconde skeletons
+  document.getElementById('sk-saldo').style.display   = 'none';
+  document.getElementById('sk-lista').style.display   = 'none';
+  document.getElementById('sk-sidebar').style.display = 'none';
+
+  // Mostra conteúdo real
+  document.getElementById('real-saldo').style.display   = 'grid';
+  document.getElementById('real-sidebar').style.display = 'flex';
+  document.getElementById('lista').style.display        = 'block';
+}
+
+function setTipo(tipo) {
+  tipoAtivo = tipo;
+  document.getElementById('btn-ganho').classList.toggle('active', tipo === 'GANHO');
+  document.getElementById('btn-gasto').classList.toggle('active', tipo === 'GASTO');
+  const btn = document.getElementById('btn-salvar');
+  btn.className = `btn-primary ${tipo === 'GANHO' ? 'ganho' : 'gasto'}`;
+  btn.textContent = tipo === 'GANHO' ? 'Registrar ganho' : 'Registrar gasto';
+}
+
+function setFiltro(filtro, el) {
+  filtroAtivo = filtro;
+  document.querySelectorAll('#filtros .filter-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  paginaAtual = 1; // volta pra primeira página ao trocar de filtro
+  atualizarTudo();
+}
+
+/*
+  setPeriodo(chave, el)
+  ─────────────────────
+  Chamada ao clicar em qualquer pill de período (Hoje, 7 dias, etc).
+
+  Caso especial: 'custom' não filtra imediatamente — só revela
+  os dois campos de data. O filtro real só é aplicado quando o
+  usuário clica em "Aplicar" (função aplicarPeriodoCustom).
+  Isso evita filtrar com datas incompletas enquanto o usuário
+  ainda está escolhendo o intervalo.
+*/
+function setPeriodo(chave, el) {
+  document.querySelectorAll('#filtros-periodo .filter-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+
+  const customBox = document.getElementById('custom-range');
+
+  if (chave === 'custom') {
+    // Apenas mostra os campos — não filtra ainda
+    customBox.classList.add('show');
+    return;
+  }
+
+  // Qualquer outra opção esconde o intervalo customizado
+  customBox.classList.remove('show');
+  periodoAtivo = chave;
+  paginaAtual = 1; // volta pra primeira página ao trocar de período
+
+  /*
+    DEBUG: abra o Console do navegador (F12 → aba Console) e
+    clique em "Hoje". Mostra a data calculada como "hoje" e
+    as datas reais das movimentações, para comparar formatos.
+  */
+  if (chave === 'hoje') {
+    console.log('🔍 Debug filtro Hoje — data calculada:', dataLocalISO(new Date()));
+    console.log('🔍 Datas das movimentações no sistema:', todos.map(m => m.data));
+  }
+
+  atualizarTudo();
+}
+
+/*
+  aplicarPeriodoCustom()
+  ───────────────────────
+  Lê os dois campos de data, valida, e aplica o filtro customizado.
+*/
+function aplicarPeriodoCustom() {
+  const inicio = document.getElementById('data-inicio').value;
+  const fim    = document.getElementById('data-fim').value;
+
+  if (!inicio || !fim) {
+    if (!inicio) document.getElementById('data-inicio').focus();
+    else document.getElementById('data-fim').focus();
+    return;
+  }
+
+  if (inicio > fim) {
+    toast('A data inicial não pode ser maior que a data final.', 'error');
+    document.getElementById('data-inicio').focus();
+    return;
+  }
+
+  periodoAtivo  = 'custom';
+  periodoInicio = inicio;
+  periodoFim    = fim;
+  paginaAtual = 1; // volta pra primeira página ao aplicar período customizado
+  atualizarTudo();
+}
+
+/*
+  dataLocalISO(date)
+  ────────────────────
+  BUG CORRIGIDO: toISOString() sempre converte para UTC.
+  Se você está no Brasil (UTC-3) e são, por exemplo, 22h,
+  toISOString() já devolve a data de AMANHÃ em UTC.
+  Resultado: o filtro "Hoje" nunca batia com a data salva
+  no banco (que é a data local, sem fuso).
+
+  Esta função monta a string 'YYYY-MM-DD' usando os componentes
+  LOCAIS da data (getFullYear/getMonth/getDate), que respeitam
+  o fuso horário do navegador do usuário — exatamente o que
+  o <input type="date"> também usa internamente.
+*/
+function dataLocalISO(date) {
+  const ano = date.getFullYear();
+  const mes = String(date.getMonth() + 1).padStart(2, '0'); // getMonth() é 0-indexado
+  const dia = String(date.getDate()).padStart(2, '0');
+  return `${ano}-${mes}-${dia}`;
+}
+
+/*
+  dentroDoPeriodo(dataStr)
+  ─────────────────────────
+  Recebe a data de uma movimentação (string 'YYYY-MM-DD') e
+  retorna true/false se ela cai dentro do período selecionado.
+
+  Comparamos strings de data ISO diretamente (sem criar Date)
+  sempre que possível, pois 'YYYY-MM-DD' é comparável léxicamente
+  na mesma ordem que cronologicamente — evita bugs de timezone.
+*/
+function dentroDoPeriodo(dataStr) {
+  if (periodoAtivo === 'tudo') return true;
+  if (!dataStr) return false;
+
+  /*
+    CORREÇÃO ADICIONAL:
+    A API (FastAPI/Pydantic) pode serializar um campo `date` como
+    "2026-06-29" OU como "2026-06-29T00:00:00" dependendo do banco
+    e da versão do driver. Se vier com timestamp, a comparação de
+    string direta ("2026-06-29T00:00:00" === "2026-06-29") falha
+    silenciosamente e o filtro "Hoje" nunca bate.
+
+    slice(0, 10) garante que pegamos só "YYYY-MM-DD" não importa
+    o que vier depois.
+  */
+  dataStr = String(dataStr).slice(0, 10);
+
+  const hoje = new Date();
+  const hojeISO = dataLocalISO(hoje);   // usa data local, não UTC
+
+  if (periodoAtivo === 'hoje') {
+    return dataStr === hojeISO;
+  }
+
+  if (periodoAtivo === '7d') {
+    const limite = new Date(hoje);
+    limite.setDate(limite.getDate() - 7);
+    const limiteISO = dataLocalISO(limite);
+    return dataStr >= limiteISO && dataStr <= hojeISO;
+  }
+
+  if (periodoAtivo === 'mes') {
+    const mesAtual = hojeISO.slice(0, 7);
+    return dataStr.slice(0, 7) === mesAtual;
+  }
+
+  if (periodoAtivo === 'custom') {
+    return dataStr >= periodoInicio && dataStr <= periodoFim;
+  }
+
+  return true;
+}
+
+/*
+  atualizarTudo()
+  ────────────────
+  Função central chamada sempre que QUALQUER filtro muda
+  (tipo ou período). Re-renderiza tudo que depende dos dados
+  filtrados: lista, stats, saldo e gráfico.
+
+  Centralizar aqui evita esquecer de atualizar algum painel
+  quando um novo filtro é adicionado no futuro.
+*/
+function atualizarTudo() {
+  renderLista();
+  renderStats();
+  renderSaldo();
+  renderChart();
+  renderEvolucao();
+  renderMetas();
+}
+
+/*
+  getDadosFiltrados()
+  ────────────────────
+  Aplica AMBOS os filtros (tipo + período) de uma vez.
+  Todas as funções de render usam esta função como fonte única
+  de dados — assim tipo e período sempre trabalham em conjunto,
+  nunca um anulando o outro.
+*/
+function getDadosFiltrados() {
+  return todos
+    .filter(m => filtroAtivo === 'TODOS' || m.tipo === filtroAtivo)
+    .filter(m => dentroDoPeriodo(m.data));
+}
+
+/* ════════════════════════════════════════════════════════════
+   TOAST NOTIFICATIONS
+   ════════════════════════════════════════════════════════════
+   Substitui window.alert() por uma notificação não-bloqueante.
+   Uso: toast('Mensagem', 'success' | 'error' | 'info')
+──────────────────────────────────────────────────────────── */
+
+const TOAST_ICONS = { success: '✓', error: '✕', info: 'ℹ' };
+
+/*
+  toast(mensagem, tipo, duracaoMs)
+  ───────────────────────────────────
+  Cria o elemento do toast, injeta no container, e agenda
+  sua remoção automática após `duracaoMs` (padrão 3.5s).
+
+  O usuário também pode fechar manualmente clicando no X —
+  nesse caso, cancelamos o timer automático para não tentar
+  remover um elemento que já foi removido.
+*/
+function toast(mensagem, tipo = 'info', duracaoMs = 3500) {
+  const container = document.getElementById('toast-container');
+
+  const el = document.createElement('div');
+  el.className = `toast ${tipo}`;
+  const icon = document.createElement('span');
+  icon.className = 'toast-icon';
+  icon.textContent = TOAST_ICONS[tipo] || 'ℹ';
+  const texto = document.createElement('span');
+  texto.className = 'toast-text';
+  texto.textContent = mensagem;
+  const fechar = document.createElement('button');
+  fechar.className = 'toast-close';
+  fechar.title = 'Fechar';
+  fechar.textContent = '×';
+  el.append(icon, texto, fechar);
+  container.appendChild(el);
+
+  // Função que anima a saída e remove o elemento do DOM
+  function remover() {
+    el.classList.add('toast-out');
+    // Espera a animação de saída (0.2s) terminar antes de
+    // remover de fato — senão o toast "pula" sem a animação.
+    setTimeout(() => el.remove(), 200);
+  }
+
+  // Fechar manualmente pelo botão X
+  el.querySelector('.toast-close').addEventListener('click', remover);
+
+  // Remoção automática após o tempo definido
+  const timer = setTimeout(remover, duracaoMs);
+
+  // Se o usuário fechar manualmente, cancela o timer automático
+  // para não chamar remover() duas vezes
+  el.querySelector('.toast-close').addEventListener('click', () => clearTimeout(timer));
+}
+
+/* ════════════════════════════════════════════════════════════
+   GRÁFICO DE EVOLUÇÃO DO SALDO
+   ════════════════════════════════════════════════════════════
+   Desenha um SVG de linha mostrando o saldo acumulado dia a dia,
+   dentro do período/filtro ativo. Sem biblioteca externa de
+   gráficos — controle total sobre o visual.
+──────────────────────────────────────────────────────────── */
+
+/*
+  renderEvolucao()
+  ──────────────────
+  1. Pega os dados filtrados (mesmo filtro de tipo+período da tela)
+  2. Agrupa por data e calcula o saldo do dia (ganhos - gastos)
+  3. Ordena por data e calcula o saldo ACUMULADO até cada dia
+  4. Converte os pontos em coordenadas SVG e desenha a linha
+*/
+function renderEvolucao() {
+  const wrap = document.getElementById('evolucao-wrap');
+
+  // Para a evolução, ignoramos o filtro de TIPO (ganho/gasto) —
+  // faz sentido mostrar sempre o saldo combinado, senão um
+  // gráfico "só de gastos" não seria uma evolução de saldo real.
+  // Mantemos apenas o filtro de PERÍODO.
+  const dados = todos.filter(m => dentroDoPeriodo(m.data));
+
+  if (dados.length < 2) {
+    wrap.innerHTML = '<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px 0;">Sem dados suficientes para o gráfico</div>';
+    return;
+  }
+
+  // Agrupa por data: soma ganhos e subtrai gastos de cada dia
+  const porDia = {};
+  dados.forEach(m => {
+    const d = String(m.data).slice(0, 10);
+    if (!porDia[d]) porDia[d] = 0;
+    porDia[d] += m.tipo === 'GANHO' ? m.valor : -m.valor;
+  });
+
+  // Ordena as datas cronologicamente e calcula o saldo acumulado
+  const datasOrdenadas = Object.keys(porDia).sort();
+  let acumulado = 0;
+  const pontos = datasOrdenadas.map(d => {
+    acumulado += porDia[d];
+    return { data: d, saldo: acumulado };
+  });
+
+  // ── Configuração do SVG ──
+  const largura = 300;
+  const altura = 90;
+  const paddingY = 10;
+
+  const valores = pontos.map(p => p.saldo);
+  const max = Math.max(...valores, 0);
+  const min = Math.min(...valores, 0);
+  const range = (max - min) || 1; // evita divisão por zero se todos os saldos forem iguais
+
+  // Converte um índice de ponto + valor de saldo em coordenadas X,Y do SVG
+  function coordX(i) {
+    return pontos.length === 1 ? largura / 2 : (i / (pontos.length - 1)) * largura;
+  }
+  function coordY(saldo) {
+    // Inverte o eixo Y (SVG cresce para baixo, gráfico cresce para cima)
+    return altura - paddingY - ((saldo - min) / range) * (altura - paddingY * 2);
+  }
+
+  // Monta a string do atributo "points" da polyline
+  const pontosSVG = pontos.map((p, i) => `${coordX(i)},${coordY(p.saldo)}`).join(' ');
+
+  // Posição da linha do zero (eixo de referência) — só desenhamos
+  // se o zero estiver dentro do intervalo visível
+  const yZero = coordY(0);
+  const mostrarLinhaZero = min < 0 && max > 0;
+
+  // Cor da linha: verde se terminou positivo, vermelho se negativo
+  const saldoFinal = pontos[pontos.length - 1].saldo;
+  const corLinha = saldoFinal >= 0 ? 'var(--green)' : 'var(--red)';
+
+  /*
+    Círculos invisíveis maiores sobre cada ponto real (raio 8) servem
+    de área de hover para o tooltip — pontos visuais pequenos (raio 3)
+    seriam difíceis demais de acertar com o mouse.
+  */
+  const circulosHover = pontos.map((p, i) => `
+    <circle class="evo-hover-point" cx="${coordX(i)}" cy="${coordY(p.saldo)}" r="8"
+      fill="transparent" data-data="${p.data}" data-saldo="${p.saldo}" style="cursor:pointer;" />
+    <circle cx="${coordX(i)}" cy="${coordY(p.saldo)}" r="2.5" fill="${corLinha}" />
+  `).join('');
+
+  wrap.innerHTML = `
+    <svg class="evolucao-svg-wrap" viewBox="0 0 ${largura} ${altura}" style="width:100%;height:${altura}px;">
+      ${mostrarLinhaZero ? `<line x1="0" y1="${yZero}" x2="${largura}" y2="${yZero}" stroke="var(--border2)" stroke-width="1" stroke-dasharray="3,3" />` : ''}
+      <polyline points="${pontosSVG}" fill="none" stroke="${corLinha}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
+      ${circulosHover}
+    </svg>
+    <div class="evolucao-tooltip" id="evo-tooltip">
+      <div class="tt-data" id="evo-tt-data"></div>
+      <div class="tt-valor" id="evo-tt-valor"></div>
+    </div>
+  `;
+
+  // ── Eventos de hover para o tooltip ──
+  const tooltip = document.getElementById('evo-tooltip');
+  wrap.querySelectorAll('.evo-hover-point').forEach(circle => {
+    circle.addEventListener('mouseenter', (e) => {
+      const d = circle.dataset.data;
+      const saldo = parseFloat(circle.dataset.saldo);
+
+      document.getElementById('evo-tt-data').textContent = fmtData(d);
+      const ttValor = document.getElementById('evo-tt-valor');
+      ttValor.textContent = (saldo < 0 ? '- ' : '') + fmt(saldo);
+      ttValor.style.color = saldo >= 0 ? 'var(--green)' : 'var(--red)';
+
+      // Posiciona o tooltip próximo do ponto, usando coordenadas
+      // relativas ao wrap (que tem position:relative no CSS)
+      const rect = wrap.getBoundingClientRect();
+      const svgRect = wrap.querySelector('svg').getBoundingClientRect();
+      const px = ((parseFloat(circle.getAttribute('cx')) / largura) * svgRect.width);
+      const py = ((parseFloat(circle.getAttribute('cy')) / altura) * svgRect.height);
+
+      tooltip.style.left = Math.min(px + 8, svgRect.width - 100) + 'px';
+      tooltip.style.top  = Math.max(py - 40, 0) + 'px';
+      tooltip.classList.add('show');
+    });
+    circle.addEventListener('mouseleave', () => tooltip.classList.remove('show'));
+  });
+}
+
+/* ════════════════════════════════════════════════════════════
+   METAS DE GASTO POR CATEGORIA
+   ════════════════════════════════════════════════════════════
+   Persistência via localStorage (chave 'autogestor_metas').
+
+   ESTRUTURA SALVA: array de objetos { categoria, limite }
+   Exemplo: [{ categoria: "Combustível", limite: 500 }]
+
+   NOTA IMPORTANTE (ver explicação completa no chat):
+   Isso funciona perfeitamente para uso pessoal num navegador,
+   mas não sincroniza entre dispositivos nem aparece se você
+   limpar os dados do navegador. Se quiser persistir de verdade,
+   precisa de um endpoint novo na API (ver sugestão no final).
+──────────────────────────────────────────────────────────── */
+
+const METAS_STORAGE_KEY = 'autogestor_metas';
+
+function carregarMetas() {
+  try {
+    const raw = localStorage.getItem(METAS_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function salvarMetas(metas) {
+  localStorage.setItem(METAS_STORAGE_KEY, JSON.stringify(metas));
+}
+
+/*
+  adicionarMeta()
+  ─────────────────
+  Lê os campos do formulário no fim do card de metas,
+  valida, adiciona ao array e re-renderiza.
+*/
+function adicionarMeta() {
+  const categoria = document.getElementById('meta-categoria').value.trim();
+  const limite = parseFloat(document.getElementById('meta-valor').value);
+
+  if (!categoria || !limite || limite <= 0) {
+    toast('Preencha categoria e valor da meta.', 'error');
+    return;
+  }
+
+  const metas = carregarMetas();
+
+  // Se já existe uma meta para essa categoria, atualiza em vez de duplicar
+  const existente = metas.find(m => m.categoria.toLowerCase() === categoria.toLowerCase());
+  if (existente) {
+    existente.limite = limite;
+    toast(`Meta de "${categoria}" atualizada.`, 'success');
+  } else {
+    metas.push({ categoria, limite });
+    toast(`Meta de "${categoria}" criada.`, 'success');
+  }
+
+  salvarMetas(metas);
+
+  document.getElementById('meta-categoria').value = '';
+  document.getElementById('meta-valor').value = '';
+
+  renderMetas();
+}
+
+function removerMeta(categoria) {
+  let metas = carregarMetas();
+  metas = metas.filter(m => m.categoria !== categoria);
+  salvarMetas(metas);
+  renderMetas();
+  toast(`Meta de "${categoria}" removida.`, 'info');
+}
+
+/*
+  renderMetas()
+  ───────────────
+  Para cada meta cadastrada, calcula quanto já foi gasto NESSE
+  MÊS na categoria correspondente (sempre mês atual, independente
+  do filtro de período da tela — meta é sempre mensal por definição)
+  e desenha a barra de progresso.
+
+  Cores da barra:
+    < 80%   → verde   (ok)
+    80-99%  → âmbar   (atenção)
+    >= 100% → vermelho (estourou)
+*/
+function renderMetas() {
+  const lista = document.getElementById('metas-lista');
+  const metas = carregarMetas();
+
+  if (!metas.length) {
+    lista.innerHTML = '<div class="meta-empty">Nenhuma meta cadastrada ainda</div>';
+    return;
+  }
+
+  // Gastos do mês atual, agrupados por categoria
+  const hojeISO = dataLocalISO(new Date());
+  const mesAtual = hojeISO.slice(0, 7);
+
+  const gastosDoMes = {};
+  todos
+    .filter(m => m.tipo === 'GASTO' && String(m.data).slice(0, 7) === mesAtual)
+    .forEach(m => {
+      gastosDoMes[m.categoria] = (gastosDoMes[m.categoria] || 0) + m.valor;
     });
 
+  lista.innerHTML = metas.map(meta => {
+    const gasto = gastosDoMes[meta.categoria] || 0;
+    const pct = Math.min(Math.round((gasto / meta.limite) * 100), 999); // cap visual em 999%
+
+    let statusClasse = 'ok';
+    if (pct >= 100) statusClasse = 'estourou';
+    else if (pct >= 80) statusClasse = 'atencao';
+
+    // Largura da barra nunca passa de 100% visualmente, mesmo
+    // que o gasto real ultrapasse a meta (senão a barra "vaza" do card)
+    const larguraBarra = Math.min(pct, 100);
+
+    return `
+      <div class="meta-item">
+        <div class="meta-header">
+          <span class="meta-nome">${meta.categoria}
+            <button class="meta-delete" onclick="removerMeta('${meta.categoria.replace(/'/g, "\\'")}')">remover</button>
+          </span>
+          <span class="meta-valores">${fmt(gasto)} / ${fmt(meta.limite)}</span>
+        </div>
+        <div class="meta-bar-bg">
+          <div class="meta-bar-fill ${statusClasse}" style="width:${larguraBarra}%"></div>
+        </div>
+        <div class="meta-pct-label ${statusClasse}">
+          ${pct}% ${statusClasse === 'estourou' ? '— meta estourada' : statusClasse === 'atencao' ? '— atenção' : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+/* ════════════════════════════════════════════════════════════
+   EXPORTAÇÃO: CSV e Excel
+   ════════════════════════════════════════════════════════════
+
+   AMBAS as funções partem da mesma base: montarLinhasExport().
+   Isso garante que CSV e Excel sempre tenham exatamente as
+   mesmas colunas e os mesmos dados — só muda o formato do
+   arquivo final.
+
+   IMPORTANTE: usamos getDadosFiltrados(), não 'todos' direto.
+   Ou seja, o usuário exporta exatamente o que está vendo na
+   tela (com os filtros de tipo e período aplicados). Isso é
+   o comportamento esperado em qualquer ferramenta financeira
+   real — exportar "tudo" quando só "Mês atual" está selecionado
+   seria confuso e até gerar relatórios incorretos.
+──────────────────────────────────────────────────────────── */
+
+/*
+  montarLinhasExport()
+  ──────────────────────
+  Transforma os dados brutos da API (campos em inglês/técnico,
+  tipo 'GANHO'/'GASTO', data 'YYYY-MM-DD') em um array de objetos
+  com cabeçalhos legíveis em português — prontos para virar
+  planilha. Também ordena por data, mais recente primeiro.
+*/
+function montarLinhasExport() {
+  const dados = [...getDadosFiltrados()].sort((a, b) => new Date(b.data) - new Date(a.data));
+
+  return dados.map(m => ({
+    'Data':        fmtData(m.data),
+    'Tipo':        m.tipo === 'GANHO' ? 'Ganho' : 'Gasto',
+    'Categoria':   m.categoria,
+    'Descrição':   m.descricao || '',
+    // Valor numérico puro (sem "R$") para que o Excel reconheça
+    // a coluna como número e permita somas/fórmulas direto na planilha.
+    // Gastos saem negativos para que o somatório da coluna já
+    // dê o saldo líquido automaticamente.
+    'Valor (R$)':  m.tipo === 'GASTO' ? -m.valor : m.valor,
+  }));
+}
+
+/*
+  nomeArquivoExport(extensao)
+  ─────────────────────────────
+  Gera um nome de arquivo com a data atual embutida, ex:
+  "autogestor_movimentacoes_2026-06-29.csv"
+  Isso evita que o usuário acumule vários arquivos chamados
+  "export.csv" e perca o controle de qual é o mais recente.
+*/
+function nomeArquivoExport(extensao) {
+  const hojeISO = dataLocalISO(new Date());
+  return `autogestor_movimentacoes_${hojeISO}.${extensao}`;
+}
+
+/*
+  exportarCSV()
+  ──────────────
+  Gera um CSV puro, sem depender da biblioteca SheetJS — CSV é
+  só texto, então construímos a string manualmente. Isso também
+  serve como exemplo de como funciona um CSV "por baixo do capô"
+  (separador, escaping de aspas, etc).
+*/
+function exportarCSV() {
+  const linhas = montarLinhasExport();
+
+  if (!linhas.length) {
+    toast('Não há movimentações para exportar com os filtros atuais.', 'error');
+    return;
+  }
+
+  const colunas = Object.keys(linhas[0]);
+
+  /*
+    Escapar campos com vírgula, aspas ou quebra de linha:
+    regra do formato CSV (RFC 4180) — se o campo contém vírgula,
+    aspas ou \n, ele precisa ser envolvido em aspas duplas, e
+    qualquer aspas dupla interna vira duas aspas duplas ("").
+  */
+  function escapeCSV(valor) {
+    const str = String(valor);
+    if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+      return '"' + str.replace(/"/g, '""') + '"';
+    }
+    return str;
+  }
+
+  const linhaCabecalho = colunas.map(escapeCSV).join(',');
+  const linhasDados = linhas.map(linha =>
+    colunas.map(col => escapeCSV(linha[col])).join(',')
+  );
+
+  // \uFEFF (BOM) no início garante que o Excel abra o CSV
+  // reconhecendo corretamente os acentos (UTF-8 com BOM).
+  // Sem isso, "Descrição" pode virar "DescriÃ§Ã£o" no Excel.
+  const csvContent = '\uFEFF' + [linhaCabecalho, ...linhasDados].join('\r\n');
+
+  baixarArquivo(csvContent, nomeArquivoExport('csv'), 'text/csv;charset=utf-8;');
+  toast('CSV exportado com sucesso.', 'success');
+}
+
+/*
+  exportarExcel()
+  ────────────────
+  Usa a biblioteca SheetJS (window.XLSX) para gerar um arquivo
+  .xlsx de verdade — com tipos de dados nativos (números reais,
+  não texto), múltiplas linhas, e compatível com Excel/Google Sheets
+  sem precisar de nenhuma conversão.
+*/
+function exportarExcel() {
+  const linhas = montarLinhasExport();
+
+  if (!linhas.length) {
+    toast('Não há movimentações para exportar com os filtros atuais.', 'error');
+    return;
+  }
+
+  // json_to_sheet converte o array de objetos JS direto em
+  // uma planilha, usando as chaves do objeto como cabeçalho.
+  const planilha = XLSX.utils.json_to_sheet(linhas);
+
+  // Define larguras de coluna manualmente para o arquivo já
+  // abrir legível, sem o usuário precisar redimensionar nada.
+  planilha['!cols'] = [
+    { wch: 12 },  // Data
+    { wch: 10 },  // Tipo
+    { wch: 18 },  // Categoria
+    { wch: 30 },  // Descrição
+    { wch: 14 },  // Valor (R$)
+  ];
+
+  // Um "workbook" pode ter várias abas — aqui criamos uma só,
+  // nomeada "Movimentações".
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, planilha, 'Movimentações');
+
+  // writeFile já cuida de gerar o blob e disparar o download
+  // do navegador — não precisamos da função baixarArquivo aqui.
+  XLSX.writeFile(workbook, nomeArquivoExport('xlsx'));
+  toast('Excel exportado com sucesso.', 'success');
+}
+
+/*
+  baixarArquivo(conteudo, nomeArquivo, mimeType)
+  ─────────────────────────────────────────────────
+  Função utilitária usada pelo CSV (o Excel já tem seu próprio
+  mecanismo de download via XLSX.writeFile).
+
+  Cria um Blob (arquivo em memória), gera uma URL temporária
+  para ele, simula um clique num link <a> invisível para disparar
+  o download, e depois limpa tudo da memória.
+*/
+function baixarArquivo(conteudo, nomeArquivo, mimeType) {
+  const blob = new Blob([conteudo], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = nomeArquivo;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+
+  // Libera a memória usada pela URL temporária
+  URL.revokeObjectURL(url);
+}
+
+async function salvar() {
+  const categoria = document.getElementById('categoria').value.trim();
+  const descricao = document.getElementById('descricao').value.trim() || null;
+  const valor = parseFloat(document.getElementById('valor').value);
+  const data = document.getElementById('data').value;
+
+  if (!categoria || !valor || valor <= 0 || !data) {
+    if (!categoria) document.getElementById('categoria').focus();
+    else if (!data) document.getElementById('data').focus();
+    else document.getElementById('valor').focus();
+    return;
+  }
+
+  try {
+    const res = await apiFetch(API + '/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tipo: tipoAtivo, categoria, descricao, valor, data })
+    });
+
+    /*
+      CORREÇÃO IMPORTANTE:
+      fetch() só lança erro (cai no catch) se houver falha de REDE
+      (servidor offline, sem internet, CORS bloqueado, etc).
+      Se o servidor responder com erro HTTP (400, 422, 500...),
+      o fetch considera "sucesso" mesmo assim — só o status muda.
+
+      Sem essa checagem, um erro de validação do Pydantic (422)
+      passava batido: o formulário limpava, aparecia "sucesso",
+      mas nada era salvo no banco. Por isso parecia que "nenhum
+      parâmetro atualiza" — na real a requisição estava falhando
+      silenciosamente.
+    */
+    if (!res.ok) {
+      let detalhe = `Erro ${res.status}`;
+      try {
+        const corpo = await res.json();
+        // FastAPI/Pydantic geralmente retorna o erro em `detail`
+        if (corpo.detail) {
+          detalhe = Array.isArray(corpo.detail)
+            ? corpo.detail.map(d => d.msg || JSON.stringify(d)).join(', ')
+            : corpo.detail;
+        }
+      } catch (_) { /* corpo não era JSON, mantém a mensagem genérica */ }
+
+      toast(`Falha ao salvar: ${detalhe}`, 'error');
+      console.error('Erro ao salvar movimentação:', detalhe);
+      return; // não limpa o formulário nem recarrega — usuário pode corrigir e tentar de novo
+    }
+
+    document.getElementById('categoria').value = '';
     document.getElementById('descricao').value = '';
     document.getElementById('valor').value = '';
-
-    carregar();
+    await carregar();
+    toast(`${tipoAtivo === 'GANHO' ? 'Ganho' : 'Gasto'} registrado com sucesso.`, 'success');
+  } catch(e) {
+    // Este catch agora só pega erros REAIS de rede/conexão
+    toast('Erro ao conectar com a API. Verifique se o servidor está rodando.', 'error');
+    console.error('Erro de rede ao salvar:', e);
+  }
 }
 
 async function carregar() {
-    const res = await fetch(API);
-    let dados = await res.json();
+  /*
+    Na primeira chamada (page load), o skeleton já está visível no HTML.
+    Nas chamadas seguintes (após salvar/deletar), a UI real já foi revelada,
+    então não precisamos re-exibir o skeleton — apenas atualizamos os dados.
+  */
+  try {
+    const res = await apiFetch(API + '/');
+    if (!res.ok) throw new Error(`Erro HTTP ${res.status}`);
+    todos = await res.json();
+    if (!Array.isArray(todos)) throw new Error('Resposta inválida da API');
+    todos = todos.map((item) => ({
+      ...item,
+      valor: Number.parseFloat(item.valor ?? 0) || 0,
+    }));
 
-    const filtro = document.getElementById('filtro').value;
-    if (filtro) {
-        dados = dados.filter(g => g.categoria === filtro);
+    // Revela a UI real e esconde os skeletons (só tem efeito na 1ª chamada;
+    // nas chamadas seguintes os elementos já estão no estado correto)
+    revelarUI();
+
+    atualizarTudo();
+  } catch(e) {
+    // Erro: esconde skeletons e mostra mensagem de erro na lista
+    revelarUI();
+    document.getElementById('lista').innerHTML = `
+      <div class="empty">
+        <div class="empty-icon">🔌</div>
+        <div class="empty-text">Não foi possível conectar à API.<br>
+        Verifique se o servidor está rodando em <code style="color:var(--accent2)">127.0.0.1:8000</code></div>
+      </div>`;
+  }
+}
+
+function renderSaldo() {
+  // Antes usava 'todos' direto — agora usa os dados já filtrados
+  // por tipo + período, para que o saldo reflita o que está visível.
+  const dados = getDadosFiltrados();
+  const ganhos = dados.filter(m => m.tipo === 'GANHO').reduce((s, m) => s + m.valor, 0);
+  const gastos = dados.filter(m => m.tipo === 'GASTO').reduce((s, m) => s + m.valor, 0);
+  const liquido = ganhos - gastos;
+
+  document.getElementById('saldo-ganhos').textContent = fmt(ganhos);
+  document.getElementById('saldo-gastos').textContent = fmt(gastos);
+
+  const el = document.getElementById('saldo-liquido');
+  el.textContent = (liquido < 0 ? '- ' : '') + fmt(liquido);
+  el.className = 'saldo-value ' + (liquido >= 0 ? 'positive' : 'negative');
+}
+
+function renderStats() {
+  const dados = getDadosFiltrados();
+  const ganhos = dados.filter(m => m.tipo === 'GANHO');
+  const gastos = dados.filter(m => m.tipo === 'GASTO');
+  const totalG  = ganhos.reduce((s, m) => s + m.valor, 0);
+  const totalGa = gastos.reduce((s, m) => s + m.valor, 0);
+
+  document.getElementById('total-ganhos').textContent = fmt(totalG);
+  document.getElementById('qtd-ganhos').textContent   = ganhos.length + ' lançamento' + (ganhos.length !== 1 ? 's' : '');
+  document.getElementById('total-gastos').textContent = fmt(totalGa);
+  document.getElementById('qtd-gastos').textContent   = gastos.length + ' lançamento' + (gastos.length !== 1 ? 's' : '');
+
+  const total = dados.reduce((s, m) => s + m.valor, 0);
+  document.getElementById('media-geral').textContent  = dados.length ? fmt(total / dados.length) : '—';
+}
+
+/*
+  setOrdenacao(valor)
+  ──────────────────────
+  Chamada pelo onchange do <select> de ordenação.
+  Apenas atualiza o estado e re-renderiza a lista — a ordenação
+  em si acontece dentro de renderLista(), na função ordenarDados().
+*/
+function setOrdenacao(valor) {
+  ordenacaoAtiva = valor;
+  paginaAtual = 1; // muda a ordenação, volta pra primeira página
+  renderLista();
+}
+
+/*
+  ordenarDados(dados)
+  ──────────────────────
+  Aplica a ordenação escolhida sobre uma cópia do array
+  (nunca ordena o array original — evita efeitos colaterais
+  em outras partes do código que dependem da ordem de 'todos').
+*/
+function ordenarDados(dados) {
+  const copia = [...dados];
+
+  switch (ordenacaoAtiva) {
+    case 'recente':
+      return copia.sort((a, b) => new Date(b.data) - new Date(a.data));
+    case 'antigo':
+      return copia.sort((a, b) => new Date(a.data) - new Date(b.data));
+    case 'maior':
+      return copia.sort((a, b) => b.valor - a.valor);
+    case 'menor':
+      return copia.sort((a, b) => a.valor - b.valor);
+    default:
+      return copia;
+  }
+}
+
+function renderLista() {
+  // getDadosFiltrados() já aplica tipo + período juntos
+  const dados = getDadosFiltrados();
+  const lista = document.getElementById('lista');
+  document.getElementById('list-count').textContent = dados.length + ' item' + (dados.length !== 1 ? 's' : '');
+  lista.innerHTML = '';
+
+  if (!dados.length) {
+    lista.innerHTML = `<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">Nenhuma movimentação encontrada para este filtro.</div></div>`;
+    document.getElementById('paginacao').innerHTML = ''; // some com a paginação quando não há dados
+    return;
+  }
+
+  const sorted = ordenarDados(dados);
+
+  /*
+    PAGINAÇÃO
+    ───────────
+    1. Calcula quantas páginas existem no total
+    2. Garante que paginaAtual não "sobre" do limite (ex: usuário
+       estava na página 5, aplicou um filtro que reduziu pra 2 páginas)
+    3. Fatia o array (slice) só com os itens da página atual
+  */
+  const totalPaginas = Math.max(1, Math.ceil(sorted.length / ITENS_POR_PAGINA));
+  if (paginaAtual > totalPaginas) paginaAtual = totalPaginas;
+
+  const inicio = (paginaAtual - 1) * ITENS_POR_PAGINA;
+  const fim = inicio + ITENS_POR_PAGINA;
+  const paginaDeItens = sorted.slice(inicio, fim);
+
+  paginaDeItens.forEach(m => {
+    const isGanho = m.tipo === 'GANHO';
+    const div = document.createElement('div');
+    div.className = `mov-item ${isGanho ? 'ganho-item' : 'gasto-item'}`;
+    div.innerHTML = `
+      <div class="mov-left">
+        <div class="mov-icon" style="background:${isGanho ? 'rgba(16,185,129,0.12)' : 'rgba(239,68,68,0.12)'}">
+          ${isGanho ? '↑' : '↓'}
+        </div>
+        <div>
+          <div class="mov-desc">${escaparHtml(m.descricao || m.categoria)}</div>
+          <div class="mov-meta">
+            <span class="mov-badge">${escaparHtml(m.categoria)}</span>
+            <span class="mov-date">${fmtData(m.data)}</span>
+          </div>
+        </div>
+      </div>
+      <div class="mov-right">
+        <div>
+          <div class="mov-value ${isGanho ? 'green' : 'red'}">${isGanho ? '+' : '-'} ${fmt(m.valor)}</div>
+          <div class="mov-value-label">${isGanho ? 'entrada' : 'saída'}</div>
+        </div>
+        <button class="btn-edit btn-edit-item"
+          data-id="${m.id}"
+          data-categoria="${escaparHtml(m.categoria)}"
+          data-descricao="${escaparHtml(m.descricao || '')}"
+          data-valor="${m.valor}"
+          data-tipo="${m.tipo}"
+          data-data="${m.data}"
+          title="Editar">✎</button>
+        <button class="btn-delete btn-del-item"
+          data-id="${m.id}"
+          data-desc="${escaparHtml(m.descricao || m.categoria)}"
+          data-valor="${m.valor}"
+          data-tipo="${m.tipo}"
+          title="Excluir">✕</button>
+      </div>`;
+    lista.appendChild(div);
+  });
+
+  renderPaginacao(totalPaginas);
+}
+
+/*
+  renderPaginacao(totalPaginas)
+  ─────────────────────────────────
+  Desenha os controles de página: ◀ [1] [2] [3] ... [N] ▶
+
+  ESTRATÉGIA DE RETICÊNCIAS:
+  Com poucas páginas (≤ 7), mostra todos os números.
+  Com muitas páginas, mostra: primeira, última, a atual e suas
+  vizinhas — e "..." no lugar dos números pulados. Isso evita
+  uma barra horizontal gigante quando há, por exemplo, 40 páginas.
+
+  Se houver só 1 página, o container fica vazio (sem controles).
+*/
+function renderPaginacao(totalPaginas) {
+  const container = document.getElementById('paginacao');
+
+  if (totalPaginas <= 1) {
+    container.innerHTML = '';
+    return;
+  }
+
+  let html = '';
+
+  // Botão "anterior" — desabilitado na primeira página
+  html += `<button class="page-btn" ${paginaAtual === 1 ? 'disabled' : ''} onclick="irParaPagina(${paginaAtual - 1})">‹</button>`;
+
+  /*
+    Decide quais números de página mostrar.
+    Sempre inclui: página 1, página atual (-1/+1) e última página.
+    Tudo que não estiver nesse conjunto vira "..." (no máximo
+    uma reticência entre cada bloco de números visíveis).
+  */
+  const paginasVisiveis = new Set([1, totalPaginas, paginaAtual, paginaAtual - 1, paginaAtual + 1]);
+  let ultimoNumeroExibido = 0;
+
+  for (let p = 1; p <= totalPaginas; p++) {
+    if (!paginasVisiveis.has(p)) continue;
+
+    // Se pulamos números desde o último exibido, insere reticências
+    if (p - ultimoNumeroExibido > 1) {
+      html += `<span class="page-ellipsis">…</span>`;
     }
 
-    const lista = document.getElementById('lista');
-    lista.innerHTML = '';
+    html += `<button class="page-btn ${p === paginaAtual ? 'active' : ''}" onclick="irParaPagina(${p})">${p}</button>`;
+    ultimoNumeroExibido = p;
+  }
 
-    let total = 0;
+  // Botão "próximo" — desabilitado na última página
+  html += `<button class="page-btn" ${paginaAtual === totalPaginas ? 'disabled' : ''} onclick="irParaPagina(${paginaAtual + 1})">›</button>`;
 
-    dados.forEach(g => {
-        total += g.valor;
+  container.innerHTML = html;
+}
 
-        const div = document.createElement('div');
-        div.className = 'gasto';
+/*
+  irParaPagina(numero)
+  ───────────────────────
+  Atualiza o estado da página atual e re-renderiza só a lista
+  (não precisa re-rodar stats/saldo/gráfico, que não mudam
+  com a paginação — só renderLista() é necessário aqui).
+*/
+function irParaPagina(numero) {
+  paginaAtual = numero;
+  renderLista();
 
-        div.innerHTML = `
-            <div>
-                <strong>${g.descricao}</strong><br>
-                <span class="badge">${g.categoria}</span>
-            </div>
-            <div>
-                R$ ${g.valor.toFixed(2)} <br>
-                <span class="delete" onclick="deletar(${g.id})">X</span>
-            </div>
-        `;
+  // Rola suavemente até o topo da lista — útil em telas pequenas
+  // onde a lista é longa e o usuário mudaria de página "às cegas"
+  document.querySelector('.list-header').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
 
-        lista.appendChild(div);
+function renderChart() {
+  const area = document.getElementById('chart-area');
+  const gastos = getDadosFiltrados().filter(m => m.tipo === 'GASTO');
+
+  if (!gastos.length) {
+    area.innerHTML = '<div style="color:var(--muted);font-size:12px;text-align:center;padding:12px 0;">Sem gastos registrados</div>';
+    return;
+  }
+
+  const totais = {};
+  gastos.forEach(g => { totais[g.categoria] = (totais[g.categoria] || 0) + g.valor; });
+  const max = Math.max(...Object.values(totais));
+  const sorted = Object.entries(totais).sort((a, b) => b[1] - a[1]).slice(0, 6);
+
+  area.innerHTML = sorted.map(([cat, val]) => {
+    const pct = Math.round((val / max) * 100);
+    return `
+      <div class="chart-row">
+        <div class="chart-cat">${escaparHtml(cat)}</div>
+        <div class="chart-bar-bg">
+          <div class="chart-bar-fill" data-pct="${pct}" style="background:var(--red);opacity:${0.4 + pct/160};"></div>
+        </div>
+        <div class="chart-pct">${pct}%</div>
+      </div>`;
+  }).join('');
+
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.chart-bar-fill').forEach(el => { el.style.width = el.dataset.pct + '%'; });
+  });
+}
+
+/*
+  EVENT DELEGATION no lugar de onclick inline
+  ────────────────────────────────────────────
+  Em vez de colocar onclick em cada botão gerado dinamicamente,
+  colocamos UM listener no elemento pai (#lista).
+  Quando qualquer clique acontece dentro da lista, verificamos
+  se o alvo (e.target) tem a classe .btn-del-item.
+  Se sim, lemos os data attributes e abrimos o modal.
+
+  Vantagem: não há risco de quebrar com aspas ou caracteres
+  especiais na descrição, pois os dados ficam em atributos
+  HTML escapados — não em strings JavaScript inline.
+*/
+document.getElementById('lista').addEventListener('click', function(e) {
+  const btn = e.target.closest('.btn-del-item');
+  if (!btn) return;
+
+  const id    = btn.dataset.id;
+  const desc  = btn.dataset.desc;
+  const valor = parseFloat(btn.dataset.valor);
+  const tipo  = btn.dataset.tipo;
+
+  // Preenche o preview com os dados do item
+  document.getElementById('modal-preview-desc').textContent  = desc;
+  document.getElementById('modal-preview-valor').textContent =
+    (tipo === 'GANHO' ? '+ ' : '- ') + fmt(valor) + ' · ' + tipo;
+
+  // Grava o id no botão confirmar
+  document.getElementById('btn-confirmar-delete').dataset.id = id;
+
+  // Abre o modal
+  document.getElementById('modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+});
+
+/*
+  fecharModal()
+  ─────────────
+  Remove a classe .open — o modal some.
+  Também restaura o scroll do body.
+*/
+function fecharModal() {
+  document.getElementById('modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+/*
+  confirmarDeletar()
+  ──────────────────
+  Executado quando o usuário clica "Sim, excluir".
+  Lê o id do data attribute, faz o DELETE e recarrega.
+*/
+async function confirmarDeletar() {
+  const id = document.getElementById('btn-confirmar-delete').dataset.id;
+
+  // Fecha o modal imediatamente — não espera o fetch.
+  // Isso dá feedback visual instantâneo ao usuário.
+  fecharModal();
+
+  try {
+    const res = await apiFetch(`${API}/${id}`, { method: 'DELETE' });
+    if (!res.ok) {
+      toast(`Falha ao excluir (erro ${res.status}).`, 'error');
+      return;
+    }
+    await carregar();
+    toast('Movimentação excluída.', 'success');
+  } catch (e) {
+    toast('Erro ao conectar com a API.', 'error');
+    console.error('Erro ao excluir:', e);
+  }
+}
+
+// Init
+const hoje = new Date();
+document.getElementById('data-hoje').textContent = hoje.toLocaleDateString('pt-BR', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+atualizarPerfilNoHeader();
+document.getElementById('data').value = dataLocalISO(hoje);
+document.getElementById('valor').addEventListener('keydown', e => { if (e.key === 'Enter') salvar(); });
+document.addEventListener('click', event => {
+  if (!document.getElementById('profile-menu').contains(event.target)) fecharMenuPerfil();
+  if (!document.getElementById('export-menu').contains(event.target)) fecharMenuExportacao();
+  if (!document.querySelector('.space-switcher').contains(event.target)) fecharSeletorEspacos();
+});
+document.getElementById('dialog-espacos').addEventListener('click', event => {
+  if (event.target === event.currentTarget) fecharEspacos();
+});
+
+/*
+  Fechar modal clicando no overlay (fora do box)
+  ───────────────────────────────────────────────
+  O evento de clique sobe pelo DOM (bubbling).
+  Se o clique veio direto no overlay (e.target === overlay),
+  fechamos. Se veio de dentro do .modal-box, ignoramos.
+  Essa checagem de e.target evita fechar ao clicar dentro do painel.
+*/
+document.getElementById('modal').addEventListener('click', function(e) {
+  if (e.target === this) fecharModal();
+});
+
+/*
+  Fechar com tecla Escape
+  ───────────────────────
+  Padrão de acessibilidade para modais (WCAG).
+  Qualquer modal profissional deve suportar isso.
+*/
+// ── MODAL DE EDIÇÃO ───────────────────────────────────────────
+
+// Tipo selecionado dentro do modal de edição
+let tipoEdit = 'GANHO';
+
+// Atualiza o toggle visual e a cor do botão salvar dentro do modal
+function setTipoEdit(tipo) {
+  tipoEdit = tipo;
+  document.getElementById('edit-btn-ganho').classList.toggle('active', tipo === 'GANHO');
+  document.getElementById('edit-btn-gasto').classList.toggle('active', tipo === 'GASTO');
+  const btn = document.getElementById('btn-salvar-edit');
+  btn.className = `btn-modal ${tipo === 'GANHO' ? 'salvar-ganho' : 'salvar-gasto'}`;
+}
+
+function fecharModalEdit() {
+  document.getElementById('modal-edit').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function limparErroEdicao() {
+  const el = document.getElementById('edit-error');
+  el.style.display = 'none';
+  el.textContent = '';
+}
+
+function mostrarErroEdicao(mensagem) {
+  const el = document.getElementById('edit-error');
+  el.textContent = mensagem;
+  el.style.display = 'block';
+}
+
+// Lê os data-attributes do botão ✎, preenche o formulário e abre o modal
+document.getElementById('lista').addEventListener('click', function(e) {
+  const btn = e.target.closest('.btn-edit-item');
+  if (!btn) return;
+
+  // Preenche os campos com os dados atuais do item
+  document.getElementById('edit-categoria').value  = btn.dataset.categoria;
+  document.getElementById('edit-descricao').value  = btn.dataset.descricao;
+  document.getElementById('edit-valor').value      = btn.dataset.valor;
+  document.getElementById('edit-data').value       = btn.dataset.data;
+
+  // Define o tipo e atualiza o visual do toggle
+  setTipoEdit(btn.dataset.tipo);
+  limparErroEdicao();
+
+  // Grava o id no botão salvar para usar no PUT
+  document.getElementById('btn-salvar-edit').dataset.id = btn.dataset.id;
+
+  // Abre o modal
+  document.getElementById('modal-edit').classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  // Foca no primeiro campo para facilitar a edição
+  setTimeout(() => document.getElementById('edit-categoria').focus(), 100);
+});
+
+// Envia o PUT para a API com os dados editados
+async function confirmarEdicao() {
+  const botao     = document.getElementById('btn-salvar-edit');
+  const id        = document.getElementById('btn-salvar-edit').dataset.id;
+  const categoria = document.getElementById('edit-categoria').value.trim();
+  const descricao = document.getElementById('edit-descricao').value.trim() || null;
+  const valor     = parseFloat(document.getElementById('edit-valor').value);
+  const data      = document.getElementById('edit-data').value;
+
+  if (!categoria || !valor || valor <= 0 || !data) {
+    if (!categoria) document.getElementById('edit-categoria').focus();
+    else if (!data) document.getElementById('edit-data').focus();
+    else document.getElementById('edit-valor').focus();
+    return;
+  }
+
+  limparErroEdicao();
+  const textoOriginal = botao.textContent;
+  botao.disabled = true;
+  botao.textContent = 'Salvando...';
+
+  try {
+    const res = await apiFetch(`${API}/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tipo: tipoEdit, categoria, descricao, valor, data }),
+      timeoutMs: 12000,
     });
 
-    document.getElementById('total').innerText = `Total: R$ ${total.toFixed(2)}`;
-    document.getElementById('qtd').innerText = `${dados.length} itens`;
+    if (!res.ok) {
+      let corpo = null;
+      try {
+        corpo = await res.json();
+      } catch (_) {}
+
+      const mensagem = mensagemHttp(res.status, corpo, 'Não foi possível atualizar a movimentação.');
+      mostrarErroEdicao(mensagem);
+      toast(mensagem, 'error');
+      return;
+    }
+
+    const corpo = await res.json();
+    await carregar();
+    fecharModalEdit();
+    toast(corpo?.message || 'Movimentação atualizada com sucesso.', 'success');
+  } catch (e) {
+    if (e.message === 'Sessão expirada') return;
+
+    const mensagem = e.message === 'request_timeout'
+      ? 'Tempo de espera excedido. Verifique sua conexão e tente novamente.'
+      : 'Falha de conexão com a API. Tente novamente.';
+    mostrarErroEdicao(mensagem);
+    toast(mensagem, 'error');
+  } finally {
+    botao.disabled = false;
+    botao.textContent = textoOriginal;
+  }
 }
 
-async function deletar(id) {
-    await fetch(`${API}/${id}`, { method: 'DELETE' });
-    carregar();
-}
+// Fechar modal-edit clicando no overlay
+document.getElementById('modal-edit').addEventListener('click', function(e) {
+  if (e.target === this) fecharModalEdit();
+});
 
-carregar();
+// Escape fecha qualquer modal aberto
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    fecharModal();
+    fecharModalEdit();
+  }
+});
+
+inicializarAplicacao();
 </script>
-
 </body>
 </html>
