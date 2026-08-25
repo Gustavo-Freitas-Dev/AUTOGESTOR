@@ -84,21 +84,21 @@ def test_get_db_faz_rollback_e_close_em_excecao():
 
 
 def test_healthcheck_retorna_503_quando_banco_falha(client, monkeypatch):
-    import main
-
-    class FailingContext:
-        def __enter__(self):
+    class FailingSession:
+        def execute(self, *_args, **_kwargs):
             raise SQLAlchemyError("db down")
 
-        def __exit__(self, exc_type, exc, tb):
-            return False
+    from main import app
 
-    class FailingEngine:
-        def connect(self):
-            return FailingContext()
+    def override_db():
+        yield FailingSession()
 
-    monkeypatch.setattr(main, "engine", FailingEngine())
+    app.dependency_overrides[get_db] = override_db
 
-    resposta = client.get("/health")
+    try:
+        resposta = client.get("/health")
+    finally:
+        app.dependency_overrides.clear()
+
     assert resposta.status_code == 503
     assert resposta.json()["detail"] == "database_unavailable"

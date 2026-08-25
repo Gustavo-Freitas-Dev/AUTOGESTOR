@@ -16,6 +16,7 @@ from datetime import UTC, datetime, timedelta
 from email_validator import EmailNotValidError, validate_email
 from jose import ExpiredSignatureError, JWTError, jwt
 from passlib.context import CryptContext
+from sqlalchemy import func
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
@@ -62,6 +63,12 @@ def hash_senha(senha: str) -> str:
     return pwd_context.hash(senha)
 
 
+def validar_requisitos_senha(senha: str) -> tuple[bool, str | None]:
+    if not senha or len(senha) < 6:
+        return False, "A senha precisa ter pelo menos os requisitos informados."
+    return True, None
+
+
 def verificar_senha(senha_texto: str, senha_hash: str) -> bool:
     """
     Compara a senha digitada no login com o hash salvo no banco.
@@ -82,6 +89,8 @@ def criar_access_token(dados: dict) -> str:
     """
     to_encode = dados.copy()
     expira_em = datetime.now(UTC) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    if "tv" not in to_encode:
+        to_encode["tv"] = 0
     to_encode.update({"exp": expira_em})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
@@ -100,22 +109,23 @@ def decodificar_token(token: str) -> int | None:
         return None
 
 
-def validar_token(token: str) -> tuple[int | None, str | None]:
+def validar_token(token: str) -> tuple[int | None, int | None, str | None]:
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         subject = payload.get("sub")
+        token_version = payload.get("tv", 0)
         if subject is None:
-            return None, "token_invalid"
-        return int(subject), None
+            return None, None, "token_invalid"
+        return int(subject), int(token_version), None
     except ExpiredSignatureError:
-        return None, "token_expired"
+        return None, None, "token_expired"
     except (JWTError, TypeError, ValueError):
-        return None, "token_invalid"
+        return None, None, "token_invalid"
 
 
 def buscar_usuario_por_email(db: Session, email: str) -> Usuario | None:
     email_normalizado = normalizar_email(email)
-    return db.query(Usuario).filter(Usuario.email.ilike(email_normalizado)).first()
+    return db.query(Usuario).filter(func.lower(Usuario.email) == email_normalizado).first()
 
 
 def buscar_usuario_por_id(db: Session, usuario_id: int) -> Usuario | None:

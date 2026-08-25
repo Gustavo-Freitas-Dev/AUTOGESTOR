@@ -38,9 +38,26 @@ Copie `.env.example` para `.env.local`.
 AUTOGESTOR_APP_ENV=development
 DATABASE_URL=
 AUTOGESTOR_ALLOW_SQLITE_FALLBACK=true
+AUTOGESTOR_DB_CONNECT_TIMEOUT_SECONDS=5
+AUTOGESTOR_DB_STATEMENT_TIMEOUT_MS=12000
+AUTOGESTOR_ENABLE_SERVER_TIMING=false
 AUTOGESTOR_SECRET_KEY=troque-esta-chave
 AUTOGESTOR_ACCESS_TOKEN_EXPIRE_MINUTES=10080
 AUTOGESTOR_CORS_ORIGINS=http://127.0.0.1:8000,http://localhost:8000
+AUTOGESTOR_APP_BASE_URL=http://127.0.0.1:8000
+AUTOGESTOR_PASSWORD_RESET_TOKEN_EXPIRE_MINUTES=30
+AUTOGESTOR_PASSWORD_RESET_UNIFORM_DELAY_MS=200
+AUTOGESTOR_PASSWORD_RESET_REQUEST_LIMIT_PER_IP=10
+AUTOGESTOR_PASSWORD_RESET_REQUEST_LIMIT_PER_EMAIL=5
+AUTOGESTOR_PASSWORD_RESET_CONFIRM_LIMIT_PER_IP=20
+AUTOGESTOR_PASSWORD_RESET_RATE_LIMIT_WINDOW_SECONDS=900
+AUTOGESTOR_EMAIL_PROVIDER=log
+AUTOGESTOR_EMAIL_FROM=AutoGestor <nao-responda@example.com>
+AUTOGESTOR_EMAIL_SMTP_HOST=
+AUTOGESTOR_EMAIL_SMTP_PORT=587
+AUTOGESTOR_EMAIL_SMTP_USERNAME=
+AUTOGESTOR_EMAIL_SMTP_PASSWORD=
+AUTOGESTOR_EMAIL_SMTP_USE_TLS=true
 ```
 
 ## Provedores PostgreSQL (exemplos)
@@ -159,6 +176,17 @@ Copy-Item autogestor.db autogestor.backup.db
 - `AUTOGESTOR_APP_ENV=production`
 - `DATABASE_URL=<url-postgresql>`
 - `AUTOGESTOR_SECRET_KEY=<segredo-forte-e-estavel>`
+- `AUTOGESTOR_APP_BASE_URL=<https://seu-dominio>`
+
+Se usar envio real de e-mail por SMTP:
+
+- `AUTOGESTOR_EMAIL_PROVIDER=smtp`
+- `AUTOGESTOR_EMAIL_FROM=<AutoGestor <nao-responda@seu-dominio>>`
+- `AUTOGESTOR_EMAIL_SMTP_HOST=<host-smtp>`
+- `AUTOGESTOR_EMAIL_SMTP_PORT=<porta>`
+- `AUTOGESTOR_EMAIL_SMTP_USERNAME=<usuario>`
+- `AUTOGESTOR_EMAIL_SMTP_PASSWORD=<senha>`
+- `AUTOGESTOR_EMAIL_SMTP_USE_TLS=true`
 
 Se `DATABASE_URL` ou `AUTOGESTOR_SECRET_KEY` nao estiverem configuradas corretamente em producao/Vercel, a aplicacao falha na inicializacao por seguranca.
 
@@ -194,6 +222,37 @@ reinicia engine/sessoes e valida novo login com dados persistidos.
 Sem `DATABASE_URL` em producao, a aplicacao falha por seguranca.
 
 No startup, a aplicacao registra somente o dialeto ativo (exemplo: `Database dialect: postgresql`), sem expor credenciais.
+
+## Recuperacao de Senha
+
+- Tela de solicitacao: `static/login.html` (link "Esqueci minha senha")
+- Tela de redefinicao: `static/redefinir-senha.html`
+- Endpoint de solicitacao: `POST /auth/esqueci-senha`
+- Endpoint de redefinicao: `POST /auth/redefinir-senha`
+
+Propriedades de seguranca implementadas:
+
+- resposta publica generica para e-mail existente/inexistente;
+- token de recuperacao aleatorio e armazenado apenas como hash SHA-256;
+- expira em `AUTOGESTOR_PASSWORD_RESET_TOKEN_EXPIRE_MINUTES`;
+- token de uso unico (reuso bloqueado);
+- tokens anteriores do mesmo usuario sao revogados;
+- troca de senha incrementa `token_version` e invalida JWTs antigos;
+- limitacao de tentativas por IP e por e-mail normalizado.
+
+## Observabilidade de Cadastro
+
+- O endpoint `POST /auth/cadastro` registra metricas por etapa sem dados sensiveis:
+  - `connection_ms`
+  - `email_lookup_ms`
+  - `password_hash_ms`
+  - `insert_ms`
+  - `commit_ms`
+  - `refresh_ms`
+  - `token_ms`
+  - `endpoint_total_ms`
+- Para inspecao controlada, habilite `AUTOGESTOR_ENABLE_SERVER_TIMING=true`.
+- O backend retorna `X-Request-ID` para correlacao entre cliente e logs.
 
 ## Roteiro de Validacao do Login em Producao
 

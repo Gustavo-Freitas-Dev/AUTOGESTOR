@@ -1,21 +1,26 @@
 import logging
+import time
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from pathlib import Path
+from uuid import uuid4
 
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
 from app.core.errors import register_exception_handlers
 from app.database.db import engine
+from app.database.dependencies import get_db
 from app.models.espaco_financeiro import EspacoFinanceiro  # noqa: F401
 from app.models.membro_espaco import MembroEspaco  # noqa: F401
 from app.models.movimentacao import Movimentacao  # noqa: F401
+from app.models.password_reset_token import PasswordResetToken  # noqa: F401
 from app.models.usuario_model import Usuario  # noqa: F401
 from app.routes.auth import router as auth_router
 from app.routes.dashboard import router as dashboard_router
@@ -45,6 +50,24 @@ app = FastAPI(
     ],
     lifespan=app_lifespan,
 )
+app.state.enable_server_timing = settings.enable_server_timing
+
+
+@app.middleware("http")
+async def request_timing_middleware(request, call_next):
+    request_id = request.headers.get("X-Request-ID") or str(uuid4())
+    request.state.request_id = request_id
+
+    started = time.perf_counter()
+    response = await call_next(request)
+    total_ms = (time.perf_counter() - started) * 1000
+
+    response.headers["X-Request-ID"] = request_id
+    if app.state.enable_server_timing:
+        existing = response.headers.get("Server-Timing")
+        total_metric = f"app_total;dur={total_ms:.2f}"
+        response.headers["Server-Timing"] = f"{existing}, {total_metric}" if existing else total_metric
+    return response
 
 register_exception_handlers(app)
 
@@ -67,10 +90,9 @@ app.include_router(espacos_router)
 
 
 @app.get("/health", tags=["Sistema"], summary="Health check da aplicação")
-def health() -> dict[str, str]:
+def health(db: Session = Depends(get_db)) -> dict[str, str]:
     try:
-        with engine.connect() as connection:
-            connection.execute(text("SELECT 1"))
+        db.execute(text("SELECT 1"))
     except SQLAlchemyError as exc:
         raise HTTPException(status_code=503, detail="database_unavailable") from exc
     return {"status": "ok", "environment": settings.app_env}

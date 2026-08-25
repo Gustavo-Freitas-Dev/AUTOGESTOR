@@ -54,7 +54,7 @@ def obter_usuario_atual(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    usuario_id, erro = validar_token(token)
+    usuario_id, token_version, erro = validar_token(token)
     if erro:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -67,6 +67,13 @@ def obter_usuario_atual(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="user_not_found",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    if int(usuario.token_version or 0) != int(token_version or 0):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="token_revoked",
             headers={"WWW-Authenticate": "Bearer"},
         )
 

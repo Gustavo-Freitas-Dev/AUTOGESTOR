@@ -22,10 +22,47 @@ class Settings(BaseSettings):
 
     database_url: str | None = Field(default=None, alias="DATABASE_URL")
     allow_sqlite_fallback: bool = Field(default=True, alias="AUTOGESTOR_ALLOW_SQLITE_FALLBACK")
+    db_connect_timeout_seconds: int = Field(default=5, alias="AUTOGESTOR_DB_CONNECT_TIMEOUT_SECONDS")
+    db_statement_timeout_ms: int = Field(default=12000, alias="AUTOGESTOR_DB_STATEMENT_TIMEOUT_MS")
+    enable_server_timing: bool = Field(default=False, alias="AUTOGESTOR_ENABLE_SERVER_TIMING")
 
     jwt_secret_key: str = Field(default="changeme-dev-secret", alias="AUTOGESTOR_SECRET_KEY")
     jwt_algorithm: str = "HS256"
     jwt_expire_minutes: int = Field(default=10080, alias="AUTOGESTOR_ACCESS_TOKEN_EXPIRE_MINUTES")
+
+    password_reset_token_expire_minutes: int = Field(
+        default=30,
+        alias="AUTOGESTOR_PASSWORD_RESET_TOKEN_EXPIRE_MINUTES",
+    )
+    password_reset_uniform_delay_ms: int = Field(
+        default=200,
+        alias="AUTOGESTOR_PASSWORD_RESET_UNIFORM_DELAY_MS",
+    )
+    password_reset_request_limit_per_ip: int = Field(
+        default=10,
+        alias="AUTOGESTOR_PASSWORD_RESET_REQUEST_LIMIT_PER_IP",
+    )
+    password_reset_request_limit_per_email: int = Field(
+        default=5,
+        alias="AUTOGESTOR_PASSWORD_RESET_REQUEST_LIMIT_PER_EMAIL",
+    )
+    password_reset_confirm_limit_per_ip: int = Field(
+        default=20,
+        alias="AUTOGESTOR_PASSWORD_RESET_CONFIRM_LIMIT_PER_IP",
+    )
+    password_reset_rate_limit_window_seconds: int = Field(
+        default=900,
+        alias="AUTOGESTOR_PASSWORD_RESET_RATE_LIMIT_WINDOW_SECONDS",
+    )
+
+    app_base_url: str = Field(default="http://127.0.0.1:8000", alias="AUTOGESTOR_APP_BASE_URL")
+    email_provider: str = Field(default="log", alias="AUTOGESTOR_EMAIL_PROVIDER")
+    email_from: str = Field(default="AutoGestor <nao-responda@example.com>", alias="AUTOGESTOR_EMAIL_FROM")
+    email_smtp_host: str | None = Field(default=None, alias="AUTOGESTOR_EMAIL_SMTP_HOST")
+    email_smtp_port: int = Field(default=587, alias="AUTOGESTOR_EMAIL_SMTP_PORT")
+    email_smtp_username: str | None = Field(default=None, alias="AUTOGESTOR_EMAIL_SMTP_USERNAME")
+    email_smtp_password: str | None = Field(default=None, alias="AUTOGESTOR_EMAIL_SMTP_PASSWORD")
+    email_smtp_use_tls: bool = Field(default=True, alias="AUTOGESTOR_EMAIL_SMTP_USE_TLS")
 
     cors_origins: str = Field(default="http://127.0.0.1:8000,http://localhost:8000", alias="AUTOGESTOR_CORS_ORIGINS")
 
@@ -77,6 +114,10 @@ class Settings(BaseSettings):
                 "AUTOGESTOR_SECRET_KEY obrigatoria em producao/Vercel e nao pode usar valor padrao."
             )
         return secret or "changeme-dev-secret"
+
+    @property
+    def normalized_app_base_url(self) -> str:
+        return self.app_base_url.rstrip("/")
 
 
 @lru_cache

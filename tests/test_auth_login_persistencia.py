@@ -177,3 +177,66 @@ def test_config_engine_unificada_usada_nas_rotas():
 
     assert engine is not None
     assert engine.dialect.name in {"sqlite", "postgresql"}
+
+
+def test_cadastro_gera_hash_uma_unica_vez(client, monkeypatch):
+    contador = {"chamadas": 0}
+    original_hash = auth_routes.hash_senha
+
+    def hash_monitorado(senha: str):
+        contador["chamadas"] += 1
+        return original_hash(senha)
+
+    monkeypatch.setattr(auth_routes, "hash_senha", hash_monitorado)
+
+    resposta = client.post(
+        "/auth/cadastro",
+        json={"nome": "Ana", "email": "hash_once@example.com", "senha": "senha123"},
+    )
+
+    assert resposta.status_code == 201
+    assert contador["chamadas"] == 1
+
+
+def test_token_emitido_somente_apos_commit(client, db, monkeypatch):
+    estado = {"commit_ok": False}
+    original_commit = db.commit
+    original_token = auth_routes.criar_access_token
+
+    def commit_monitorado():
+        original_commit()
+        estado["commit_ok"] = True
+
+    def token_monitorado(payload: dict):
+        assert estado["commit_ok"] is True
+        return original_token(payload)
+
+    monkeypatch.setattr(db, "commit", commit_monitorado)
+    monkeypatch.setattr(auth_routes, "criar_access_token", token_monitorado)
+
+    resposta = client.post(
+        "/auth/cadastro",
+        json={"nome": "Ana", "email": "token_depois_commit@example.com", "senha": "senha123"},
+    )
+
+    assert resposta.status_code == 201
+    assert estado["commit_ok"] is True
+
+
+def test_cadastro_falha_se_conexao_db_indisponivel(client, db, monkeypatch):
+    original_connection = db.connection
+
+    def falhar_conexao(*_args, **_kwargs):
+        raise SQLAlchemyError("timeout de conexao")
+
+    monkeypatch.setattr(db, "connection", falhar_conexao)
+
+    resposta = client.post(
+        "/auth/cadastro",
+        json={"nome": "Ana", "email": "falha_conexao@example.com", "senha": "senha123"},
+    )
+
+    monkeypatch.setattr(db, "connection", original_connection)
+
+    assert resposta.status_code == 503
+    assert resposta.json()["detail"] == "database_unavailable"

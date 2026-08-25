@@ -35,9 +35,15 @@ class Usuario(Base):
     email = Column(String(320), unique=True, index=True, nullable=False)
 
     senha_hash = Column(String(255), nullable=False)
+    token_version = Column(Integer, nullable=False, default=0)
 
     criado_em = Column(DateTime(timezone=True), server_default=func.now())
 
     membros_espacos = relationship("MembroEspaco", back_populates="usuario", cascade="all, delete-orphan")
     espacos_criados = relationship("EspacoFinanceiro", foreign_keys="EspacoFinanceiro.criado_por_id", back_populates="criador")
     movimentacoes_criadas = relationship("Movimentacao", foreign_keys="Movimentacao.criado_por_id", back_populates="criador")
+    password_reset_tokens = relationship(
+      "PasswordResetToken",
+      back_populates="usuario",
+      cascade="all, delete-orphan",
+    )

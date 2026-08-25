@@ -63,6 +63,7 @@ def view(
     return service_listar_movimentacoes(
         db,
         espaco_id,
+        usuario.id,
         tipo=tipo,
         categoria=categoria,
         descricao=descricao,
@@ -103,7 +104,7 @@ def delete(
     usuario: Usuario = Depends(obter_usuario_atual),   # ← exige login
 ) -> dict[str, str]:
     verificar_acesso_espaco(usuario.id, espaco_id, db)
-    return service_deletar_movimentacao(db, id, espaco_id)
+    return service_deletar_movimentacao(db, id, espaco_id, usuario.id)
 
 
 @router.get(
@@ -119,7 +120,13 @@ def resumo_por_categoria(
     usuario: Usuario = Depends(obter_usuario_atual),
 ) -> list[dict[str, str | float]]:
     verificar_acesso_espaco(usuario.id, espaco_id, db)
-    dados = service_resumo_por_categoria(db, espaco_id, data_inicio=data_inicio, data_fim=data_fim)
+    dados = service_resumo_por_categoria(
+        db,
+        espaco_id,
+        usuario.id,
+        data_inicio=data_inicio,
+        data_fim=data_fim,
+    )
     return [{"categoria": item["categoria"], "total": float(item["total"])} for item in dados]
 
 
@@ -135,4 +142,4 @@ def buscar_id(
     usuario: Usuario = Depends(obter_usuario_atual),   # ← exige login
 ) -> MovimentacaoResposta:
     verificar_acesso_espaco(usuario.id, espaco_id, db)
-    return service_buscar_id(db, id, espaco_id)
+    return service_buscar_id(db, id, espaco_id, usuario.id)

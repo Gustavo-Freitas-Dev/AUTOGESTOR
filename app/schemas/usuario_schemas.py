@@ -76,3 +76,22 @@ class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
     usuario: UsuarioResposta
+
+
+class EsqueciSenhaRequest(BaseModel):
+    email: EmailStr
+
+    @field_validator("email", mode="before")
+    @classmethod
+    def _normalizar_email(cls, valor: str) -> str:
+        return normalizar_email(valor)
+
+
+class RedefinirSenhaRequest(BaseModel):
+    token: str = Field(..., min_length=20, max_length=512)
+    nova_senha: str = Field(..., min_length=6, max_length=72)
+    confirmar_senha: str = Field(..., min_length=6, max_length=72)
+
+
+class MensagemGenerica(BaseModel):
+    message: str

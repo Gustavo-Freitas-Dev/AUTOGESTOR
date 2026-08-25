@@ -165,6 +165,14 @@
   }
   .field input::placeholder { color: var(--dim); }
 
+  .field-error {
+    display: none;
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--red);
+  }
+  .field-error.show { display: block; }
+
   /* Botão de mostrar/ocultar senha — ícone dentro do campo */
   .field.password-field input { padding-right: 42px; }
   .toggle-password {
@@ -259,11 +267,82 @@
   }
   .auth-error.show { display: flex; }
 
+  .auth-info {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    background: rgba(245,158,11,0.1);
+    border: 1px solid rgba(245,158,11,0.35);
+    border-radius: 9px;
+    padding: 10px 12px;
+    margin-bottom: 16px;
+    font-size: 12px;
+    color: var(--amber);
+  }
+  .auth-info.show { display: flex; }
+
   .auth-footer {
     text-align: center;
     margin-top: 20px;
     font-size: 12px;
     color: var(--muted);
+  }
+
+  .auth-link {
+    margin-top: 10px;
+    text-align: right;
+  }
+  .auth-link button {
+    background: none;
+    border: none;
+    color: var(--accent2);
+    cursor: pointer;
+    font-size: 12px;
+    text-decoration: underline;
+  }
+
+  .modal-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    z-index: 20;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+  .modal-backdrop.show { display: flex; }
+  .modal-card {
+    width: 100%;
+    max-width: 430px;
+    background: var(--card);
+    border: 1px solid var(--border2);
+    border-radius: 16px;
+    padding: 20px;
+  }
+  .modal-title {
+    font-size: 18px;
+    margin-bottom: 8px;
+    font-weight: 700;
+  }
+  .modal-sub {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+  .modal-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .btn-secondary {
+    flex: 1;
+    border: 1px solid var(--border2);
+    background: transparent;
+    color: var(--text);
+    border-radius: 10px;
+    padding: 11px;
+    cursor: pointer;
   }
 </style>
 </head>
@@ -293,6 +372,10 @@
       <span>⚠</span>
       <span id="auth-error-text">Erro</span>
     </div>
+    <div class="auth-info" id="auth-info">
+      <span>⏳</span>
+      <span id="auth-info-text">Aguarde...</span>
+    </div>
 
     <!-- ═══════════════ FORMULÁRIO DE LOGIN ═══════════════ -->
     <form id="form-login" onsubmit="return false;">
@@ -303,7 +386,11 @@
       <div class="field password-field">
         <label>Senha</label>
         <input type="password" id="login-senha" placeholder="••••••••" autocomplete="current-password">
-        <button type="button" class="toggle-password" onclick="alternarSenha('login-senha', this)">👁</button>
+        <button type="button" class="toggle-password" aria-label="Mostrar ou ocultar senha" onclick="alternarSenha('login-senha', this)">👁</button>
+      </div>
+
+      <div class="auth-link">
+        <button type="button" onclick="abrirModalRecuperacao()">Esqueci minha senha</button>
       </div>
 
       <button type="button" class="btn-submit" id="btn-login" onclick="fazerLogin()">
@@ -325,7 +412,7 @@
       <div class="field password-field">
         <label>Senha</label>
         <input type="password" id="cad-senha" placeholder="Mínimo 6 caracteres" autocomplete="new-password" oninput="atualizarForcaSenha(this.value)">
-        <button type="button" class="toggle-password" onclick="alternarSenha('cad-senha', this)">👁</button>
+        <button type="button" class="toggle-password" aria-label="Mostrar ou ocultar senha" onclick="alternarSenha('cad-senha', this)">👁</button>
 
         <!-- Indicador de força da senha — aparece ao digitar -->
         <div class="strength-wrap" id="strength-wrap">
@@ -336,6 +423,13 @@
           </div>
           <span class="strength-label" id="strength-label">Fraca</span>
         </div>
+      </div>
+
+      <div class="field password-field">
+        <label for="cad-confirmar-senha">Confirmar senha</label>
+        <input type="password" id="cad-confirmar-senha" autocomplete="new-password" placeholder="Repita sua senha" oninput="validarConfirmacaoSenha()">
+        <button type="button" class="toggle-password" aria-label="Mostrar ou ocultar confirmacao de senha" onclick="alternarSenha('cad-confirmar-senha', this)">👁</button>
+        <span class="field-error" id="cad-confirmar-erro" role="alert">As senhas não coincidem.</span>
       </div>
 
       <button type="button" class="btn-submit" id="btn-cadastro" onclick="fazerCadastro()">
@@ -352,6 +446,32 @@
 
 </div>
 
+<div class="modal-backdrop" id="modal-recuperacao" aria-hidden="true">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-recuperacao-title">
+    <div class="modal-title" id="modal-recuperacao-title">Recuperar senha</div>
+    <div class="modal-sub">Informe seu e-mail. Se existir uma conta, enviaremos as instruções de redefinição.</div>
+    <div class="field">
+      <label for="rec-email">E-mail</label>
+      <input type="email" id="rec-email" autocomplete="email" placeholder="seu@email.com">
+    </div>
+    <div class="auth-info" id="rec-info">
+      <span>ℹ</span>
+      <span id="rec-info-text"></span>
+    </div>
+    <div class="auth-error" id="rec-erro">
+      <span>⚠</span>
+      <span id="rec-erro-text"></span>
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn-secondary" onclick="fecharModalRecuperacao()">Voltar ao login</button>
+      <button type="button" class="btn-submit" id="btn-recuperar" onclick="enviarRecuperacaoSenha()">
+        <span class="spinner" id="spinner-recuperar"></span>
+        <span id="btn-recuperar-text">Enviar link de recuperação</span>
+      </button>
+    </div>
+  </div>
+</div>
+
 <script>
 /*
   URL DA API — mesma lógica do dashboard principal:
@@ -361,6 +481,8 @@
   (ex: app/static/login.html).
 */
 const API_BASE = window.location.origin;
+const REQUEST_TIMEOUT_MS = 15000;
+const SLOW_REQUEST_NOTICE_MS = 4000;
 
 /*
   trocarAba(aba)
@@ -378,6 +500,7 @@ function trocarAba(aba) {
   document.getElementById('form-cadastro').style.display = isLogin ? 'none' : 'block';
 
   esconderErro();
+  esconderInfo();
 }
 
 function mostrarErro(mensagem) {
@@ -386,6 +509,118 @@ function mostrarErro(mensagem) {
 }
 function esconderErro() {
   document.getElementById('auth-error').classList.remove('show');
+}
+
+function mostrarInfo(mensagem) {
+  document.getElementById('auth-info-text').textContent = mensagem;
+  document.getElementById('auth-info').classList.add('show');
+}
+
+function esconderInfo() {
+  document.getElementById('auth-info').classList.remove('show');
+}
+
+function abrirModalRecuperacao() {
+  document.getElementById('modal-recuperacao').classList.add('show');
+  document.getElementById('modal-recuperacao').setAttribute('aria-hidden', 'false');
+  esconderErroRecuperacao();
+  esconderInfoRecuperacao();
+}
+
+function fecharModalRecuperacao() {
+  document.getElementById('modal-recuperacao').classList.remove('show');
+  document.getElementById('modal-recuperacao').setAttribute('aria-hidden', 'true');
+}
+
+function mostrarErroRecuperacao(mensagem) {
+  document.getElementById('rec-erro-text').textContent = mensagem;
+  document.getElementById('rec-erro').classList.add('show');
+}
+
+function esconderErroRecuperacao() {
+  document.getElementById('rec-erro').classList.remove('show');
+}
+
+function mostrarInfoRecuperacao(mensagem) {
+  document.getElementById('rec-info-text').textContent = mensagem;
+  document.getElementById('rec-info').classList.add('show');
+}
+
+function esconderInfoRecuperacao() {
+  document.getElementById('rec-info').classList.remove('show');
+}
+
+function validarConfirmacaoSenha() {
+  const senha = document.getElementById('cad-senha').value;
+  const confirmar = document.getElementById('cad-confirmar-senha').value;
+  const erro = document.getElementById('cad-confirmar-erro');
+
+  if (!confirmar) {
+    erro.classList.remove('show');
+    return true;
+  }
+
+  if (senha !== confirmar) {
+    erro.classList.add('show');
+    return false;
+  }
+
+  erro.classList.remove('show');
+  return true;
+}
+
+async function enviarRecuperacaoSenha() {
+  esconderErroRecuperacao();
+  esconderInfoRecuperacao();
+  const email = document.getElementById('rec-email').value.trim();
+  if (!email) {
+    mostrarErroRecuperacao('Preencha o e-mail.');
+    return;
+  }
+
+  setCarregando('btn-recuperar', 'spinner-recuperar', 'btn-recuperar-text', true, 'Enviar link de recuperação');
+  try {
+    const res = await fetchComTimeout(`${API_BASE}/auth/esqueci-senha`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    }, REQUEST_TIMEOUT_MS, () => {
+      mostrarInfoRecuperacao('O servidor está levando mais tempo que o normal...');
+    });
+
+    if (!res.ok && res.status === 429) {
+      mostrarErroRecuperacao('Muitas tentativas. Aguarde alguns minutos e tente novamente.');
+      return;
+    }
+
+    mostrarInfoRecuperacao('Se existir uma conta com este e-mail, enviaremos as instruções para redefinir sua senha.');
+  } catch (e) {
+    if (e.name === 'AbortError') {
+      mostrarErroRecuperacao('Tempo limite excedido. Tente novamente em instantes.');
+    } else {
+      mostrarErroRecuperacao('Erro ao solicitar recuperação de senha.');
+    }
+  } finally {
+    setCarregando('btn-recuperar', 'spinner-recuperar', 'btn-recuperar-text', false, 'Enviar link de recuperação');
+  }
+}
+
+async function fetchComTimeout(url, options, timeoutMs, onSlow) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  const slowId = setTimeout(() => {
+    if (typeof onSlow === 'function') onSlow();
+  }, SLOW_REQUEST_NOTICE_MS);
+
+  try {
+    return await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timeoutId);
+    clearTimeout(slowId);
+  }
 }
 
 /*
@@ -480,6 +715,7 @@ function setCarregando(botaoId, spinnerId, textoId, carregando, textoOriginal) {
 */
 async function fazerLogin() {
   esconderErro();
+  esconderInfo();
 
   const email = document.getElementById('login-email').value.trim();
   const senha = document.getElementById('login-senha').value;
@@ -492,10 +728,12 @@ async function fazerLogin() {
   setCarregando('btn-login', 'spinner-login', 'btn-login-text', true, 'Entrar');
 
   try {
-    const res = await fetch(`${API_BASE}/auth/login`, {
+    const res = await fetchComTimeout(`${API_BASE}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, senha }),
+    }, REQUEST_TIMEOUT_MS, () => {
+      mostrarInfo('O servidor está levando mais tempo que o normal...');
     });
 
     const corpo = await res.json();
@@ -510,9 +748,14 @@ async function fazerLogin() {
     redirecionarAposLogin();
 
   } catch (e) {
-    mostrarErro('Erro ao conectar com a API. Verifique se o servidor está rodando.');
+    if (e.name === 'AbortError') {
+      mostrarErro('Tempo limite excedido ao autenticar. Tente novamente em instantes.');
+    } else {
+      mostrarErro('Erro ao conectar com a API. Verifique se o servidor está rodando.');
+    }
     console.error('Erro de rede no login:', e);
   } finally {
+    esconderInfo();
     setCarregando('btn-login', 'spinner-login', 'btn-login-text', false, 'Entrar');
   }
 }
@@ -526,10 +769,12 @@ async function fazerLogin() {
 */
 async function fazerCadastro() {
   esconderErro();
+  esconderInfo();
 
   const nome  = document.getElementById('cad-nome').value.trim();
   const email = document.getElementById('cad-email').value.trim();
   const senha = document.getElementById('cad-senha').value;
+  const confirmarSenha = document.getElementById('cad-confirmar-senha').value;
 
   if (!nome || !email || !senha) {
     mostrarErro('Preencha todos os campos.');
@@ -539,14 +784,22 @@ async function fazerCadastro() {
     mostrarErro('A senha precisa ter pelo menos 6 caracteres.');
     return;
   }
+  if (!confirmarSenha || senha !== confirmarSenha) {
+    validarConfirmacaoSenha();
+    mostrarErro('As senhas não coincidem.');
+    return;
+  }
 
   setCarregando('btn-cadastro', 'spinner-cadastro', 'btn-cadastro-text', true, 'Criar conta');
+  document.getElementById('btn-cadastro-text').textContent = 'Criando sua conta...';
 
   try {
-    const res = await fetch(`${API_BASE}/auth/cadastro`, {
+    const res = await fetchComTimeout(`${API_BASE}/auth/cadastro`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ nome, email, senha }),
+    }, REQUEST_TIMEOUT_MS, () => {
+      mostrarInfo('O servidor está levando mais tempo que o normal...');
     });
 
     const corpo = await res.json();
@@ -557,6 +810,9 @@ async function fazerCadastro() {
       if (Array.isArray(mensagem)) {
         mensagem = mensagem.map(d => d.msg).join(', ');
       }
+      if (res.status === 503) {
+        mensagem = 'Serviço temporariamente indisponível. Tente novamente em instantes.';
+      }
       mostrarErro(mensagem);
       return;
     }
@@ -565,9 +821,14 @@ async function fazerCadastro() {
     redirecionarAposLogin();
 
   } catch (e) {
-    mostrarErro('Erro ao conectar com a API. Verifique se o servidor está rodando.');
+    if (e.name === 'AbortError') {
+      mostrarErro('Tempo limite excedido ao criar conta. Tente novamente em instantes.');
+    } else {
+      mostrarErro('Erro ao conectar com a API. Verifique se o servidor está rodando.');
+    }
     console.error('Erro de rede no cadastro:', e);
   } finally {
+    esconderInfo();
     setCarregando('btn-cadastro', 'spinner-cadastro', 'btn-cadastro-text', false, 'Criar conta');
   }
 }
@@ -577,6 +838,9 @@ document.getElementById('login-senha').addEventListener('keydown', e => {
   if (e.key === 'Enter') fazerLogin();
 });
 document.getElementById('cad-senha').addEventListener('keydown', e => {
+  if (e.key === 'Enter') fazerCadastro();
+});
+document.getElementById('cad-confirmar-senha').addEventListener('keydown', e => {
   if (e.key === 'Enter') fazerCadastro();
 });
 

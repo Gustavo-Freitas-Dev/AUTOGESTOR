@@ -68,6 +68,7 @@ def _apply_ordering(stmt: Select[tuple[Movimentacao]], ordenar_por: str, ordem: 
 def service_listar_movimentacoes(
     db: Session,
     espaco_id: int,
+    usuario_id: int,
     tipo: str | None = None,
     categoria: str | None = None,
     descricao: str | None = None,
@@ -84,7 +85,10 @@ def service_listar_movimentacoes(
             detail="A data inicial nao pode ser maior que a data final.",
         )
 
-    stmt = select(Movimentacao).where(Movimentacao.espaco_id == espaco_id)
+    stmt = select(Movimentacao).where(
+        Movimentacao.espaco_id == espaco_id,
+        Movimentacao.criado_por_id == usuario_id,
+    )
     stmt = _apply_filters(stmt, tipo, categoria, descricao, data_inicio, data_fim)
     stmt = _apply_ordering(stmt, ordenar_por, ordem)
     stmt = stmt.offset(offset).limit(limite)
@@ -133,10 +137,14 @@ def service_atualizar_movimentacao(
     }
 
 
-def service_deletar_movimentacao(db: Session, id: int, espaco_id: int) -> dict[str, str]:
+def service_deletar_movimentacao(db: Session, id: int, espaco_id: int, usuario_id: int) -> dict[str, str]:
     movimentacao = (
         db.query(Movimentacao)
-        .filter(Movimentacao.id == id, Movimentacao.espaco_id == espaco_id)
+        .filter(
+            Movimentacao.id == id,
+            Movimentacao.espaco_id == espaco_id,
+            Movimentacao.criado_por_id == usuario_id,
+        )
         .first()
     )
 
@@ -151,14 +159,18 @@ def service_deletar_movimentacao(db: Session, id: int, espaco_id: int) -> dict[s
     }
 
 
-def service_buscar_id(db: Session, id: int, espaco_id: int):
+def service_buscar_id(db: Session, id: int, espaco_id: int, usuario_id: int):
     """
     Mesma proteção: busca por id, mas só dentro das movimentações
     daquele usuário.
     """
     movimentacao = (
         db.query(Movimentacao)
-        .filter(Movimentacao.id == id, Movimentacao.espaco_id == espaco_id)
+        .filter(
+            Movimentacao.id == id,
+            Movimentacao.espaco_id == espaco_id,
+            Movimentacao.criado_por_id == usuario_id,
+        )
         .first()
     )
 
@@ -174,6 +186,7 @@ def service_buscar_id(db: Session, id: int, espaco_id: int):
 def service_resumo_por_categoria(
     db: Session,
     espaco_id: int,
+    usuario_id: int,
     data_inicio: date | None = None,
     data_fim: date | None = None,
 ) -> list[dict[str, Decimal | str]]:
@@ -187,7 +200,10 @@ def service_resumo_por_categoria(
         Movimentacao.categoria,
         Movimentacao.tipo,
         Movimentacao.valor,
-    ).where(Movimentacao.espaco_id == espaco_id)
+    ).where(
+        Movimentacao.espaco_id == espaco_id,
+        Movimentacao.criado_por_id == usuario_id,
+    )
 
     if data_inicio:
         stmt = stmt.where(Movimentacao.data >= data_inicio)
