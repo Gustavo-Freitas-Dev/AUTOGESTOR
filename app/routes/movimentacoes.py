@@ -88,7 +88,7 @@ def update(
     usuario: Usuario = Depends(obter_usuario_atual),   # ← exige login
 ) -> dict:
     verificar_acesso_espaco(usuario.id, espaco_id, db)
-    return service_atualizar_movimentacao(db, id, dado, espaco_id)
+    return service_atualizar_movimentacao(db, id, dado, espaco_id, usuario.id)
 
 
 @router.delete(

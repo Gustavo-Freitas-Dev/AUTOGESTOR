@@ -14,7 +14,9 @@ Separar assim evita o erro clássico de devolver a senha (ou o hash dela)
 numa resposta JSON por descuido.
 """
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
+
+from app.services.auth_service import normalizar_email
 
 
 class CriarUsuario(BaseModel):
@@ -24,10 +26,20 @@ class CriarUsuario(BaseModel):
     # Pode reforçar depois (exigir número, maiúscula, etc) se quiser.
     senha: str = Field(..., min_length=6, max_length=72)
 
+    @field_validator("email", mode="before")
+    @classmethod
+    def _normalizar_email(cls, valor: str) -> str:
+        return normalizar_email(valor)
+
 
 class LoginUsuario(BaseModel):
     email: EmailStr
     senha: str
+
+    @field_validator("email", mode="before")
+    @classmethod
+    def _normalizar_email(cls, valor: str) -> str:
+        return normalizar_email(valor)
 
 
 class AtualizarUsuario(BaseModel):
@@ -35,6 +47,11 @@ class AtualizarUsuario(BaseModel):
     email: EmailStr
     senha_atual: str = Field(..., min_length=1, max_length=72)
     nova_senha: str | None = Field(default=None, min_length=6, max_length=72)
+
+    @field_validator("email", mode="before")
+    @classmethod
+    def _normalizar_email(cls, valor: str) -> str:
+        return normalizar_email(valor)
 
 
 class UsuarioResposta(BaseModel):

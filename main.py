@@ -1,19 +1,18 @@
+import logging
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
 
 from app.core.config import get_settings
 from app.core.errors import register_exception_handlers
-from app.database.base import Base
 from app.database.db import engine
-
-# ESTA LINHA É A QUE FALTAVA:
 from app.models.espaco_financeiro import EspacoFinanceiro  # noqa: F401
 from app.models.membro_espaco import MembroEspaco  # noqa: F401
 from app.models.movimentacao import Movimentacao  # noqa: F401
@@ -24,11 +23,12 @@ from app.routes.espacos import router as espacos_router
 from app.routes.movimentacoes import router as movimentacoes_router
 
 settings = get_settings()
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
 async def app_lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
-    Base.metadata.create_all(bind=engine)
+    logger.info("Database dialect: %s", engine.dialect.name)
     yield
 
 
@@ -68,15 +68,19 @@ app.include_router(espacos_router)
 
 @app.get("/health", tags=["Sistema"], summary="Health check da aplicação")
 def health() -> dict[str, str]:
-    with engine.connect() as connection:
-        connection.execute(text("SELECT 1"))
+    try:
+        with engine.connect() as connection:
+            connection.execute(text("SELECT 1"))
+    except SQLAlchemyError as exc:
+        raise HTTPException(status_code=503, detail="database_unavailable") from exc
     return {"status": "ok", "environment": settings.app_env}
 
-@app.get('/', include_in_schema=False)
+
+@app.get("/", include_in_schema=False)
 def home() -> RedirectResponse:
-    return RedirectResponse(url='/static/login.html', status_code=307)
+    return RedirectResponse(url="/static/login.html", status_code=307)
 
 
-@app.get('/docs/', include_in_schema=False)
+@app.get("/docs/", include_in_schema=False)
 def docs_redirect() -> RedirectResponse:
-    return RedirectResponse(url='/docs')
+    return RedirectResponse(url="/docs")

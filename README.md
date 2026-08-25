@@ -1,76 +1,58 @@
 # AutoGestor
 
-AutoGestor e uma aplicacao de controle financeiro com FastAPI, SQLAlchemy e frontend em HTML/CSS/JS. O projeto foi estruturado para portfolio com foco em seguranca, organizacao, testes e preparo para deploy.
+AutoGestor e uma API de controle financeiro com FastAPI, SQLAlchemy e frontend estatico. O projeto esta preparado para portfolio e deploy em ambiente serverless com PostgreSQL.
 
-## Objetivo
-
-Gerenciar ganhos e gastos com autenticacao JWT, isolamento de dados por usuario e espaco financeiro, dashboard e filtros analiticos.
-
-## Principais Funcionalidades
-
-- Cadastro e login com JWT
-- Endpoint de usuario autenticado (`/auth/me`)
-- Logout no cliente com invalidacao local de sessao
-- Espacos pessoais e compartilhados (com codigo de acesso)
-- CRUD de movimentacoes por espaco
-- Filtros por tipo, categoria, descricao, periodo
-- Ordenacao e paginacao na listagem
-- Resumo financeiro, resumo mensal e resumo por categoria
-- Dashboard visual com frontend responsivo
-- Exportacao CSV/Excel
-
-## Stack Tecnica
+## Stack
 
 - Python 3.11+
 - FastAPI
-- SQLAlchemy 2
-- Pydantic v2 + pydantic-settings
-- SQLite (dev) e PostgreSQL (prod via `DATABASE_URL`)
-- Pytest
-- Ruff + MyPy
+- SQLAlchemy 2 (sync)
 - Alembic
-- Docker
+- Pydantic v2
+- PostgreSQL (producao)
+- SQLite (apenas dev local opcional)
+- Pytest, Ruff, MyPy
 
 ## Arquitetura
 
 - `app/routes`: camada HTTP
 - `app/services`: regras de negocio
-- `app/models`: entidades SQLAlchemy
-- `app/schemas`: contratos Pydantic
-- `app/database`: sessao, engine, dependencias e scripts de migracao legada
+- `app/models`: modelos ORM
+- `app/schemas`: contratos de entrada/saida
+- `app/database`: engine, sessao e scripts de migracao
 - `app/core`: configuracao e tratamento global de erros
-- `app/static`: frontend web
+- `app/static`: frontend
 
-## Estrutura (resumo)
+## Politica de Banco (importante)
 
-```text
-app/
-  core/
-  database/
-  models/
-  routes/
-  schemas/
-  services/
-  static/
-alembic/
-tests/
-main.py
-pyproject.toml
-```
+- Em producao/Vercel, `DATABASE_URL` e obrigatoria.
+- Em producao/Vercel, `DATABASE_URL` deve ser PostgreSQL.
+- Fallback para SQLite existe apenas em desenvolvimento local.
+- Startup da aplicacao nao usa `create_all`; schema e gerenciado por Alembic.
 
-## Configuracao de Ambiente
+## Variaveis de Ambiente
 
-Copie `.env.example` para `.env.local` e ajuste:
+Copie `.env.example` para `.env.local`.
 
 ```env
 AUTOGESTOR_APP_ENV=development
-DATABASE_URL=sqlite:///autogestor.db
-AUTOGESTOR_SECRET_KEY=troque-esta-chave-por-um-segredo-forte
+DATABASE_URL=
+AUTOGESTOR_ALLOW_SQLITE_FALLBACK=true
+AUTOGESTOR_SECRET_KEY=troque-esta-chave
 AUTOGESTOR_ACCESS_TOKEN_EXPIRE_MINUTES=10080
 AUTOGESTOR_CORS_ORIGINS=http://127.0.0.1:8000,http://localhost:8000
 ```
 
-## Instalacao e Execucao Local
+## Provedores PostgreSQL (exemplos)
+
+- Neon
+- Supabase
+- Railway
+- Vercel Postgres
+
+A maioria fornece URL no formato `postgres://` ou `postgresql://`. O app normaliza automaticamente para o driver `psycopg`.
+
+## Setup Local
 
 ```powershell
 uv sync --dev
@@ -78,36 +60,109 @@ uv run alembic upgrade head
 uv run uvicorn main:app --reload
 ```
 
-API e frontend:
+Acessos:
 
-- Swagger: `http://127.0.0.1:8000/docs`
-- ReDoc: `http://127.0.0.1:8000/redoc`
 - Frontend: `http://127.0.0.1:8000/static/login.html`
+- Docs: `http://127.0.0.1:8000/docs`
 - Healthcheck: `http://127.0.0.1:8000/health`
 
-## Banco e Migracoes
+## Fluxo de Migracoes (Alembic-first)
 
-### Banco novo
+Criar migration:
+
+```powershell
+uv run alembic revision -m "descricao"
+```
+
+Aplicar migration:
 
 ```powershell
 uv run alembic upgrade head
 ```
 
-### Banco legado com dados
-
-1. Execute migracao legada segura (gera backup automatico):
+Ver revisao atual:
 
 ```powershell
-uv run python app/database/migrar_espacos.py
+uv run alembic current
 ```
 
-2. Marque o estado atual para Alembic sem recriar tabelas:
+Ver historico:
 
 ```powershell
-uv run alembic stamp head
+uv run alembic history
 ```
 
-## Qualidade e Testes
+Rollback de 1 revisao:
+
+```powershell
+uv run alembic downgrade -1
+```
+
+## Migracao Segura SQLite -> PostgreSQL
+
+Pre-condicoes:
+
+1. Configurar `DATABASE_URL` PostgreSQL.
+2. Executar schema no alvo com Alembic (`upgrade head`).
+3. Garantir backup do SQLite.
+
+Executar copia de dados:
+
+```powershell
+uv run python app/database/migrar_sqlite_para_neon.py
+```
+
+Comportamento do script:
+
+- Aborta se `DATABASE_URL` nao for PostgreSQL.
+- Aborta se banco destino ja possuir dados.
+- Copia tabela por tabela mantendo IDs.
+- Sincroniza sequences no PostgreSQL.
+
+## Backup e Restore (referencia)
+
+Backup PostgreSQL:
+
+```powershell
+pg_dump "$env:DATABASE_URL" -Fc -f backup_autogestor.dump
+```
+
+Restore PostgreSQL:
+
+```powershell
+pg_restore --clean --if-exists --no-owner --no-privileges -d "$env:DATABASE_URL" backup_autogestor.dump
+```
+
+Backup SQLite local:
+
+```powershell
+Copy-Item autogestor.db autogestor.backup.db
+```
+
+## Validacao Pos-Deploy
+
+1. Conferir `GET /health` retorna `200`.
+2. Criar conta nova no `login.html`.
+3. Entrar no dashboard com essa conta.
+4. Criar uma movimentacao.
+5. Editar a movimentacao e confirmar que a sessao permanece ativa.
+6. Sair voluntariamente pelo menu de perfil.
+7. Entrar novamente com o mesmo e-mail e senha.
+8. Confirmar que o usuario continua existente e que a edicao permaneceu.
+9. Abrir janela anonima e repetir login para validar persistencia entre sessoes.
+10. Fazer redeploy na Vercel.
+11. Repetir login apos redeploy e validar dados preservados.
+12. Executar `uv run alembic current` no ambiente e validar revisao esperada.
+
+## Variaveis obrigatorias em producao
+
+- `AUTOGESTOR_APP_ENV=production`
+- `DATABASE_URL=<url-postgresql>`
+- `AUTOGESTOR_SECRET_KEY=<segredo-forte-e-estavel>`
+
+Se `DATABASE_URL` ou `AUTOGESTOR_SECRET_KEY` nao estiverem configuradas corretamente em producao/Vercel, a aplicacao falha na inicializacao por seguranca.
+
+## Qualidade
 
 ```powershell
 uv run ruff check .
@@ -115,72 +170,42 @@ uv run mypy app/core
 uv run pytest -q
 ```
 
-## Docker
+## Teste de Integracao PostgreSQL
 
-Build:
-
-```powershell
-docker build -t autogestor:latest .
-```
-
-Run:
+Defina uma URL exclusiva de teste:
 
 ```powershell
-docker run --rm -p 8000:8000 --env-file .env.local autogestor:latest
+$env:AUTOGESTOR_TEST_DATABASE_URL="postgresql://.../autogestor_test"
+uv run pytest -q -k postgres_integration
 ```
 
-## CI
+O teste aplica migrations, cria usuario, faz login, cria movimentacao,
+reinicia engine/sessoes e valida novo login com dados persistidos.
 
-Pipeline em `.github/workflows/ci.yml` com:
+## Deploy Vercel
 
-- `ruff check`
-- `mypy`
-- `pytest`
+- Runtime Python definido em `vercel.json`.
+- Configure no projeto Vercel:
+  - `AUTOGESTOR_APP_ENV=production`
+  - `DATABASE_URL=<url-postgresql>`
+  - `AUTOGESTOR_SECRET_KEY=<segredo-forte>`
+  - `AUTOGESTOR_CORS_ORIGINS=<origens-permitidas>`
 
-## Seguranca
+Sem `DATABASE_URL` em producao, a aplicacao falha por seguranca.
 
-- Senhas com hash bcrypt
-- JWT com expiracao configuravel
-- Segredo JWT via variavel de ambiente
-- CORS configuravel por ambiente
-- Rotas financeiras protegidas
-- Isolamento por espaco financeiro
-- Tratamento global de erros sem exposicao de stack trace
+No startup, a aplicacao registra somente o dialeto ativo (exemplo: `Database dialect: postgresql`), sem expor credenciais.
 
-## Exemplos de Endpoints
+## Roteiro de Validacao do Login em Producao
 
-- `POST /auth/cadastro`
-- `POST /auth/login`
-- `GET /auth/me`
-- `GET /espacos`
-- `GET /espacos/{espaco_id}/movimentacoes/?tipo=GASTO&data_inicio=2026-08-01&data_fim=2026-08-31&ordenar_por=valor&ordem=desc&limite=20&offset=0`
-- `GET /espacos/{espaco_id}/movimentacoes/resumo-por-categoria`
-- `GET /espacos/{espaco_id}/dashboard/resumo`
-
-## Capturas de Tela
-
-Adicione imagens em uma pasta `docs/images` e referencie aqui:
-
-- `docs/images/login.png`
-- `docs/images/dashboard.png`
-- `docs/images/filtros.png`
-
-## Proximos Passos
-
-- Persistir metas financeiras no backend (hoje estao no localStorage)
-- Adicionar endpoint de refresh token
-- Evoluir cobertura de testes E2E no frontend
-```
-
-Interface: `http://127.0.0.1:8000/static/login.html`
-
-Swagger: `http://127.0.0.1:8000/docs`
-
-### Testes
-
-```powershell
-uv sync --all-groups
-uv run pytest -q
-```
-
-Os testes usam SQLite em memória e não alteram `autogestor.db`.
+1. Criar conta nova.
+2. Anotar apenas o e-mail (nunca registrar senha em logs).
+3. Sair voluntariamente.
+4. Entrar novamente.
+5. Criar movimentacao.
+6. Editar movimentacao.
+7. Sair novamente.
+8. Entrar novamente.
+9. Abrir janela anonima e entrar.
+10. Fazer redeploy.
+11. Entrar novamente e validar usuario + movimentacao preservados.
+12. Confirmar no painel do PostgreSQL que o usuario continua existente.

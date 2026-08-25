@@ -1386,6 +1386,8 @@
       </div>
     </div>
 
+    <div id="edit-error" style="display:none;margin-top:12px;padding:9px 10px;border-radius:8px;border:1px solid rgba(239,68,68,.35);background:rgba(239,68,68,.1);color:#fecaca;font-size:12px;"></div>
+
     <div class="modal-actions" style="margin-top:20px;">
       <button class="btn-modal cancelar" onclick="fecharModalEdit()">Cancelar</button>
       <!--
@@ -1812,16 +1814,57 @@ if (!TOKEN) {
   window.location.replace('/static/login.html');
 }
 
+const AUTH_FAILURE_DETAILS = new Set(['token_missing', 'token_invalid', 'token_expired', 'user_not_found']);
+
+function tokenAtualSessao() {
+  return localStorage.getItem('autogestor_token') || TOKEN || '';
+}
+
+function limparSessaoAutogestor() {
+  localStorage.removeItem('autogestor_token');
+  localStorage.removeItem('autogestor_usuario');
+}
+
+function encerrarSessaoExpirada() {
+  localStorage.setItem('autogestor_return_to', window.location.pathname + window.location.search + window.location.hash);
+  limparSessaoAutogestor();
+  window.location.replace('/static/login.html');
+}
+
+function detalheErro(corpo) {
+  if (!corpo) return null;
+  if (typeof corpo.detail === 'string') return corpo.detail;
+  if (Array.isArray(corpo.detail)) {
+    return corpo.detail.map(item => item.msg || JSON.stringify(item)).join(', ');
+  }
+  if (Array.isArray(corpo.errors)) {
+    return corpo.errors.map(item => item.msg || JSON.stringify(item)).join(', ');
+  }
+  return null;
+}
+
+function mensagemHttp(status, corpo, fallback) {
+  const detalhe = detalheErro(corpo);
+  if (detalhe) return detalhe;
+  if (status === 400) return 'Não foi possível concluir a operação.';
+  if (status === 401) return 'Sua sessão expirou. Entre novamente.';
+  if (status === 403) return 'Você não possui permissão para executar esta ação.';
+  if (status === 404) return 'Recurso não encontrado.';
+  if (status === 409) return 'Conflito ao processar a solicitação.';
+  if (status === 422) return 'Dados inválidos. Revise os campos e tente novamente.';
+  if (status >= 500) return 'Erro interno da API. Tente novamente em instantes.';
+  return fallback || `Erro ${status}`;
+}
+
 function deslogar() {
   const finalizar = () => {
-    localStorage.removeItem('autogestor_token');
-    localStorage.removeItem('autogestor_usuario');
+    limparSessaoAutogestor();
     window.location.replace('/static/login.html');
   };
 
   fetch(window.location.origin + '/auth/logout', {
     method: 'POST',
-    headers: { Authorization: `Bearer ${TOKEN}` },
+    headers: { Authorization: `Bearer ${tokenAtualSessao()}` },
   }).finally(finalizar);
 }
 
@@ -1971,15 +2014,37 @@ async function salvarMinhaConta(event) {
 }
 
 async function apiFetch(url, options = {}) {
-  const headers = new Headers(options.headers || {});
-  headers.set('Authorization', `Bearer ${TOKEN}`);
-  const response = await fetch(url, { ...options, headers });
+  const { timeoutMs = 12000, ...rest } = options;
+  const headers = new Headers(rest.headers || {});
+  const token = tokenAtualSessao();
+  if (token) {
+    headers.set('Authorization', `Bearer ${token}`);
+  }
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  let response;
+  try {
+    response = await fetch(url, { ...rest, headers, signal: controller.signal });
+  } catch (erro) {
+    if (erro?.name === 'AbortError') throw new Error('request_timeout');
+    throw new Error('network_error');
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
   if (response.status === 401) {
-    localStorage.removeItem('autogestor_token');
-    localStorage.removeItem('autogestor_usuario');
-    window.location.replace('/static/login.html');
-    throw new Error('Sessão expirada');
+    let detail = '';
+    try {
+      const corpo = await response.clone().json();
+      if (typeof corpo?.detail === 'string') detail = corpo.detail;
+    } catch (_) {}
+
+    if (AUTH_FAILURE_DETAILS.has(detail) || detail === 'Não foi possível validar as credenciais') {
+      encerrarSessaoExpirada();
+      throw new Error('Sessão expirada');
+    }
   }
 
   return response;
@@ -3433,6 +3498,18 @@ function fecharModalEdit() {
   document.body.style.overflow = '';
 }
 
+function limparErroEdicao() {
+  const el = document.getElementById('edit-error');
+  el.style.display = 'none';
+  el.textContent = '';
+}
+
+function mostrarErroEdicao(mensagem) {
+  const el = document.getElementById('edit-error');
+  el.textContent = mensagem;
+  el.style.display = 'block';
+}
+
 // Lê os data-attributes do botão ✎, preenche o formulário e abre o modal
 document.getElementById('lista').addEventListener('click', function(e) {
   const btn = e.target.closest('.btn-edit-item');
@@ -3446,6 +3523,7 @@ document.getElementById('lista').addEventListener('click', function(e) {
 
   // Define o tipo e atualiza o visual do toggle
   setTipoEdit(btn.dataset.tipo);
+  limparErroEdicao();
 
   // Grava o id no botão salvar para usar no PUT
   document.getElementById('btn-salvar-edit').dataset.id = btn.dataset.id;
@@ -3460,6 +3538,7 @@ document.getElementById('lista').addEventListener('click', function(e) {
 
 // Envia o PUT para a API com os dados editados
 async function confirmarEdicao() {
+  const botao     = document.getElementById('btn-salvar-edit');
   const id        = document.getElementById('btn-salvar-edit').dataset.id;
   const categoria = document.getElementById('edit-categoria').value.trim();
   const descricao = document.getElementById('edit-descricao').value.trim() || null;
@@ -3473,35 +3552,46 @@ async function confirmarEdicao() {
     return;
   }
 
-  fecharModalEdit();
+  limparErroEdicao();
+  const textoOriginal = botao.textContent;
+  botao.disabled = true;
+  botao.textContent = 'Salvando...';
 
   try {
     const res = await apiFetch(`${API}/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tipo: tipoEdit, categoria, descricao, valor, data })
+      body: JSON.stringify({ tipo: tipoEdit, categoria, descricao, valor, data }),
+      timeoutMs: 12000,
     });
 
     if (!res.ok) {
-      let detalhe = `Erro ${res.status}`;
+      let corpo = null;
       try {
-        const corpo = await res.json();
-        if (corpo.detail) {
-          detalhe = Array.isArray(corpo.detail)
-            ? corpo.detail.map(d => d.msg || JSON.stringify(d)).join(', ')
-            : corpo.detail;
-        }
+        corpo = await res.json();
       } catch (_) {}
-      toast(`Falha ao atualizar: ${detalhe}`, 'error');
-      console.error('Erro ao editar movimentação:', detalhe);
+
+      const mensagem = mensagemHttp(res.status, corpo, 'Não foi possível atualizar a movimentação.');
+      mostrarErroEdicao(mensagem);
+      toast(mensagem, 'error');
       return;
     }
 
+    const corpo = await res.json();
     await carregar();
-    toast('Movimentação atualizada.', 'success');
+    fecharModalEdit();
+    toast(corpo?.message || 'Movimentação atualizada com sucesso.', 'success');
   } catch (e) {
-    toast('Erro ao conectar com a API.', 'error');
-    console.error('Erro de rede ao editar:', e);
+    if (e.message === 'Sessão expirada') return;
+
+    const mensagem = e.message === 'request_timeout'
+      ? 'Tempo de espera excedido. Verifique sua conexão e tente novamente.'
+      : 'Falha de conexão com a API. Tente novamente.';
+    mostrarErroEdicao(mensagem);
+    toast(mensagem, 'error');
+  } finally {
+    botao.disabled = false;
+    botao.textContent = textoOriginal;
   }
 }
 

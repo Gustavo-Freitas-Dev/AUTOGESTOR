@@ -3,10 +3,15 @@ from decimal import Decimal
 
 from fastapi import HTTPException, status
 from sqlalchemy import Select, asc, desc, select
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.models.movimentacao import Movimentacao
-from app.schemas.movimentacao_schemas import AtualizarMovimentacao, CriarMovimentacao
+from app.schemas.movimentacao_schemas import (
+    AtualizarMovimentacao,
+    CriarMovimentacao,
+    MovimentacaoResposta,
+)
 
 
 def service_criar_movimentacao(
@@ -92,6 +97,7 @@ def service_atualizar_movimentacao(
     id: int,
     dado: AtualizarMovimentacao,
     espaco_id: int,
+    usuario_id: int,
 ) -> dict[str, str | Movimentacao]:
     movimentacao = (
         db.query(Movimentacao)
@@ -102,18 +108,28 @@ def service_atualizar_movimentacao(
     if not movimentacao:
         raise HTTPException(status_code=404, detail="Movimentação não encontrada")
 
+    if movimentacao.criado_por_id != usuario_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Você não possui permissão para editar esta movimentação.",
+        )
+
     movimentacao.tipo = dado.tipo
     movimentacao.categoria = dado.categoria
     movimentacao.descricao = dado.descricao
     movimentacao.valor = dado.valor
     movimentacao.data = dado.data
 
-    db.commit()
+    try:
+        db.commit()
+    except SQLAlchemyError:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Não foi possível atualizar a movimentação.")
     db.refresh(movimentacao)
 
     return {
         "message": "Movimentação atualizada com sucesso",
-        "movimentacao": movimentacao
+        "movimentacao": MovimentacaoResposta.model_validate(movimentacao).model_dump(mode="json"),
     }
 
 

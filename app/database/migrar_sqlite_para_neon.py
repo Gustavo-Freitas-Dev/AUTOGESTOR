@@ -1,4 +1,4 @@
-"""Copia os dados do SQLite local para o PostgreSQL configurado no Neon."""
+"""Copia os dados do SQLite local para o PostgreSQL configurado no DATABASE_URL."""
 
 from pathlib import Path
 
@@ -17,22 +17,24 @@ SQLITE_PATH = Path("autogestor.db")
 
 def migrar() -> None:
     if not SQLITE_PATH.exists():
-        raise RuntimeError(f"Banco local não encontrado: {SQLITE_PATH.resolve()}")
+        raise RuntimeError(f"Banco local nao encontrado: {SQLITE_PATH.resolve()}")
     if DATABASE_URL.startswith("sqlite"):
-        raise RuntimeError("DATABASE_URL não aponta para o Neon/PostgreSQL.")
+        raise RuntimeError("DATABASE_URL nao aponta para PostgreSQL.")
 
     sqlite_engine = create_engine(f"sqlite:///{SQLITE_PATH}")
-    Base.metadata.create_all(neon_engine)
 
     tabelas = list(Base.metadata.sorted_tables)
     with neon_engine.begin() as destino:
+        # A migracao exige schema ja aplicado via Alembic.
+        destino.execute(text("SELECT 1 FROM usuarios LIMIT 1"))
+
         ocupadas = {
             tabela.name: destino.execute(select(func.count()).select_from(tabela)).scalar_one()
             for tabela in tabelas
         }
         if any(ocupadas.values()):
             raise RuntimeError(
-                "Migração cancelada: o banco Neon já possui dados. "
+                "Migracao cancelada: o banco PostgreSQL ja possui dados. "
                 f"Contagens: {ocupadas}"
             )
 
@@ -58,7 +60,7 @@ def migrar() -> None:
             tabela.name: conexao.execute(select(func.count()).select_from(tabela)).scalar_one()
             for tabela in tabelas
         }
-    print(f"Migração concluída: {totais}")
+    print(f"Migracao concluida: {totais}")
 
 
 if __name__ == "__main__":

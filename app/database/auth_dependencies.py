@@ -27,18 +27,18 @@ from sqlalchemy.orm import Session
 
 from app.database.dependencies import get_db
 from app.models.usuario_model import Usuario
-from app.services.auth_service import buscar_usuario_por_id, decodificar_token
+from app.services.auth_service import buscar_usuario_por_id, validar_token
 
 # OAuth2PasswordBearer só define DE ONDE o token deve ser lido
 # (header "Authorization: Bearer <token>") e gera automaticamente
 # o cadeado 🔒 nas rotas protegidas dentro do Swagger (/docs).
 # tokenUrl aponta para a rota de login, usada pelo Swagger para
 # o botão "Authorize" funcionar — não afeta o frontend HTML.
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login", auto_error=False)
 
 
 def obter_usuario_atual(
-    token: str = Depends(oauth2_scheme),
+    token: str | None = Depends(oauth2_scheme),
     db: Session = Depends(get_db),
 ) -> Usuario:
     """
@@ -47,18 +47,27 @@ def obter_usuario_atual(
     3. Busca o usuário correspondente no banco
     4. Se qualquer etapa falhar, lança 401 Unauthorized
     """
-    credenciais_invalidas = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Não foi possível validar as credenciais",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="token_missing",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
-    usuario_id = decodificar_token(token)
-    if usuario_id is None:
-        raise credenciais_invalidas
+    usuario_id, erro = validar_token(token)
+    if erro:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=erro,
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
     usuario = buscar_usuario_por_id(db, usuario_id)
     if usuario is None:
-        raise credenciais_invalidas
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="user_not_found",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
     return usuario

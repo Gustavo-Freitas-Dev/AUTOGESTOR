@@ -448,6 +448,16 @@ function salvarSessao(resposta) {
   localStorage.setItem('autogestor_usuario', JSON.stringify(resposta.usuario));
 }
 
+function redirecionarAposLogin() {
+  const destino = localStorage.getItem('autogestor_return_to');
+  localStorage.removeItem('autogestor_return_to');
+  if (destino && destino.startsWith('/')) {
+    window.location.href = destino;
+    return;
+  }
+  window.location.href = 'index.html';
+}
+
 /*
   setCarregando(botaoId, spinnerId, textoId, carregando, textoOriginal)
   ─────────────────────────────────────────────────────────────────────
@@ -497,10 +507,7 @@ async function fazerLogin() {
     }
 
     salvarSessao(corpo);
-
-    // Redireciona para o dashboard principal após login bem-sucedido.
-    // Ajuste o caminho abaixo se o nome do arquivo for diferente.
-    window.location.href = 'index.html';
+    redirecionarAposLogin();
 
   } catch (e) {
     mostrarErro('Erro ao conectar com a API. Verifique se o servidor está rodando.');
@@ -555,7 +562,7 @@ async function fazerCadastro() {
     }
 
     salvarSessao(corpo);
-    window.location.href = 'index.html';
+    redirecionarAposLogin();
 
   } catch (e) {
     mostrarErro('Erro ao conectar com a API. Verifique se o servidor está rodando.');
@@ -585,7 +592,7 @@ document.getElementById('cad-senha').addEventListener('keydown', e => {
   redirecionar de volta pra cá (ver instruções no chat).
 */
 if (localStorage.getItem('autogestor_token')) {
-  window.location.href = 'index.html';
+  redirecionarAposLogin();
 }
 </script>
 </body>

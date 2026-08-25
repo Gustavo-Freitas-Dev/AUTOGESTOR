@@ -32,9 +32,9 @@ class Usuario(Base):
     # unique=True garante a nível de banco que não existem dois
     # usuários com o mesmo e-mail — segunda camada de proteção
     # além da validação que já fazemos no service.
-    email = Column(String, unique=True, index=True, nullable=False)
+    email = Column(String(320), unique=True, index=True, nullable=False)
 
-    senha_hash = Column(String, nullable=False)
+    senha_hash = Column(String(255), nullable=False)
 
     criado_em = Column(DateTime(timezone=True), server_default=func.now())
 

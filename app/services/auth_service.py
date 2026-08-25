@@ -10,19 +10,46 @@ DEPENDÊNCIAS NOVAS que você precisa instalar:
   python-jose[cryptography] → criação e validação de tokens JWT
 """
 
+import logging
 from datetime import UTC, datetime, timedelta
 
-from jose import JWTError, jwt
+from email_validator import EmailNotValidError, validate_email
+from jose import ExpiredSignatureError, JWTError, jwt
 from passlib.context import CryptContext
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
 from app.models.usuario_model import Usuario
 
 settings = get_settings()
-SECRET_KEY = settings.jwt_secret_key
+SECRET_KEY = settings.effective_jwt_secret_key
 ALGORITHM = settings.jwt_algorithm
 ACCESS_TOKEN_EXPIRE_MINUTES = settings.jwt_expire_minutes
+logger = logging.getLogger(__name__)
+
+
+class AuthServiceUnavailableError(Exception):
+    pass
+
+
+def mascarar_email(email: str) -> str:
+    email = email.strip().lower()
+    if "@" not in email:
+        return "***"
+    local, domain = email.split("@", 1)
+    local_mask = (local[:2] + "***") if local else "***"
+    domain_mask = (domain[:2] + "***") if domain else "***"
+    return f"{local_mask}@{domain_mask}"
+
+
+def normalizar_email(email: str) -> str:
+    candidato = str(email or "").strip().lower()
+    try:
+        validado = validate_email(candidato, check_deliverability=False)
+    except EmailNotValidError as exc:
+        raise ValueError("E-mail invalido.") from exc
+    return validado.email
 
 # Contexto do passlib configurado para usar bcrypt — algoritmo
 # de hash padrão da indústria para senhas (lento de propósito,
@@ -73,8 +100,22 @@ def decodificar_token(token: str) -> int | None:
         return None
 
 
+def validar_token(token: str) -> tuple[int | None, str | None]:
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        subject = payload.get("sub")
+        if subject is None:
+            return None, "token_invalid"
+        return int(subject), None
+    except ExpiredSignatureError:
+        return None, "token_expired"
+    except (JWTError, TypeError, ValueError):
+        return None, "token_invalid"
+
+
 def buscar_usuario_por_email(db: Session, email: str) -> Usuario | None:
-    return db.query(Usuario).filter(Usuario.email == email).first()
+    email_normalizado = normalizar_email(email)
+    return db.query(Usuario).filter(Usuario.email.ilike(email_normalizado)).first()
 
 
 def buscar_usuario_por_id(db: Session, usuario_id: int) -> Usuario | None:
@@ -94,9 +135,25 @@ def autenticar_usuario(db: Session, email: str, senha: str) -> Usuario | None:
     a mensagem de erro do login deve ser sempre genérica
     ("email ou senha incorretos").
     """
-    usuario = buscar_usuario_por_email(db, email)
+    try:
+        usuario = buscar_usuario_por_email(db, email)
+    except SQLAlchemyError as exc:
+        logger.exception("Falha de banco ao buscar usuario no login")
+        raise AuthServiceUnavailableError("database_unavailable") from exc
+
     if not usuario:
+        logger.info("Login sem usuario correspondente", extra={"email_mask": mascarar_email(email)})
         return None
-    if not verificar_senha(senha, usuario.senha_hash):
+
+    try:
+        senha_ok = verificar_senha(senha, usuario.senha_hash)
+    except Exception as exc:
+        logger.exception("Falha na verificacao de hash de senha")
+        raise AuthServiceUnavailableError("password_verification_failed") from exc
+
+    if not senha_ok:
+        logger.info("Login com senha invalida", extra={"user_id": usuario.id})
         return None
+
+    logger.info("Login autenticado com sucesso", extra={"user_id": usuario.id})
     return usuario
