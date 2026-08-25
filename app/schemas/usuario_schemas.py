@@ -95,3 +95,7 @@ class RedefinirSenhaRequest(BaseModel):
 
 class MensagemGenerica(BaseModel):
     message: str
+
+
+class ExcluirContaRequest(BaseModel):
+    senha_atual: str = Field(..., min_length=1, max_length=72)

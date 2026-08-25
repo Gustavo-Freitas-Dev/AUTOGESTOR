@@ -16,9 +16,14 @@ from app.core.config import get_settings
 from app.database.auth_dependencies import obter_usuario_atual
 from app.database.dependencies import get_db
 from app.models.usuario_model import Usuario
+from app.models.espaco_financeiro import EspacoFinanceiro
+from app.models.membro_espaco import MembroEspaco
+from app.models.movimentacao import Movimentacao
+from app.models.password_reset_token import PasswordResetToken
 from app.schemas.usuario_schemas import (
     AtualizarUsuario,
     CriarUsuario,
+    ExcluirContaRequest,
     EsqueciSenhaRequest,
     LoginUsuario,
     MensagemGenerica,
@@ -396,3 +401,64 @@ def obter_perfil(usuario: Usuario = Depends(obter_usuario_atual)):
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT, summary="Invalida a sessão no cliente")
 def logout(_: Usuario = Depends(obter_usuario_atual)) -> None:
     return None
+
+
+@router.delete(
+    "/me",
+    response_model=MensagemGenerica,
+    summary="Exclui a conta do usuário autenticado",
+)
+def excluir_conta(
+    dado: ExcluirContaRequest,
+    db: Session = Depends(get_db),
+    usuario: Usuario = Depends(obter_usuario_atual),
+):
+    try:
+        autenticado = autenticar_usuario(db, usuario.email, dado.senha_atual)
+    except AuthServiceUnavailableError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="auth_service_unavailable",
+        ) from exc
+
+    if not autenticado:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Senha atual incorreta.",
+        )
+
+    usuario_id = usuario.id
+    espacos_criados_ids = [
+        espaco_id
+        for (espaco_id,) in db.query(EspacoFinanceiro.id).filter(EspacoFinanceiro.criado_por_id == usuario_id).all()
+    ]
+
+    try:
+        db.query(PasswordResetToken).filter(PasswordResetToken.usuario_id == usuario_id).delete(
+            synchronize_session=False
+        )
+
+        if espacos_criados_ids:
+            db.query(Movimentacao).filter(Movimentacao.espaco_id.in_(espacos_criados_ids)).delete(
+                synchronize_session=False
+            )
+            db.query(MembroEspaco).filter(MembroEspaco.espaco_id.in_(espacos_criados_ids)).delete(
+                synchronize_session=False
+            )
+            db.query(EspacoFinanceiro).filter(EspacoFinanceiro.id.in_(espacos_criados_ids)).delete(
+                synchronize_session=False
+            )
+
+        db.query(Movimentacao).filter(Movimentacao.criado_por_id == usuario_id).delete(synchronize_session=False)
+        db.query(MembroEspaco).filter(MembroEspaco.usuario_id == usuario_id).delete(synchronize_session=False)
+        db.query(Usuario).filter(Usuario.id == usuario_id).delete(synchronize_session=False)
+
+        db.commit()
+    except SQLAlchemyError as exc:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="database_unavailable",
+        ) from exc
+
+    return MensagemGenerica(message="Conta excluída com sucesso.")

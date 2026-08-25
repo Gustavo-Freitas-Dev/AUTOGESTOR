@@ -42,6 +42,44 @@ def test_obter_usuario_atual(client):
     assert resposta.json()["email"] == usuario["usuario"]["email"]
 
 
+def test_usuario_pode_excluir_propria_conta(client):
+    usuario, headers = cadastrar(client, "Ana", "ana_excluir@example.com")
+
+    resposta = client.request(
+        "DELETE",
+        "/auth/me",
+        json={"senha_atual": "senha123"},
+        headers=headers,
+    )
+    assert resposta.status_code == 200
+    assert resposta.json()["message"] == "Conta excluída com sucesso."
+
+    resposta_me = client.get("/auth/me", headers=headers)
+    assert resposta_me.status_code == 401
+
+    resposta_login = client.post(
+        "/auth/login",
+        json={"email": usuario["usuario"]["email"], "senha": "senha123"},
+    )
+    assert resposta_login.status_code == 401
+
+
+def test_excluir_conta_exige_senha_atual_valida(client):
+    _, headers = cadastrar(client, "Ana", "ana_excluir_invalida@example.com")
+
+    resposta = client.request(
+        "DELETE",
+        "/auth/me",
+        json={"senha_atual": "senha-errada"},
+        headers=headers,
+    )
+    assert resposta.status_code == 401
+    assert resposta.json()["detail"] == "Senha atual incorreta."
+
+    resposta_me = client.get("/auth/me", headers=headers)
+    assert resposta_me.status_code == 200
+
+
 def test_nao_autenticado_recebe_401(client):
     assert client.get("/espacos").status_code == 401
 
