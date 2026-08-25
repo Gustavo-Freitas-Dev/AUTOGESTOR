@@ -1169,6 +1169,9 @@
         <button type="button" class="profile-option" onclick="abrirMinhaConta()" role="menuitem">
           <span>✎</span><span>Editar perfil</span>
         </button>
+        <button type="button" class="profile-option danger" onclick="abrirExcluirConta()" role="menuitem">
+          <span>🗑</span><span>Excluir conta</span>
+        </button>
         <div class="profile-divider"></div>
         <button type="button" class="profile-option danger" onclick="deslogar()" role="menuitem">
           <span>↪</span><span>Sair da conta</span>
@@ -1274,6 +1277,21 @@
     <div class="account-actions">
       <button type="button" class="btn-logout" onclick="fecharMinhaConta()">Cancelar</button>
       <button type="submit" class="btn-primary ganho" id="btn-salvar-conta">Salvar alterações</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog class="account-dialog" id="dialog-excluir-conta">
+  <form class="account-form" id="form-excluir-conta" onsubmit="excluirMinhaConta(event)">
+    <h2 class="account-title">Excluir conta</h2>
+    <p class="account-help">Esta ação é permanente. Todos os seus dados e espaços criados por você serão removidos.</p>
+    <div class="field">
+      <label for="excluir-conta-senha">Confirme sua senha atual</label>
+      <input id="excluir-conta-senha" type="password" required maxlength="72" autocomplete="current-password">
+    </div>
+    <div class="account-actions">
+      <button type="button" class="btn-logout" onclick="fecharExcluirConta()">Cancelar</button>
+      <button type="submit" class="btn-modal confirmar" id="btn-excluir-conta">Excluir conta</button>
     </div>
   </form>
 </dialog>
@@ -1966,8 +1984,18 @@ function abrirMinhaConta() {
   document.getElementById('dialog-conta').showModal();
 }
 
+function abrirExcluirConta() {
+  fecharMenuPerfil();
+  document.getElementById('excluir-conta-senha').value = '';
+  document.getElementById('dialog-excluir-conta').showModal();
+}
+
 function fecharMinhaConta() {
   document.getElementById('dialog-conta').close();
+}
+
+function fecharExcluirConta() {
+  document.getElementById('dialog-excluir-conta').close();
 }
 
 async function salvarMinhaConta(event) {
@@ -2006,6 +2034,37 @@ async function salvarMinhaConta(event) {
     atualizarPerfilNoHeader();
     fecharMinhaConta();
     toast('Dados da conta atualizados.', 'success');
+  } catch (erro) {
+    if (erro.message !== 'Sessão expirada') toast('Erro ao conectar com a API.', 'error');
+  } finally {
+    botao.disabled = false;
+  }
+}
+
+async function excluirMinhaConta(event) {
+  event.preventDefault();
+  const botao = document.getElementById('btn-excluir-conta');
+  const senhaAtual = document.getElementById('excluir-conta-senha').value;
+
+  botao.disabled = true;
+  try {
+    const resposta = await apiFetch(window.location.origin + '/auth/me', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ senha_atual: senhaAtual }),
+    });
+    const corpo = await resposta.json();
+    if (!resposta.ok) {
+      toast(mensagemHttp(resposta.status, corpo, 'Não foi possível excluir a conta.'), 'error');
+      return;
+    }
+
+    toast('Conta excluída com sucesso.', 'success');
+    fecharExcluirConta();
+    setTimeout(() => {
+      limparSessaoAutogestor();
+      window.location.replace('/static/login.html');
+    }, 500);
   } catch (erro) {
     if (erro.message !== 'Sessão expirada') toast('Erro ao conectar com a API.', 'error');
   } finally {
