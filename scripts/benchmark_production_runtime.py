@@ -71,7 +71,6 @@ def main() -> None:
         signup_start = time.perf_counter()
         signup_resp = client.post(f"{base_url}/auth/cadastro", json={"nome": "Perf Prod", "email": email, "senha": senha})
         signup_ms = (time.perf_counter() - signup_start) * 1000
-        signup_body = signup_resp.json()
 
         login_start = time.perf_counter()
         login_resp = client.post(f"{base_url}/auth/login", json={"email": email, "senha": senha})

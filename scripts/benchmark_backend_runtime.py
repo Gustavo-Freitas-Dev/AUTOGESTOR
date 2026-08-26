@@ -1,7 +1,7 @@
 import json
 import statistics
-import time
 import sys
+import time
 from pathlib import Path
 
 from fastapi.testclient import TestClient
@@ -12,14 +12,14 @@ ROOT_DIR = Path(__file__).resolve().parents[1]
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
-from app.database.base import Base
-from app.database.dependencies import get_db
-from app.models.espaco_financeiro import EspacoFinanceiro  # noqa: F401
-from app.models.membro_espaco import MembroEspaco  # noqa: F401
-from app.models.movimentacao import Movimentacao  # noqa: F401
-from app.models.password_reset_token import PasswordResetToken  # noqa: F401
-from app.models.usuario_model import Usuario  # noqa: F401
-from main import app
+from app.database.base import Base  # noqa: E402
+from app.database.dependencies import get_db  # noqa: E402
+from app.models.espaco_financeiro import EspacoFinanceiro  # noqa: E402, F401
+from app.models.membro_espaco import MembroEspaco  # noqa: E402, F401
+from app.models.movimentacao import Movimentacao  # noqa: E402, F401
+from app.models.password_reset_token import PasswordResetToken  # noqa: E402, F401
+from app.models.usuario_model import Usuario  # noqa: E402, F401
+from main import app  # noqa: E402
 
 
 def percentile(values: list[float], p: float) -> float:

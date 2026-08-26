@@ -1,10 +1,10 @@
 import pytest
+from conftest import cadastrar
 from sqlalchemy import event
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.core.config import Settings
 from app.database.dependencies import get_db
-from conftest import cadastrar
 
 
 def test_producao_sem_database_url_falha(monkeypatch):
