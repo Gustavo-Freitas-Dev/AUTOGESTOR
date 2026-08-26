@@ -2609,6 +2609,27 @@ function getDadosFiltrados() {
     .filter(m => dentroDoPeriodo(m.data));
 }
 
+function normalizarMovimentacao(item) {
+  return {
+    ...item,
+    valor: Number.parseFloat(item?.valor ?? 0) || 0,
+  };
+}
+
+function inserirMovimentacaoLocal(item) {
+  const normalizada = normalizarMovimentacao(item);
+  const indice = todos.findIndex(m => Number(m.id) === Number(normalizada.id));
+  if (indice >= 0) {
+    todos[indice] = normalizada;
+  } else {
+    todos = [normalizada, ...todos];
+  }
+}
+
+function removerMovimentacaoLocal(id) {
+  todos = todos.filter(m => Number(m.id) !== Number(id));
+}
+
 /* ════════════════════════════════════════════════════════════
    TOAST NOTIFICATIONS
    ════════════════════════════════════════════════════════════
@@ -3145,10 +3166,12 @@ async function salvar() {
       return; // não limpa o formulário nem recarrega — usuário pode corrigir e tentar de novo
     }
 
+    const criada = normalizarMovimentacao(await res.json());
     document.getElementById('categoria').value = '';
     document.getElementById('descricao').value = '';
     document.getElementById('valor').value = '';
-    await carregar();
+    inserirMovimentacaoLocal(criada);
+    atualizarTudo();
     toast(`${tipoAtivo === 'GANHO' ? 'Ganho' : 'Gasto'} registrado com sucesso.`, 'success');
   } catch(e) {
     // Este catch agora só pega erros REAIS de rede/conexão
@@ -3168,10 +3191,7 @@ async function carregar() {
     if (!res.ok) throw new Error(`Erro HTTP ${res.status}`);
     todos = await res.json();
     if (!Array.isArray(todos)) throw new Error('Resposta inválida da API');
-    todos = todos.map((item) => ({
-      ...item,
-      valor: Number.parseFloat(item.valor ?? 0) || 0,
-    }));
+    todos = todos.map(normalizarMovimentacao);
 
     // Revela a UI real e esconde os skeletons (só tem efeito na 1ª chamada;
     // nas chamadas seguintes os elementos já estão no estado correto)
@@ -3497,7 +3517,8 @@ async function confirmarDeletar() {
       toast(`Falha ao excluir (erro ${res.status}).`, 'error');
       return;
     }
-    await carregar();
+    removerMovimentacaoLocal(id);
+    atualizarTudo();
     toast('Movimentação excluída.', 'success');
   } catch (e) {
     toast('Erro ao conectar com a API.', 'error');
