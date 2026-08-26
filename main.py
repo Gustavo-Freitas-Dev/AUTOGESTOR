@@ -15,6 +15,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
 from app.core.errors import register_exception_handlers
+from app.core.request_context import request_metrics_var
 from app.database.db import engine
 from app.database.dependencies import get_db
 from app.models.espaco_financeiro import EspacoFinanceiro  # noqa: F401
@@ -57,17 +58,37 @@ app.state.enable_server_timing = settings.enable_server_timing
 async def request_timing_middleware(request, call_next):
     request_id = request.headers.get("X-Request-ID") or str(uuid4())
     request.state.request_id = request_id
+    metrics_token = request_metrics_var.set({"request_id": request_id})
 
     started = time.perf_counter()
-    response = await call_next(request)
-    total_ms = (time.perf_counter() - started) * 1000
+    response = None
+    status_code = 500
+    try:
+        response = await call_next(request)
+        status_code = response.status_code
+        return response
+    finally:
+        total_ms = (time.perf_counter() - started) * 1000
+        metrics = request_metrics_var.get({})
+        logger.info(
+            "request request_id=%s method=%s path=%s status_code=%s duration_ms=%.2f sql_count=%s sql_total_ms=%.2f",
+            request_id,
+            request.method,
+            request.url.path,
+            status_code,
+            total_ms,
+            metrics.get("sql_count", 0),
+            float(metrics.get("sql_total_ms", 0.0)),
+        )
 
-    response.headers["X-Request-ID"] = request_id
-    if app.state.enable_server_timing:
-        existing = response.headers.get("Server-Timing")
-        total_metric = f"app_total;dur={total_ms:.2f}"
-        response.headers["Server-Timing"] = f"{existing}, {total_metric}" if existing else total_metric
-    return response
+        if response is not None:
+            response.headers["X-Request-ID"] = request_id
+            if app.state.enable_server_timing:
+                existing = response.headers.get("Server-Timing")
+                total_metric = f"app_total;dur={total_ms:.2f}"
+                response.headers["Server-Timing"] = f"{existing}, {total_metric}" if existing else total_metric
+
+        request_metrics_var.reset(metrics_token)
 
 register_exception_handlers(app)
 
@@ -90,12 +111,17 @@ app.include_router(espacos_router)
 
 
 @app.get("/health", tags=["Sistema"], summary="Health check da aplicação")
-def health(db: Session = Depends(get_db)) -> dict[str, str]:
+def health() -> dict[str, str]:
+    return {"status": "ok", "environment": settings.app_env}
+
+
+@app.get("/health/database", tags=["Sistema"], summary="Health check do banco de dados")
+def health_database(db: Session = Depends(get_db)) -> dict[str, str]:
     try:
         db.execute(text("SELECT 1"))
     except SQLAlchemyError as exc:
         raise HTTPException(status_code=503, detail="database_unavailable") from exc
-    return {"status": "ok", "environment": settings.app_env}
+    return {"status": "ok", "database": "reachable"}
 
 
 @app.get("/", include_in_schema=False)

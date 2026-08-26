@@ -45,6 +45,13 @@ class ResumoFinanceiro(BaseModel):
     quantidade_movimentacoes: int
 
 
+class ResumoDashboard(BaseModel):
+    saldo: Decimal
+    total_ganhos: Decimal
+    total_gastos: Decimal
+    quantidade_movimentacoes: int
+
+
 class ResumoCategoria(BaseModel):
     categoria: str
     total: Decimal

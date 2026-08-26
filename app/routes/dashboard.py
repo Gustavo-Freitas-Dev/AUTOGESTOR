@@ -15,18 +15,7 @@ from app.services.dashboard_service import (
 from app.services.dashboard_service import (
     buscar_por_data as service_buscar_por_data,
 )
-from app.services.dashboard_service import (
-    quantidade_movimentacoes as service_quantidade_movimentacoes,
-)
-from app.services.dashboard_service import (
-    saldo_total,
-)
-from app.services.dashboard_service import (
-    total_ganhos as service_total_ganhos,
-)
-from app.services.dashboard_service import (
-    total_gastos as service_total_gastos,
-)
+from app.services.dashboard_service import resumo_dashboard
 from app.services.espaco_service import verificar_acesso_espaco
 
 router = APIRouter(prefix="/espacos/{espaco_id}/dashboard", tags=["Dashboard"])
@@ -34,10 +23,7 @@ router = APIRouter(prefix="/espacos/{espaco_id}/dashboard", tags=["Dashboard"])
 @router.get('/resumo')
 def resumo(espaco_id: int, db: Session = Depends(get_db), usuario: Usuario = Depends(obter_usuario_atual)):
     verificar_acesso_espaco(usuario.id, espaco_id, db)
-    return {
-        **saldo_total(db, espaco_id), **service_total_ganhos(db, espaco_id),
-        **service_total_gastos(db, espaco_id), **service_quantidade_movimentacoes(db, espaco_id)
-    }
+    return resumo_dashboard(db, espaco_id)
 
 
 @router.get('/resumo-mensal')
@@ -75,19 +61,24 @@ def resumo_mensal(
 @router.get("/saldo")
 def saldo(espaco_id: int, db: Session = Depends(get_db), usuario: Usuario = Depends(obter_usuario_atual)):
     verificar_acesso_espaco(usuario.id, espaco_id, db)
-    return saldo_total(db, espaco_id)
+    resumo = resumo_dashboard(db, espaco_id)
+    return {"Saldo": resumo["saldo"], "saldo": resumo["saldo"]}
 
 
 @router.get("/total_gastos")
 def total_gastos(espaco_id: int, db: Session = Depends(get_db), usuario: Usuario = Depends(obter_usuario_atual)):
     verificar_acesso_espaco(usuario.id, espaco_id, db)
-    return service_total_gastos(db, espaco_id)
+    resumo = resumo_dashboard(db, espaco_id)
+    total = resumo["total_gastos"]
+    return {"Total Gastos": total, "total_gastos": total}
 
 
 @router.get("/total_ganhos")
 def total_ganhos(espaco_id: int, db: Session = Depends(get_db), usuario: Usuario = Depends(obter_usuario_atual)):
     verificar_acesso_espaco(usuario.id, espaco_id, db)
-    return service_total_ganhos(db, espaco_id)
+    resumo = resumo_dashboard(db, espaco_id)
+    total = resumo["total_ganhos"]
+    return {"Total Ganhos": total, "total_ganhos": total}
 
 
 @router.get("/data/{data}")

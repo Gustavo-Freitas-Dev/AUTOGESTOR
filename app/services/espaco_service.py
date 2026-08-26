@@ -4,7 +4,7 @@ import string
 from fastapi import HTTPException, status
 from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from app.models.enums import PapelMembro, TipoEspaco
 from app.models.espaco_financeiro import EspacoFinanceiro
@@ -97,16 +97,36 @@ def entrar_por_codigo(db: Session, usuario_id: int, codigo: str) -> EspacoFinanc
 
 
 def listar_espacos(db: Session, usuario_id: int) -> list[dict]:
-    vinculos = db.query(MembroEspaco).filter_by(usuario_id=usuario_id).all()
-    return [serializar_espaco(db, vinculo.espaco, vinculo) for vinculo in vinculos]
+    vinculos = (
+        db.query(MembroEspaco)
+        .options(selectinload(MembroEspaco.espaco))
+        .filter_by(usuario_id=usuario_id)
+        .all()
+    )
+    contagens = dict(
+        db.query(MembroEspaco.espaco_id, func.count(MembroEspaco.id))
+        .group_by(MembroEspaco.espaco_id)
+        .all()
+    )
+    return [
+        serializar_espaco(db, vinculo.espaco, vinculo, quantidade_membros=contagens.get(vinculo.espaco_id, 0))
+        for vinculo in vinculos
+    ]
 
 
-def serializar_espaco(db: Session, espaco: EspacoFinanceiro, membro: MembroEspaco) -> dict:
+def serializar_espaco(
+    db: Session,
+    espaco: EspacoFinanceiro,
+    membro: MembroEspaco,
+    quantidade_membros: int | None = None,
+) -> dict:
     administrador = membro.papel in PAPEIS_ADMINISTRATIVOS
+    if quantidade_membros is None:
+        quantidade_membros = db.query(MembroEspaco).filter_by(espaco_id=espaco.id).count()
     return {
         "id": espaco.id, "nome": espaco.nome, "tipo": espaco.tipo,
         "papel": membro.papel,
-        "quantidade_membros": db.query(MembroEspaco).filter_by(espaco_id=espaco.id).count(),
+        "quantidade_membros": quantidade_membros,
         "codigo_acesso": espaco.codigo_acesso if administrador else None,
         "codigo_ativo": espaco.codigo_ativo,
         "limite_membros": espaco.limite_membros,

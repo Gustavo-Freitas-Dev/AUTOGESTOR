@@ -2,7 +2,7 @@ from datetime import date
 from decimal import Decimal
 
 from fastapi import HTTPException, status
-from sqlalchemy import func
+from sqlalchemy import case, func
 from sqlalchemy.orm import Session
 
 from app.models.movimentacao import Movimentacao
@@ -13,36 +13,50 @@ def _to_decimal(valor: Decimal | int | float | None) -> Decimal:
         return Decimal("0.00")
     return Decimal(valor).quantize(Decimal("0.01"))
 
+
+def resumo_dashboard(db: Session, espaco_id: int) -> dict[str, Decimal | int]:
+    ganhos = func.coalesce(
+        func.sum(case((Movimentacao.tipo == "GANHO", Movimentacao.valor), else_=0)),
+        0,
+    )
+    gastos = func.coalesce(
+        func.sum(case((Movimentacao.tipo == "GASTO", Movimentacao.valor), else_=0)),
+        0,
+    )
+    quantidade = func.count(Movimentacao.id)
+    total_ganhos, total_gastos, quantidade_movimentacoes = db.query(
+        ganhos,
+        gastos,
+        quantidade,
+    ).filter(Movimentacao.espaco_id == espaco_id).one()
+
+    total_ganhos_decimal = _to_decimal(total_ganhos)
+    total_gastos_decimal = _to_decimal(total_gastos)
+    saldo = total_ganhos_decimal - total_gastos_decimal
+    return {
+        "Saldo": saldo,
+        "saldo": saldo,
+        "Total Ganhos": total_ganhos_decimal,
+        "total_ganhos": total_ganhos_decimal,
+        "Total Gastos": total_gastos_decimal,
+        "total_gastos": total_gastos_decimal,
+        "Quantidade de movimentações": quantidade_movimentacoes,
+        "quantidade_movimentacoes": quantidade_movimentacoes,
+    }
+
 def saldo_total(db: Session, espaco_id: int):
-    ganhos = db.query(func.sum(Movimentacao.valor)).filter(
-        Movimentacao.tipo == "GANHO",
-        Movimentacao.espaco_id == espaco_id,
-    ).scalar()
-    gastos = db.query(func.sum(Movimentacao.valor)).filter(
-        Movimentacao.tipo == "GASTO",
-        Movimentacao.espaco_id == espaco_id,
-    ).scalar()
-    saldo = _to_decimal(ganhos) - _to_decimal(gastos)
+    resumo = resumo_dashboard(db, espaco_id)
+    saldo = resumo["saldo"]
     return {"Saldo": saldo, "saldo": saldo}
 
 def total_ganhos(db: Session, espaco_id: int):
-
-    total = db.query(func.sum(Movimentacao.valor)).filter(
-        Movimentacao.tipo == "GANHO",
-        Movimentacao.espaco_id == espaco_id,
-    ).scalar()
-
-    total_decimal = _to_decimal(total)
+    resumo = resumo_dashboard(db, espaco_id)
+    total_decimal = resumo["total_ganhos"]
     return {"Total Ganhos": total_decimal, "total_ganhos": total_decimal}
 
 def total_gastos(db: Session, espaco_id: int):
-
-    total = db.query(func.sum(Movimentacao.valor)).filter(
-        Movimentacao.tipo == "GASTO",
-        Movimentacao.espaco_id == espaco_id,
-    ).scalar()
-
-    total_decimal = _to_decimal(total)
+    resumo = resumo_dashboard(db, espaco_id)
+    total_decimal = resumo["total_gastos"]
     return {"Total Gastos": total_decimal, "total_gastos": total_decimal}
 
 def buscar_id(db: Session, id: int, espaco_id: int):
@@ -101,10 +115,6 @@ def buscar_periodo(
     )
 
 def quantidade_movimentacoes(db: Session, espaco_id: int):
-
-    quantidade = db.query(Movimentacao).filter(Movimentacao.espaco_id == espaco_id).count()
-
-    return {
-        "Quantidade de movimentações": quantidade,
-        "quantidade_movimentacoes": quantidade,
-    }
+    resumo = resumo_dashboard(db, espaco_id)
+    quantidade = resumo["quantidade_movimentacoes"]
+    return {"Quantidade de movimentações": quantidade, "quantidade_movimentacoes": quantidade}

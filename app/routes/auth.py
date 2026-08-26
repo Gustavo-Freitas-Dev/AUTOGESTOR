@@ -15,16 +15,16 @@ from sqlalchemy.orm import Session
 from app.core.config import get_settings
 from app.database.auth_dependencies import obter_usuario_atual
 from app.database.dependencies import get_db
-from app.models.usuario_model import Usuario
 from app.models.espaco_financeiro import EspacoFinanceiro
 from app.models.membro_espaco import MembroEspaco
 from app.models.movimentacao import Movimentacao
 from app.models.password_reset_token import PasswordResetToken
+from app.models.usuario_model import Usuario
 from app.schemas.usuario_schemas import (
     AtualizarUsuario,
     CriarUsuario,
-    ExcluirContaRequest,
     EsqueciSenhaRequest,
+    ExcluirContaRequest,
     LoginUsuario,
     MensagemGenerica,
     RedefinirSenhaRequest,
@@ -206,6 +206,15 @@ def cadastrar(
     description="Verifica e-mail e senha e retorna um token JWT válido por 7 dias",
 )
 def login(dado: LoginUsuario, db: Session = Depends(get_db)):
+    started = time.perf_counter()
+    metricas_ms: dict[str, float] = {}
+
+    def _medir(nome: str, fn):
+        t0 = time.perf_counter()
+        resultado = fn()
+        metricas_ms[nome] = (time.perf_counter() - t0) * 1000
+        return resultado
+
     try:
         email_normalizado = normalizar_email(str(dado.email))
     except ValueError as exc:
@@ -214,7 +223,7 @@ def login(dado: LoginUsuario, db: Session = Depends(get_db)):
     logger.info("Tentativa de login", extra={"email_mask": mascarar_email(email_normalizado)})
 
     try:
-        usuario = autenticar_usuario(db, email_normalizado, dado.senha)
+        usuario = _medir("auth_ms", lambda: autenticar_usuario(db, email_normalizado, dado.senha))
     except AuthServiceUnavailableError as exc:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -229,7 +238,14 @@ def login(dado: LoginUsuario, db: Session = Depends(get_db)):
             detail="E-mail ou senha incorretos.",
         )
 
-    token = criar_access_token({"sub": str(usuario.id), "tv": int(usuario.token_version or 0)})
+    token = _medir("token_ms", lambda: criar_access_token({"sub": str(usuario.id), "tv": int(usuario.token_version or 0)}))
+    metricas_ms["endpoint_total_ms"] = (time.perf_counter() - started) * 1000
+    logger.info(
+        "auth.login.metrics auth_ms=%.2f token_ms=%.2f total_ms=%.2f",
+        metricas_ms.get("auth_ms", 0.0),
+        metricas_ms.get("token_ms", 0.0),
+        metricas_ms.get("endpoint_total_ms", 0.0),
+    )
 
     return Token(access_token=token, usuario=usuario)
 
