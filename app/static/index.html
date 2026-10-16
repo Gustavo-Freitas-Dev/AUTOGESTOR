@@ -1100,6 +1100,62 @@
     font-size: 12px;
     padding: 0 4px;
   }
+
+/* AutoGestor Dashboard 3.0 — presentation only; existing API and data remain unchanged */
+:root { --bg:#0b0d19;--surface:#101321;--card:#161929;--border:#292d43;--border2:#343950;--muted:#a0a6bd;--accent:#6857f5;--accent2:#9d90ff;--radius:16px; }
+body {background:radial-gradient(ellipse at 48% -22%,rgba(92,69,228,.17),transparent 55%),var(--bg);}
+header {background:rgba(13,16,29,.96);border-bottom-color:#25283d;}
+.logo {font-size:17px;letter-spacing:-.6px;}
+.logo-icon {width:36px;height:36px;overflow:hidden;border-radius:11px;}
+.logo-icon img {width:100%;height:100%;object-fit:cover;}
+.container {max-width:1500px;grid-template-columns:minmax(0,1fr) 330px;gap:18px;padding:25px 26px 48px;}
+.ag3-welcome {grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:16px;margin:0 0 2px;}
+.ag3-welcome h1 {font-size:clamp(21px,2.4vw,30px);font-weight:800;letter-spacing:-.8px;}
+.ag3-welcome p {font-size:13px;color:var(--muted);margin-top:6px;}
+.ag3-new {border:0;border-radius:11px;padding:14px 22px;background:linear-gradient(110deg,#6553f2,#7662ff);color:white;font:650 13px Inter,sans-serif;cursor:pointer;white-space:nowrap;box-shadow:0 8px 24px #5444da33;}
+.ag3-new:hover {filter:brightness(1.1);}
+.container>.main {grid-column:1;grid-row:2;min-width:0;}
+.container>.sidebar {grid-column:2;grid-row:2;min-width:0;}
+.card,.saldo-card {border:1px solid #292d43;border-radius:15px;background:linear-gradient(145deg,#191c2e,#121522);box-shadow:0 10px 30px #05071325;}
+.card-label {color:#c8cbe0;font-size:11px;letter-spacing:.035em;text-transform:none;font-weight:700;}
+.saldo-grid {gap:12px;}
+.saldo-card {min-height:120px;padding:22px 18px;}
+.saldo-label {font-size:12px;color:#b8bcd0;}
+.saldo-value {font-size:clamp(20px,2.3vw,29px);letter-spacing:-.7px;}
+.saldo-card:last-child {background:linear-gradient(130deg,#27205a,#191b32);border-color:#40357d;}
+.sidebar>.card:first-child {border-color:#443d75;}
+.ag3-form-title {display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.ag3-close {border:1px solid var(--border2);background:transparent;color:var(--text);padding:5px 9px;border-radius:8px;cursor:pointer;}
+.ag3-mobile-nav {display:none;}
+@media (max-width:900px) {
+ .container {grid-template-columns:minmax(0,1fr);padding:20px 16px 95px;gap:14px;}
+ .ag3-welcome {grid-column:1;grid-row:1;}
+ .container>.main {grid-column:1;grid-row:2;}
+ .container>.sidebar {grid-column:1;grid-row:3;}
+ .ag3-welcome h1 {font-size:22px;}
+ .ag3-welcome p {font-size:11px;line-height:1.5;}
+ .ag3-new {padding:12px 14px;font-size:12px;}
+ .saldo-grid {grid-template-columns:1fr 1fr !important;gap:9px;}
+ .saldo-card {min-height:94px;padding:16px 13px;}
+ .saldo-card:last-child {grid-column:1/-1;grid-row:1;min-height:122px;}
+ .saldo-value {font-size:20px;}
+ .saldo-card:last-child .saldo-value {font-size:29px;}
+ .sidebar>.card:first-child {display:none;}
+ .sidebar.ag3-form-open>.card:first-child {display:block;}
+ .ag3-mobile-nav {position:fixed;bottom:0;left:0;right:0;z-index:110;display:flex;justify-content:space-around;align-items:center;background:#141727f5;border-top:1px solid #33374e;padding:10px 8px calc(10px + env(safe-area-inset-bottom));backdrop-filter:blur(14px);}
+ .ag3-mobile-nav button {background:transparent;border:0;color:#b3b6cb;font:600 11px Inter,sans-serif;padding:8px 10px;cursor:pointer;}
+ .ag3-mobile-nav button.active {color:#a99dff;}
+ .ag3-mobile-nav button.primary {width:46px;height:46px;border-radius:50%;background:#6957f5;color:white;font-size:27px;box-shadow:0 5px 18px #6957f566;}
+}
+@media (max-width:520px) {
+ .ag3-welcome {align-items:flex-start;flex-direction:column;}
+ .ag3-new {width:100%;}
+ .container {padding:18px 13px 98px;}
+ .card {padding:16px;}
+ .saldo-card {padding:14px 11px;}
+ .saldo-value {font-size:17px;}
+ .saldo-card:last-child .saldo-value {font-size:27px;}
+}
 </style>
 
 <!--
@@ -1426,13 +1482,17 @@
 </div>
 
 <div class="container">
+  <section class="ag3-welcome" aria-label="Visão geral financeira">
+    <div><h1>Seu dinheiro, com clareza.</h1><p>Acompanhe seus resultados e organize suas movimentações.</p></div>
+    <button type="button" class="ag3-new" onclick="ag3AbrirRegistro()">＋ Nova movimentação</button>
+  </section>
 
   <!-- SIDEBAR -->
   <div class="sidebar">
 
     <!-- FORM (nunca tem skeleton — o form é local, não depende da API) -->
     <div class="card">
-      <div class="card-label">Nova movimentação</div>
+      <div class="card-label ag3-form-title"><span>Nova movimentação</span><button type="button" class="ag3-close" onclick="ag3FecharRegistro()" aria-label="Fechar formulário">✕</button></div>
       <div class="tipo-toggle">
         <button class="tipo-btn ganho active" id="btn-ganho" onclick="setTipo('GANHO')">↑ Ganho</button>
         <button class="tipo-btn gasto" id="btn-gasto" onclick="setTipo('GASTO')">↓ Gasto</button>
@@ -3693,7 +3753,26 @@ document.addEventListener('keydown', function(e) {
   }
 });
 
-inicializarAplicacao();
+
+// Dashboard 3.0: reuses the original registration form and save handlers.
+function ag3AbrirRegistro(tipo) {
+  const sidebar=document.querySelector('.container>.sidebar');
+  if(!sidebar)return;
+  sidebar.classList.add('ag3-form-open');
+  if(tipo && typeof setTipo==='function')setTipo(tipo);
+  const card=sidebar.querySelector('.card');
+  if(card)card.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function ag3FecharRegistro() {
+  const sidebar=document.querySelector('.container>.sidebar');
+  if(sidebar)sidebar.classList.remove('ag3-form-open');
+}
+\ninicializarAplicacao();
 </script>
-</body>
+<nav class="ag3-mobile-nav" aria-label="Navegação rápida">
+  <button type="button" class="active" onclick="window.scrollTo({top:0,behavior:'smooth'})">⌂ Início</button>
+  <button type="button" onclick="document.querySelector('.list-header')?.scrollIntoView({behavior:'smooth'})">☷ Movimentações</button>
+  <button type="button" class="primary" aria-label="Nova movimentação" onclick="ag3AbrirRegistro()">＋</button>
+  <button type="button" onclick="document.getElementById('chart-area')?.scrollIntoView({behavior:'smooth'})">▥ Relatórios</button>
+</nav></body>
 </html>
