@@ -55,7 +55,5 @@ def listar_contas(
             Movimentacao.tipo == TipoMovimentacao.GASTO,
         ))
         saldo = Decimal(conta.saldo_inicial) + Decimal(ganhos or 0) - Decimal(gastos or 0)
-        resposta.append(SaldoConta.model_validate(conta, from_attributes=True).model_copy(
-            update={"saldo_atual": saldo}
-        ))
+        resposta.append(SaldoConta(**ContaResposta.model_validate(conta).model_dump(), saldo_atual=saldo))
     return resposta
