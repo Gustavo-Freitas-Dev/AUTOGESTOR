@@ -1095,6 +1095,124 @@
     font-size: 12px;
     padding: 0 4px;
   }
+
+/* Dashboard 2.1 — acabamento visual progressivo, sem alterar dados nem eventos */
+:root {
+  --bg:#0B0D17;
+  --surface:#101320;
+  --card:#161927;
+  --border:#282C40;
+  --border2:#343950;
+  --text:#F4F5FB;
+  --muted:#A4A9C1;
+  --dim:#747C98;
+  --accent:#655CF4;
+  --accent2:#A59BFF;
+  --green:#35D4A0;
+  --red:#FF727D;
+  --radius:16px;
+}
+body {
+  background:radial-gradient(ellipse at 80% -20%,rgba(93,81,210,.085),transparent 46%),var(--bg);
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+header {
+  min-height:72px;
+  background:rgba(14,16,29,.94);
+  border-bottom-color:#292C43;
+  box-shadow:0 4px 26px rgba(0,0,0,.14);
+}
+.logo { font-size:17px; letter-spacing:-.55px; }
+.logo-icon { width:36px; height:36px; border-radius:11px; box-shadow:0 5px 20px rgba(99,92,244,.22); }
+.container { max-width:1380px; grid-template-columns:minmax(300px,350px) minmax(0,1fr); gap:22px; padding:26px 28px 46px; }
+.sidebar,.main { min-width:0; }
+.card,.saldo-card,.mov-item {
+  border-color:var(--border);
+  box-shadow:0 6px 24px rgba(0,0,0,.10);
+}
+.card { padding:22px; }
+.card-label {
+  color:#A9ADC8;
+  font-size:11px;
+  letter-spacing:.085em;
+  margin-bottom:17px;
+}
+.field label { color:#AEB4CC; font-size:11px; font-weight:650; }
+.field input,.field select { min-height:43px; color:var(--text); }
+.field input::placeholder { color:#777E99; }
+.field input:focus-visible,.field select:focus-visible,
+button:focus-visible,.sort-select:focus-visible {
+  outline:2px solid #938AFF;
+  outline-offset:2px;
+}
+.btn-primary { min-height:45px; border-radius:10px; font-weight:700; }
+.saldo-grid { gap:12px; margin-bottom:6px; }
+.saldo-card { padding:20px; border-radius:15px; min-width:0; }
+.saldo-card:last-child {
+  background:linear-gradient(135deg,rgba(66,54,161,.24),rgba(24,27,46,.98));
+  border-color:#3D396B;
+}
+.saldo-label { color:#BEC2D9; font-size:11px; letter-spacing:.04em; margin-bottom:10px; }
+.saldo-value { font-size:clamp(18px,2vw,27px); line-height:1.25; letter-spacing:-.7px; overflow-wrap:anywhere; }
+.saldo-value.neutral { color:#C2BBFF; }
+.stat-card { padding:15px; border-color:#292D40; }
+.stat-label { color:#ADB2CA; }
+.stat-value { font-size:clamp(16px,1.6vw,22px); overflow-wrap:anywhere; }
+.stat-sub { color:#9FA6BD; }
+.chart-cat,.chart-pct { color:#C0C4D7; font-size:11px; }
+.chart-bar-bg { height:9px; background:#262A40; }
+.chart-row { margin-bottom:12px; }
+.list-header { gap:10px; margin-top:4px; }
+.list-title { font-size:16px; letter-spacing:-.25px; }
+.list-count { color:#ABB0C9; }
+.filter-btn { min-height:33px; color:#B8BDD3; }
+.sort-select { min-height:36px; }
+.mov-item {
+  padding:15px 16px;
+  margin-bottom:9px;
+  border-radius:13px;
+  transition:border-color .16s, background .16s, transform .16s;
+}
+.mov-item:hover { background:#1B1E2E; border-color:#43445E; }
+.mov-left { min-width:0; flex:1; }
+.mov-right { flex-shrink:0; }
+.mov-desc { font-size:13px; font-weight:650; line-height:1.4; overflow-wrap:anywhere; }
+.mov-meta { row-gap:5px; }
+.mov-date { color:#9DA3BC; }
+.mov-badge { color:#B7BDD5; }
+.mov-value { font-size:14px; white-space:nowrap; }
+.btn-delete { min-width:34px; min-height:34px; }
+@media (max-width:1100px) {
+  .container { grid-template-columns:minmax(265px,315px) minmax(0,1fr); gap:16px; padding:22px 18px 40px; }
+  .card { padding:18px; }
+  .saldo-card { padding:15px; }
+}
+@media (max-width:760px) {
+  .container { display:flex; flex-direction:column; gap:20px; padding:16px 14px calc(38px + env(safe-area-inset-bottom)); }
+  .sidebar,.main { width:100%; }
+  .main { gap:14px; }
+  .saldo-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .saldo-grid > :last-child { grid-column:1 / -1; }
+  .saldo-card { padding:17px; }
+  .saldo-value { font-size:clamp(19px,5vw,25px); }
+  .mov-item { padding:13px 12px; gap:8px; }
+  .mov-left { gap:9px; }
+  .mov-right { gap:8px; }
+  .mov-desc { font-size:12px; }
+  .mov-value { font-size:12px; }
+  .chart-cat { width:75px; }
+}
+@media (max-width:390px) {
+  .container { padding-left:10px; padding-right:10px; }
+  .saldo-card { padding:13px; }
+  .saldo-value { font-size:18px; }
+  .mov-right { gap:5px; }
+  .mov-icon { width:32px; height:32px; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .mov-item,.chart-bar-fill { transition:none !important; animation:none !important; }
+}
 </style>
 
 <!--
@@ -1624,7 +1742,7 @@
         <div class="saldo-value red" id="saldo-gastos">R$ 0,00</div>
       </div>
       <div class="saldo-card">
-        <div class="saldo-label">Saldo líquido</div>
+        <div class="saldo-label">Resultado do período</div>
         <div class="saldo-value neutral" id="saldo-liquido">R$ 0,00</div>
       </div>
     </div>
