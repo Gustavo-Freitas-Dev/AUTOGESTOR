@@ -1,6 +1,6 @@
 """Create accounts and optional account link for existing movements."""
-import sqlalchemy as sa
 from alembic import op
+import sqlalchemy as sa
 
 revision = "20261016_01"
 down_revision = "20260825_03"
