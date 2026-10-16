@@ -15,6 +15,7 @@ class CriarMovimentacao(BaseModel):
     descricao: str | None = Field(default=None, max_length=255)
     valor: Decimal = Field(gt=0, max_digits=12, decimal_places=2)
     data: date
+    conta_id: int | None = None
 
 
 class AtualizarMovimentacao(BaseModel):
@@ -23,6 +24,7 @@ class AtualizarMovimentacao(BaseModel):
     descricao: str | None = Field(default=None, max_length=255)
     valor: Decimal = Field(gt=0, max_digits=12, decimal_places=2)
     data: date
+    conta_id: int | None = None
 
 
 class MovimentacaoResposta(BaseModel):
@@ -36,6 +38,7 @@ class MovimentacaoResposta(BaseModel):
     descricao: str | None
     valor: Decimal
     data: date
+    conta_id: int | None = None
 
 
 class ResumoFinanceiro(BaseModel):
