@@ -50,8 +50,8 @@ def resumo_mensal(
         db, data_inicio, data_fim, espaco_id, fim_exclusivo=True
     )
 
-    ganhos = sum(mov.valor for mov in movimentos if str(mov.tipo) == 'GANHO')
-    gastos = sum(mov.valor for mov in movimentos if str(mov.tipo) == 'GASTO')
+    ganhos = sum(mov.valor for mov in movimentos if mov.tipo.value == 'GANHO')
+    gastos = sum(mov.valor for mov in movimentos if mov.tipo.value == 'GASTO')
     return {
         'ano': ano,
         'mes': mes,
