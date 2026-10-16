@@ -1,4 +1,13 @@
-from sqlalchemy import Column, Date, Enum, ForeignKey, ForeignKeyConstraint, Integer, Numeric, String
+from sqlalchemy import (
+    Column,
+    Date,
+    Enum,
+    ForeignKey,
+    ForeignKeyConstraint,
+    Integer,
+    Numeric,
+    String,
+)
 from sqlalchemy.orm import relationship
 
 from app.database.base import Base
