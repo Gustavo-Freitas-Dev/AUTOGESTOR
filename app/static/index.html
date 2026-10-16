@@ -1216,6 +1216,48 @@ header {background:rgba(13,16,29,.96);border-bottom-color:#25283d;}
  #lista {font-size:12px;}
  #lista button {min-width:30px;min-height:32px;}
 }
+
+/* Movimentações recentes — compacto, com ações preservadas */
+.list-header {gap:12px;margin-top:5px;align-items:center;}
+.ag3-list-heading {display:flex;flex-direction:column;gap:4px;}
+.ag3-list-heading .list-title {font-size:16px;font-weight:750;letter-spacing:-.35px;}
+.ag3-list-subtitle {font-size:11px;color:#989eb6;}
+.ag3-see-all {background:transparent;border:0;color:#a79aff;font:700 12px Inter,sans-serif;white-space:nowrap;cursor:pointer;padding:9px 6px;}
+.ag3-see-all:hover {color:white;}
+.ag3-see-all[hidden] {display:none;}
+#lista {border:1px solid #2b2e44;border-radius:15px;background:linear-gradient(145deg,#181b2c,#111422);padding:4px 16px;}
+#lista .mov-item {background:transparent;border:0;border-bottom:1px solid #2a2d41;border-radius:0;margin:0;padding:13px 0;min-height:67px;box-shadow:none;gap:12px;}
+#lista .mov-item:last-child {border-bottom:0;}
+#lista .mov-item:hover {background:#ffffff05;}
+#lista .mov-left {min-width:0;flex:1;gap:11px;}
+#lista .mov-left>div:last-child {min-width:0;}
+#lista .mov-icon {width:40px;height:40px;border-radius:11px;font-size:20px;}
+#lista .mov-desc {font-size:13px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+#lista .mov-badge {font-size:9px;padding:1px 5px;}
+#lista .mov-date {font-size:10px;}
+#lista .mov-right {gap:12px;flex-shrink:0;}
+#lista .mov-value {font-size:13px;font-weight:750;}
+#lista .mov-value-label {font-size:10px;}
+.ag3-item-actions {position:relative;}
+.ag3-item-menu {width:32px;height:34px;display:grid;place-items:center;border:1px solid transparent;border-radius:9px;background:transparent;color:#aaaec7;font-size:22px;cursor:pointer;}
+.ag3-item-menu:hover,.ag3-item-menu[aria-expanded="true"] {background:#282b40;color:white;}
+.ag3-item-menu-panel:not([hidden]) {display:flex;position:absolute;right:0;top:36px;z-index:30;min-width:128px;flex-direction:column;gap:3px;padding:6px;background:#22263b;border:1px solid #40445d;border-radius:11px;box-shadow:0 12px 30px #0009;}
+.ag3-item-menu-panel[hidden] {display:none;}
+.ag3-item-menu-panel .btn-edit,.ag3-item-menu-panel .btn-delete {display:flex;align-items:center;justify-content:flex-start;width:100%;height:34px;padding:0 11px;background:transparent;border:0;border-radius:7px;color:#e3e4f1;font:600 12px Inter,sans-serif;white-space:nowrap;cursor:pointer;}
+.ag3-item-menu-panel .btn-delete {color:#ff919b;}
+.ag3-item-menu-panel .btn-edit:hover,.ag3-item-menu-panel .btn-delete:hover {background:#ffffff12;}
+@media(max-width:520px) {
+ #lista {padding:3px 11px;}
+ #lista .mov-item {padding:11px 0;min-height:64px;gap:5px;}
+ #lista .mov-icon {width:35px;height:35px;font-size:16px;}
+ #lista .mov-left {gap:9px;}
+ #lista .mov-desc {font-size:12px;max-width:175px;}
+ #lista .mov-value {font-size:12px;}
+ #lista .mov-right {gap:3px;}
+ .ag3-list-heading .list-title {font-size:15px;}
+ .ag3-list-subtitle {font-size:10px;}
+ .list-count {display:none;}
+}
 </style>
 
 <!--
@@ -1789,9 +1831,9 @@ header {background:rgba(13,16,29,.96);border-bottom-color:#25283d;}
     </div>
 
     <div class="list-header">
-      <span class="list-title">Movimentações</span>
+      <div class="ag3-list-heading"><span class="list-title">Movimentações recentes</span><span class="ag3-list-subtitle">Suas entradas e saídas em um só lugar</span></div>
       <div style="display:flex; align-items:center; gap:10px;">
-        <span class="list-count" id="list-count"></span>
+        <span class="list-count" id="list-count"></span><button type="button" id="ag3-ver-todas" class="ag3-see-all" onclick="ag3AlternarMovimentacoes()">Ver todas ↗</button>
         <!--
           Dropdown de ordenação. onchange chama setOrdenacao()
           que atualiza o estado e re-renderiza a lista.
@@ -3418,6 +3460,29 @@ function ordenarDados(dados) {
   }
 }
 
+
+let ag3MovimentacoesExpandidas = false;
+function ag3AlternarMovimentacoes() {
+  ag3MovimentacoesExpandidas = !ag3MovimentacoesExpandidas;
+  paginaAtual = 1;
+  renderLista();
+  document.querySelector('.list-header')?.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function ag3ToggleItemMenu(event, button) {
+  event.stopPropagation();
+  const panel = button.nextElementSibling;
+  const wasOpen = !panel.hidden;
+  document.querySelectorAll('.ag3-item-menu-panel').forEach(p => p.hidden = true);
+  document.querySelectorAll('.ag3-item-menu').forEach(b => b.setAttribute('aria-expanded','false'));
+  panel.hidden = wasOpen;
+  button.setAttribute('aria-expanded', String(!wasOpen));
+}
+document.addEventListener('click', event => {
+  if (event.target.closest('.ag3-item-actions')) return;
+  document.querySelectorAll('.ag3-item-menu-panel').forEach(p => p.hidden = true);
+  document.querySelectorAll('.ag3-item-menu').forEach(b => b.setAttribute('aria-expanded','false'));
+});
+
 function renderLista() {
   // getDadosFiltrados() já aplica tipo + período juntos
   const dados = getDadosFiltrados();
@@ -3441,7 +3506,14 @@ function renderLista() {
        estava na página 5, aplicou um filtro que reduziu pra 2 páginas)
     3. Fatia o array (slice) só com os itens da página atual
   */
-  const totalPaginas = Math.max(1, Math.ceil(sorted.length / ITENS_POR_PAGINA));
+  const itensPorPagina = ag3MovimentacoesExpandidas ? ITENS_POR_PAGINA : 5;
+  const botaoVerTodas = document.getElementById('ag3-ver-todas');
+  if (botaoVerTodas) {
+    botaoVerTodas.hidden = sorted.length <= 5 && !ag3MovimentacoesExpandidas;
+    botaoVerTodas.textContent = ag3MovimentacoesExpandidas ? 'Mostrar menos ↑' : 'Ver todas ↗';
+    botaoVerTodas.setAttribute('aria-expanded', String(ag3MovimentacoesExpandidas));
+  }
+  const totalPaginas = Math.max(1, Math.ceil(sorted.length / itensPorPagina));
   if (paginaAtual > totalPaginas) paginaAtual = totalPaginas;
 
   const inicio = (paginaAtual - 1) * ITENS_POR_PAGINA;
@@ -3470,6 +3542,7 @@ function renderLista() {
           <div class="mov-value ${isGanho ? 'green' : 'red'}">${isGanho ? '+' : '-'} ${fmt(m.valor)}</div>
           <div class="mov-value-label">${isGanho ? 'entrada' : 'saída'}</div>
         </div>
+        <div class="ag3-item-actions"><button type="button" class="ag3-item-menu" aria-label="Ações de ${escaparHtml(m.descricao || m.categoria)}" aria-expanded="false" onclick="ag3ToggleItemMenu(event, this)">⋯</button><div class="ag3-item-menu-panel" hidden>
         <button class="btn-edit btn-edit-item"
           data-id="${m.id}"
           data-categoria="${escaparHtml(m.categoria)}"
@@ -3477,13 +3550,13 @@ function renderLista() {
           data-valor="${m.valor}"
           data-tipo="${m.tipo}"
           data-data="${m.data}"
-          title="Editar">✎</button>
+          title="Editar">✎ Editar</button>
         <button class="btn-delete btn-del-item"
           data-id="${m.id}"
           data-desc="${escaparHtml(m.descricao || m.categoria)}"
           data-valor="${m.valor}"
           data-tipo="${m.tipo}"
-          title="Excluir">✕</button>
+          title="Excluir">✕ Excluir</button></div></div>
       </div>`;
     lista.appendChild(div);
   });
