@@ -1,4 +1,13 @@
-from sqlalchemy import Column, Date, Enum, ForeignKey, Integer, Numeric, String
+from sqlalchemy import (
+    Column,
+    Date,
+    Enum,
+    ForeignKey,
+    ForeignKeyConstraint,
+    Integer,
+    Numeric,
+    String,
+)
 from sqlalchemy.orm import relationship
 
 from app.database.base import Base
@@ -7,6 +16,7 @@ from app.schemas.movimentacao_schemas import TipoMovimentacao
 
 class Movimentacao(Base):
     __tablename__ = "movimentacoes"
+    __table_args__ = (ForeignKeyConstraint(["conta_id", "espaco_id"], ["contas_financeiras.id", "contas_financeiras.espaco_id"], name="fk_movimentacoes_conta_espaco"),)
 
     id = Column(Integer, primary_key=True)
 
@@ -23,6 +33,7 @@ class Movimentacao(Base):
     espaco_id = Column(Integer, ForeignKey("espacos_financeiros.id", ondelete="CASCADE"), nullable=False, index=True)
     criado_por_id = Column(Integer, ForeignKey("usuarios.id", ondelete="RESTRICT"), nullable=False, index=True)
 
+    conta_id = Column(Integer, nullable=True, index=True)
     tipo = Column(Enum(TipoMovimentacao), nullable=False)       # GANHO ou GASTO
     categoria = Column(String, nullable=False)
     descricao = Column(String)
