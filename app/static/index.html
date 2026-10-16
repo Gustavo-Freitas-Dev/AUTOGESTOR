@@ -1160,6 +1160,62 @@ header {background:rgba(13,16,29,.96);border-bottom-color:#25283d;}
  .saldo-value {font-size:17px;}
  .saldo-card:last-child .saldo-value {font-size:27px;}
 }
+
+/* Dashboard 3.1: responsive visual refinement without changing financial calculations */
+:root {--ag3-panel:#171a2a;--ag3-outline:#292d43;--ag3-soft:#a6abc0;}
+.ag3-welcome h1 {font-weight:800;letter-spacing:-.85px;}
+.ag3-welcome p {color:#a6abc0;}
+.container>.main {display:flex;flex-direction:column;gap:14px;}
+#real-saldo {gap:14px;}
+#real-saldo .saldo-card {position:relative;overflow:hidden;min-height:128px;display:flex;flex-direction:column;justify-content:center;gap:9px;border-color:#2c3049;}
+#real-saldo .saldo-card:nth-child(1):before,#real-saldo .saldo-card:nth-child(2):before {content:"";position:absolute;right:17px;top:17px;width:32px;height:32px;border-radius:10px;background:#1e3d383b;}
+#real-saldo .saldo-card:nth-child(2):before {background:#49242b65;}
+#real-saldo .saldo-card:last-child {background:linear-gradient(115deg,#28215b,#191a31 78%);border-color:#44397e;}
+#real-saldo .saldo-card:last-child:after {content:"Entradas − Saídas";color:#a8a2ce;font-size:11px;}
+#real-saldo .saldo-label {font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#aeb2c9;}
+#real-saldo .saldo-value {font-weight:800;letter-spacing:-.8px;}
+.container .top-bar {background:#151827;border:1px solid #292d43;border-radius:14px;padding:14px!important;margin:0!important;gap:12px!important;}
+.container .filter-bar,.container .filter-row {gap:7px;flex-wrap:wrap;}
+.container .filter-btn {border-radius:9px;font-size:12px;}
+#lista {min-width:0;}
+#lista .movimentacao,#lista .mov-item,#lista .transaction-item {border-radius:12px;}
+.ag3-mobile-nav {box-shadow:0 -10px 35px #06071399;}
+@media(min-width:901px) {
+ .container {grid-template-columns:minmax(0,1fr) 350px;align-items:start;}
+ .container>.main {grid-column:1;grid-row:2;}
+ .container>.sidebar {grid-column:2;grid-row:2;}
+ #real-saldo {grid-template-columns:repeat(3,minmax(0,1fr));}
+ #real-saldo .saldo-card:last-child {grid-column:auto;grid-row:auto;}
+}
+@media(max-width:900px) {
+ .container {max-width:720px;margin:auto;padding:20px 17px 110px;display:grid;grid-template-columns:minmax(0,1fr);}
+ .container>.main {gap:12px;}
+ .ag3-welcome {gap:14px;}
+ .ag3-welcome h1 {font-size:24px;line-height:1.2;}
+ .ag3-welcome p {font-size:12px;}
+ .ag3-new {width:100%;height:46px;border-radius:12px;font-size:13px;font-weight:700;}
+ #real-saldo {display:grid;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px;}
+ #real-saldo .saldo-card {min-width:0;min-height:104px;padding:17px 15px;}
+ #real-saldo .saldo-card:last-child {grid-column:1/-1;grid-row:1;min-height:135px;padding:22px 20px;}
+ #real-saldo .saldo-card:last-child .saldo-value {font-size:32px;}
+ #real-saldo .saldo-value {font-size:21px;}
+ .container .top-bar {padding:12px!important;gap:9px!important;}
+ .container .filter-btn {padding:8px 12px;}
+ .ag3-mobile-nav {height:70px;padding:7px 12px calc(7px + env(safe-area-inset-bottom));}
+ .ag3-mobile-nav button {display:flex;align-items:center;flex-direction:column;gap:4px;font-size:10px;}
+ .ag3-mobile-nav button.primary {display:grid;place-items:center;flex-direction:initial;width:52px;height:52px;font-size:28px;}
+}
+@media(max-width:520px) {
+ .container {padding:18px 12px 100px;}
+ .ag3-welcome h1 {font-size:21px;}
+ .ag3-welcome p {font-size:11px;}
+ #real-saldo .saldo-card {padding:14px 12px;min-height:98px;}
+ #real-saldo .saldo-value {font-size:18px;}
+ #real-saldo .saldo-card:last-child .saldo-value {font-size:29px;}
+ .container .top-bar {padding:10px!important;}
+ #lista {font-size:12px;}
+ #lista button {min-width:30px;min-height:32px;}
+}
 </style>
 
 <!--
