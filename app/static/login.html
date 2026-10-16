@@ -440,6 +440,82 @@ body {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
 }
+
+/* Pixel-directed 2026 login layout — aligned with approved reference */
+:root { --bg:#080913; --surface:#0e0f1b; --card:#131422; --border:#272941; --border2:#30314c; --text:#f5f5fc; --muted:#a3a5bd; --dim:#737791; --accent:#625cff; --accent2:#8b80ff; }
+body { background:radial-gradient(ellipse at 16% 2%,#17173b 0%,transparent 43%),#090a14; overflow-x:hidden; }
+.bg-glow { display:none; }
+.auth-layout { width:min(1420px,calc(100% - 80px)); grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:clamp(55px,8vw,145px); min-height:100dvh; padding:50px 12px; }
+.auth-intro { min-height:760px; }
+.intro-brand { display:flex; align-items:center; gap:15px; font-size:27px; }
+.intro-brand strong { color:#7f74ff; }
+.intro-brand .brand-icon.small { width:44px; height:44px; border-radius:12px; font-size:22px; margin:0; }
+.intro-content { max-width:550px; }
+.intro-eyebrow { padding:9px 13px; background:#17162f; border-color:#242443; }
+.intro-content h1 { font-size:clamp(42px,4.2vw,65px); letter-spacing:-2px; line-height:1.13; margin:24px 0 18px; }
+.intro-content h1 em { color:#857aff; }
+.intro-content > p { max-width:490px; font-size:17px; line-height:1.7; }
+.intro-features { gap:22px; margin-top:30px; }
+.intro-feature { gap:15px; }
+.intro-feature strong { font-size:14px; }
+.intro-feature small { font-size:12px; }
+.feature-icon { width:52px; height:52px; background:#211e49; border-radius:13px; color:#9b8cff; font-weight:800; }
+.intro-dots { display:flex; gap:10px; }
+.intro-dots span { height:10px; width:10px; border-radius:50%; background:#3d405d; }
+.intro-dots span.selected { background:#756aff; }
+.auth-wrap { max-width:480px; width:100%; }
+.auth-card { padding:36px 37px 28px; border:1px solid #292b45; border-radius:19px; background:linear-gradient(155deg,#171827,#11121f); }
+.brand { margin-bottom:30px; }
+.brand-icon { font-size:26px; }
+.brand-name { font-size:26px; }
+.brand-sub { font-size:13px; }
+.auth-toggle { margin-bottom:28px; }
+.field { margin-bottom:17px; }
+.field label { color:#c1c3d6; }
+.input-shell { position:relative; }
+.input-shell > svg { position:absolute; left:15px; top:50%; transform:translateY(-50%); width:19px; height:19px; fill:none; stroke:#e0e0f1; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; pointer-events:none; z-index:1; }
+.input-shell input { padding-left:45px; }
+.field.password-field .input-shell input { padding-right:45px; }
+.toggle-password { top:38px; right:12px; }
+.login-options { display:flex; justify-content:space-between; align-items:center; gap:10px; margin:8px 0 18px; }
+.remember { display:flex; align-items:center; gap:8px; font-size:12px; white-space:nowrap; color:#e2e1f1; cursor:pointer; }
+.remember input { width:15px; height:15px; accent-color:#675cff; cursor:pointer; }
+.login-options .auth-link { margin:0; }
+.login-options .auth-link button { white-space:nowrap; }
+.btn-submit { min-height:49px; }
+.btn-submit > span:last-child { font-size:21px; font-weight:400; line-height:1; }
+.social-area { margin-top:22px; }
+.social-divider { display:flex; align-items:center; gap:15px; color:#a5a8bf; font-size:12px; white-space:nowrap; margin-bottom:20px; }
+.social-divider:before,.social-divider:after { content:""; height:1px; background:#32344b; flex:1; }
+.social-buttons { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.social-buttons button { min-height:49px; border:1px solid #3a3c59; border-radius:11px; background:#10111e; color:#f4f4fa; display:flex; align-items:center; justify-content:center; gap:10px; font-size:13px; font-weight:600; font-family:inherit; opacity:.65; cursor:not-allowed; }
+.google-g { font-size:22px; font-weight:800; color:#4285f4; text-shadow:-2px -1px #ea4335,2px 1px #34a853; }
+.apple-mark { font-size:23px; color:#fff; }
+.card-footer { margin-top:26px; text-align:center; color:#9c9db6; font-size:11px; }
+.auth-footer { display:none; }
+.mobile-benefits { display:none; }
+@media (max-width:900px) {
+  .auth-layout { width:min(480px,calc(100% - 32px)); padding:36px 0 0; justify-content:center; min-height:100dvh; }
+  .auth-intro { display:none; }
+  .auth-wrap { width:100%; }
+  .auth-card { padding:25px 22px 24px; }
+  .brand { margin-bottom:27px; }
+  .card-footer { display:none; }
+  .auth-footer { display:block; margin-top:18px; }
+  .mobile-benefits { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:34px; padding:20px 10px 28px; border-radius:50% 50% 0 0 / 22% 22% 0 0; background:linear-gradient(145deg,rgba(35,30,94,.85),rgba(16,16,41,.6)); text-align:center; }
+  .mobile-benefits div { font-size:11px; line-height:1.4; color:#d5d5eb; }
+  .mobile-benefits span { display:grid; place-items:center; width:37px; height:37px; margin:0 auto 9px; border-radius:11px; background:#27235b; color:#aa9dff; font-size:22px; }
+}
+@media (max-width:420px) {
+  .auth-layout { width:calc(100% - 24px); padding-top:24px; }
+  .auth-card { padding:21px 17px; }
+  .brand-icon { width:51px; height:51px; }
+  .brand-name { font-size:23px; }
+  .social-buttons { gap:8px; }
+  .login-options { gap:6px; }
+  .remember,.login-options .auth-link button { font-size:11px; }
+}
+@media (max-height:730px) and (max-width:900px) { .auth-layout { justify-content:flex-start; } .mobile-benefits { margin-top:20px; } }
 </style>
 </head>
 <body>
@@ -449,110 +525,61 @@ body {
 
 <main class="auth-layout">
 <section class="auth-intro" aria-label="Apresentação do AutoGestor">
-  <div class="intro-brand"><span class="intro-mark" aria-hidden="true">◈</span> Auto<span>Gestor</span></div>
+  <div class="intro-brand"><span class="brand-icon small" aria-hidden="true">💼</span><span>Auto<strong>Gestor</strong></span></div>
   <div class="intro-content">
-    <span class="intro-eyebrow"><span class="intro-dot"></span> Seu dinheiro, com mais clareza</span>
-    <h1>Controle suas finanças de forma <em>simples e inteligente.</em></h1>
-    <p>Organize receitas, despesas e contas em um só lugar. Entenda seus resultados e tenha mais tranquilidade para decidir.</p>
+    <span class="intro-eyebrow"><span class="intro-dot"></span> Seus dados sempre com você</span>
+    <h1>Controle<br>suas finanças<br>de forma <em>simples<br>e inteligente</em></h1>
+    <p>Organize seus ganhos, gastos e contas em um só lugar. Tenha clareza da sua vida financeira e tome melhores decisões todos os dias.</p>
     <div class="intro-features">
-      <div class="intro-feature"><span class="feature-icon" aria-hidden="true">▥</span><div><strong>Acompanhe seus resultados</strong><small>Seus números mais importantes em um painel.</small></div></div>
-      <div class="intro-feature"><span class="feature-icon" aria-hidden="true">▤</span><div><strong>Organize suas movimentações</strong><small>Registre ganhos e gastos com praticidade.</small></div></div>
-      <div class="intro-feature"><span class="feature-icon" aria-hidden="true">◇</span><div><strong>Planeje com confiança</strong><small>Visualize sua evolução financeira.</small></div></div>
+      <div class="intro-feature"><span class="feature-icon" aria-hidden="true">▥</span><div><strong>Acompanhe seus resultados</strong><small>Veja saldo, receitas e despesas em tempo real</small></div></div>
+      <div class="intro-feature"><span class="feature-icon" aria-hidden="true">▰</span><div><strong>Organize suas contas</strong><small>Bancos, carteiras e separação por ambiente</small></div></div>
+      <div class="intro-feature"><span class="feature-icon" aria-hidden="true">◆</span><div><strong>Classifique seus gastos</strong><small>Categorias personalizadas para sua rotina</small></div></div>
+      <div class="intro-feature"><span class="feature-icon" aria-hidden="true">⬟</span><div><strong>Seus dados protegidos</strong><small>Acesso seguro e privacidade garantida</small></div></div>
     </div>
   </div>
-  <div class="intro-bottom">AUTOGESTOR <span>·</span> SEU CONTROLE FINANCEIRO</div>
+  <div class="intro-dots" aria-hidden="true"><span class="selected"></span><span></span><span></span></div>
 </section>
-<div class="auth-wrap">
-
-  <div class="brand">
-    <div class="brand-icon" aria-hidden="true">◈</div>
-    <div class="brand-name">Auto<span>Gestor</span></div>
-    <div class="brand-sub">Seu espaço para organizar suas finanças</div>
-  </div>
-
+<section class="auth-wrap" aria-label="Acesso à conta">
   <div class="auth-card">
-
-    <!-- Toggle Entrar / Criar conta -->
+    <div class="brand">
+      <div class="brand-icon" aria-hidden="true">💼</div>
+      <div class="brand-name">Auto<span>Gestor</span></div>
+      <div class="brand-sub">Controle financeiro pessoal</div>
+    </div>
     <div class="auth-toggle">
       <button type="button" class="active" id="tab-login" onclick="trocarAba('login')">Entrar</button>
       <button type="button" id="tab-cadastro" onclick="trocarAba('cadastro')">Criar conta</button>
     </div>
-
-    <!-- Mensagem de erro genérica, reaproveitada pelos dois formulários -->
-    <div class="auth-error" id="auth-error">
-      <span>⚠</span>
-      <span id="auth-error-text">Erro</span>
-    </div>
-    <div class="auth-info" id="auth-info">
-      <span>⏳</span>
-      <span id="auth-info-text">Aguarde...</span>
-    </div>
-
-    <!-- ═══════════════ FORMULÁRIO DE LOGIN ═══════════════ -->
+    <div class="auth-error" id="auth-error" role="alert"><span>⚠</span><span id="auth-error-text">Erro</span></div>
+    <div class="auth-info" id="auth-info"><span>⏳</span><span id="auth-info-text">Aguarde...</span></div>
     <form id="form-login" onsubmit="return false;">
       <div class="field">
-        <label>E-mail</label>
-        <input type="email" id="login-email" placeholder="seu@email.com" autocomplete="email">
+        <label for="login-email">E-MAIL</label>
+        <div class="input-shell"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg><input type="email" id="login-email" placeholder="seu@email.com" autocomplete="email"></div>
       </div>
       <div class="field password-field">
-        <label>Senha</label>
-        <input type="password" id="login-senha" placeholder="••••••••" autocomplete="current-password">
+        <label for="login-senha">SENHA</label>
+        <div class="input-shell"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><input type="password" id="login-senha" placeholder="••••••••" autocomplete="current-password"></div>
         <button type="button" class="toggle-password" aria-label="Mostrar ou ocultar senha" onclick="alternarSenha('login-senha', this)">👁</button>
       </div>
-
-      <div class="auth-link">
-        <button type="button" onclick="abrirModalRecuperacao()">Esqueci minha senha</button>
-      </div>
-
-      <button type="button" class="btn-submit" id="btn-login" onclick="fazerLogin()">
-        <span class="spinner" id="spinner-login"></span>
-        <span id="btn-login-text">Entrar</span>
-      </button>
+      <div class="login-options"><label class="remember"><input type="checkbox" id="remember-email"> Lembrar de mim</label><div class="auth-link"><button type="button" onclick="abrirModalRecuperacao()">Esqueci minha senha</button></div></div>
+      <button type="button" class="btn-submit" id="btn-login" onclick="fazerLogin()"><span class="spinner" id="spinner-login"></span><span id="btn-login-text">Entrar</span><span aria-hidden="true">→</span></button>
     </form>
-
-    <!-- ═══════════════ FORMULÁRIO DE CADASTRO ═══════════════ -->
     <form id="form-cadastro" style="display:none;" onsubmit="return false;">
-      <div class="field">
-        <label>Nome</label>
-        <input type="text" id="cad-nome" placeholder="Seu nome completo" autocomplete="name">
+      <div class="field"><label for="cad-nome">NOME</label><input type="text" id="cad-nome" placeholder="Seu nome completo" autocomplete="name"></div>
+      <div class="field"><label for="cad-email">E-MAIL</label><input type="email" id="cad-email" placeholder="seu@email.com" autocomplete="email"></div>
+      <div class="field password-field"><label for="cad-senha">SENHA</label><input type="password" id="cad-senha" placeholder="Mínimo 6 caracteres" autocomplete="new-password" oninput="atualizarForcaSenha(this.value)"><button type="button" class="toggle-password" aria-label="Mostrar ou ocultar senha" onclick="alternarSenha('cad-senha', this)">👁</button>
+        <div class="strength-wrap" id="strength-wrap"><div class="strength-bars"><div class="strength-bar" id="bar-1"></div><div class="strength-bar" id="bar-2"></div><div class="strength-bar" id="bar-3"></div></div><span class="strength-label" id="strength-label">Fraca</span></div>
       </div>
-      <div class="field">
-        <label>E-mail</label>
-        <input type="email" id="cad-email" placeholder="seu@email.com" autocomplete="email">
-      </div>
-      <div class="field password-field">
-        <label>Senha</label>
-        <input type="password" id="cad-senha" placeholder="Mínimo 6 caracteres" autocomplete="new-password" oninput="atualizarForcaSenha(this.value)">
-        <button type="button" class="toggle-password" aria-label="Mostrar ou ocultar senha" onclick="alternarSenha('cad-senha', this)">👁</button>
-
-        <!-- Indicador de força da senha — aparece ao digitar -->
-        <div class="strength-wrap" id="strength-wrap">
-          <div class="strength-bars">
-            <div class="strength-bar" id="bar-1"></div>
-            <div class="strength-bar" id="bar-2"></div>
-            <div class="strength-bar" id="bar-3"></div>
-          </div>
-          <span class="strength-label" id="strength-label">Fraca</span>
-        </div>
-      </div>
-
-      <div class="field password-field">
-        <label for="cad-confirmar-senha">Confirmar senha</label>
-        <input type="password" id="cad-confirmar-senha" autocomplete="new-password" placeholder="Repita sua senha" oninput="validarConfirmacaoSenha()">
-        <button type="button" class="toggle-password" aria-label="Mostrar ou ocultar confirmacao de senha" onclick="alternarSenha('cad-confirmar-senha', this)">👁</button>
-        <span class="field-error" id="cad-confirmar-erro" role="alert">As senhas não coincidem.</span>
-      </div>
-
-      <button type="button" class="btn-submit" id="btn-cadastro" onclick="fazerCadastro()">
-        <span class="spinner" id="spinner-cadastro"></span>
-        <span id="btn-cadastro-text">Criar conta</span>
-      </button>
+      <div class="field password-field"><label for="cad-confirmar-senha">CONFIRMAR SENHA</label><input type="password" id="cad-confirmar-senha" autocomplete="new-password" placeholder="Repita sua senha" oninput="validarConfirmacaoSenha()"><button type="button" class="toggle-password" aria-label="Mostrar ou ocultar confirmação de senha" onclick="alternarSenha('cad-confirmar-senha', this)">👁</button><span class="field-error" id="cad-confirmar-erro" role="alert">As senhas não coincidem.</span></div>
+      <button type="button" class="btn-submit" id="btn-cadastro" onclick="fazerCadastro()"><span class="spinner" id="spinner-cadastro"></span><span id="btn-cadastro-text">Criar conta</span></button>
     </form>
-
+    <div class="social-area" id="social-area"><div class="social-divider"><span>ou continue com</span></div><div class="social-buttons"><button type="button" disabled title="Login com Google em breve"><span class="google-g">G</span>Google</button><button type="button" disabled title="Login com Apple em breve"><span class="apple-mark">●</span>Apple</button></div></div>
+    <div class="card-footer">AutoGestor © 2026 — seus dados ficam só com você</div>
   </div>
-
-  <div class="auth-footer">AutoGestor © 2026 · Controle financeiro em suas mãos</div>
-</div>
+  <div class="auth-footer">AutoGestor © 2026 — seus dados ficam só com você</div>
+  <div class="mobile-benefits" aria-label="Benefícios"><div><span>▥</span>Organize<br>seus ganhos</div><div><span>▰</span>Controle<br>seus gastos</div><div><span>⬟</span>Tenha seus<br>dados seguros</div></div>
+</section>
 </main>
 
 <div class="modal-backdrop" id="modal-recuperacao" aria-hidden="true">
@@ -853,6 +880,9 @@ async function fazerLogin() {
       return;
     }
 
+    const remember = document.getElementById('remember-email');
+    if (remember?.checked) localStorage.setItem('autogestor_ultimo_email', email);
+    else localStorage.removeItem('autogestor_ultimo_email');
     salvarSessao(corpo);
     redirecionarAposLogin();
 
@@ -940,6 +970,12 @@ async function fazerCadastro() {
     esconderInfo();
     setCarregando('btn-cadastro', 'spinner-cadastro', 'btn-cadastro-text', false, 'Criar conta');
   }
+}
+
+const ultimoEmail = localStorage.getItem('autogestor_ultimo_email');
+if (ultimoEmail) {
+  document.getElementById('login-email').value = ultimoEmail;
+  document.getElementById('remember-email').checked = true;
 }
 
 // Permite enviar o formulário de login apertando Enter no campo de senha
