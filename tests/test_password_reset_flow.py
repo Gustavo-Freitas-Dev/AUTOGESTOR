@@ -203,8 +203,8 @@ def test_redefinicao_simultanea_consumo_unico_do_token(client, db, monkeypatch, 
 
     engine = create_engine('sqlite:///' + str(tmp_path / 'reset.db'), connect_args=dict(check_same_thread=False, timeout=30))
     from app.database.base import Base
-    from app.models.usuario_model import Usuario
     from app.models.password_reset_token import PasswordResetToken
+    from app.models.usuario_model import Usuario
     Base.metadata.create_all(engine)
     from sqlalchemy.orm import Session
     with Session(engine) as target:
