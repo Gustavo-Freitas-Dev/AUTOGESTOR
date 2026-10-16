@@ -1258,6 +1258,50 @@ header {background:rgba(13,16,29,.96);border-bottom-color:#25283d;}
  .ag3-list-subtitle {font-size:10px;}
  .list-count {display:none;}
 }
+
+/* AutoGestor · Movimentações premium 4.0 */
+.ag4-section {border:1px solid #30334a;border-radius:20px;background:linear-gradient(140deg,#1a1c30 0%,#151726 100%);padding:20px 20px 14px;margin-top:12px;}
+.ag4-heading {margin:0 0 18px;align-items:center;}
+.ag4-eyebrow {color:#8e83ec;font-size:10px;font-weight:800;letter-spacing:.12em;margin-bottom:3px;}
+.ag4-heading .list-title {font-size:19px;letter-spacing:-.55px;font-weight:800;}
+.ag4-heading .ag3-list-subtitle {font-size:12px;margin-top:2px;}
+.ag4-header-actions {display:flex;align-items:center;gap:12px;}
+.ag4-header-actions .list-count {background:#272940;border:1px solid #383b55;border-radius:99px;padding:5px 10px;font-size:11px;white-space:nowrap;}
+.ag4-header-actions .ag3-see-all {background:#6c56f41a;border:1px solid #6556c75c;border-radius:10px;padding:9px 12px;color:#b6aaff;font-weight:750;}
+.ag4-filters {display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;flex-wrap:wrap!important;background:transparent;padding:0;}
+.ag4-filters .filter-bar {display:flex;flex-wrap:nowrap;gap:4px;padding:4px;border:1px solid #34374d;border-radius:12px;background:#10121e;}
+.ag4-filters .filter-btn {border:0;border-radius:9px;padding:9px 14px;white-space:nowrap;font-size:12px;}
+.ag4-filters .filter-btn.active,.ag4-filters .filter-btn.active.ganho-filter,.ag4-filters .filter-btn.active.gasto-filter {background:#6656ed;color:white;box-shadow:0 2px 9px #594bd344;}
+.ag4-filter-right {display:flex;gap:8px;flex-wrap:wrap;}
+.ag4-filter-right select {border:1px solid #34374d;border-radius:10px;background:#111320;color:#c7c8db;padding:10px 12px;font:600 11px Inter,sans-serif;max-width:180px;}
+.ag4-legacy-period {display:none!important;}
+.ag4-filters .custom-range.show {width:100%;justify-content:flex-end;}
+#lista {margin-top:0;border-radius:0 0 16px 16px;border-top:0;padding:4px 20px 8px;background:#171929;}
+#lista .mov-item {min-height:69px;padding:12px 0;}
+#lista .mov-icon {width:41px;height:41px;border-radius:12px;}
+#lista .mov-desc {font-size:13px;font-weight:700;}
+#lista .mov-value {font-size:14px;}
+#lista .mov-badge {background:#27293d;border-color:#363951;color:#aab0c9;}
+#lista .mov-item.ganho-item,#lista .mov-item.gasto-item {border-left:0;}
+#lista .ag3-item-menu {border-radius:10px;}
+#lista .ag3-item-menu-panel {z-index:80;}
+@media(max-width:700px) {
+ .ag4-section {padding:16px 13px 12px;border-radius:16px 16px 0 0;}
+ .ag4-heading {align-items:flex-start;gap:10px;flex-wrap:wrap;}
+ .ag4-heading .list-title {font-size:17px;}
+ .ag4-header-actions {margin-left:auto;gap:6px;}
+ .ag4-header-actions .list-count {display:none;}
+ .ag4-filters {align-items:stretch!important;gap:10px!important;}
+ .ag4-filters .filter-bar {width:100%;}
+ .ag4-filters .filter-btn {flex:1;padding:10px 5px;}
+ .ag4-filter-right {width:100%;display:grid;grid-template-columns:1fr 1fr;}
+ .ag4-filter-right select {max-width:none;width:100%;min-width:0;padding:10px 7px;}
+ #lista {padding:2px 12px 6px;border-radius:0 0 16px 16px;}
+ #lista .mov-item {min-height:62px;padding:10px 0;}
+ #lista .mov-desc {max-width:190px;font-size:12px;}
+ #lista .mov-value {font-size:12px;}
+ #lista .mov-icon {width:36px;height:36px;}
+}
 </style>
 
 <!--
@@ -1791,61 +1835,54 @@ header {background:rgba(13,16,29,.96);border-bottom-color:#25283d;}
       </div>
     </div>
 
-    <!-- Filtros e cabeçalho da lista -->
-    <div class="top-bar" style="flex-direction:column; align-items:stretch; gap:10px;">
-
-      <!-- Linha 1: filtro por TIPO (já existia) -->
-      <div class="filter-bar" id="filtros">
-        <button class="filter-btn active" onclick="setFiltro('TODOS', this)">Todos</button>
-        <button class="filter-btn ganho-filter" onclick="setFiltro('GANHO', this)">↑ Ganhos</button>
-        <button class="filter-btn gasto-filter" onclick="setFiltro('GASTO', this)">↓ Gastos</button>
+    <!-- Painel de movimentações: resumo, filtros e lançamentos -->
+    <section class="ag4-section" aria-label="Movimentações recentes">
+      <div class="list-header ag4-heading">
+        <div class="ag3-list-heading">
+          <span class="ag4-eyebrow">ATIVIDADE FINANCEIRA</span>
+          <span class="list-title">Movimentações recentes</span>
+          <span class="ag3-list-subtitle">Acompanhe suas últimas entradas e saídas</span>
+        </div>
+        <div class="ag4-header-actions">
+          <span class="list-count" id="list-count"></span>
+          <button type="button" id="ag3-ver-todas" class="ag3-see-all" onclick="ag3AlternarMovimentacoes()">Ver todas <span aria-hidden="true">→</span></button>
+        </div>
       </div>
-
-      <!--
-        Linha 2: filtro por PERÍODO.
-        Cada botão chama setPeriodo(chave, elemento).
-        A chave ('hoje', '7d', 'mes', 'tudo', 'custom') é usada
-        em filtrarPorPeriodo() para calcular o intervalo de datas.
-      -->
-      <div class="filter-row" id="filtros-periodo">
-        <button class="filter-btn active" onclick="setPeriodo('tudo', this)">Tudo</button>
-        <button class="filter-btn" onclick="setPeriodo('hoje', this)">Hoje</button>
-        <button class="filter-btn" onclick="setPeriodo('7d', this)">7 dias</button>
-        <button class="filter-btn" onclick="setPeriodo('mes', this)">Mês atual</button>
-        <div class="filter-divider"></div>
-        <button class="filter-btn" onclick="setPeriodo('custom', this)">📅 Personalizado</button>
+      <div class="top-bar ag4-filters">
+        <div class="filter-bar" id="filtros" aria-label="Filtrar por tipo">
+          <button class="filter-btn active" onclick="setFiltro('TODOS', this)">Todas</button>
+          <button class="filter-btn ganho-filter" onclick="setFiltro('GANHO', this)">↑ Entradas</button>
+          <button class="filter-btn gasto-filter" onclick="setFiltro('GASTO', this)">↓ Saídas</button>
+        </div>
+        <div class="ag4-filter-right">
+          <select class="ag4-period-select" id="ag4-period-select" aria-label="Filtrar por período" onchange="ag4SelecionarPeriodo(this.value)">
+            <option value="tudo">Todo o período</option>
+            <option value="hoje">Hoje</option>
+            <option value="7d">Últimos 7 dias</option>
+            <option value="mes">Este mês</option>
+            <option value="custom">Personalizado</option>
+          </select>
+          <select class="sort-select" id="sort-select" aria-label="Ordenar movimentações" onchange="setOrdenacao(this.value)">
+            <option value="recente">Mais recentes</option>
+            <option value="antigo">Mais antigas</option>
+            <option value="maior">Maior valor</option>
+            <option value="menor">Menor valor</option>
+          </select>
+        </div>
+        <div class="filter-row ag4-legacy-period" id="filtros-periodo" hidden>
+          <button class="filter-btn active" onclick="setPeriodo('tudo', this)">Tudo</button>
+          <button class="filter-btn" onclick="setPeriodo('hoje', this)">Hoje</button>
+          <button class="filter-btn" onclick="setPeriodo('7d', this)">7 dias</button>
+          <button class="filter-btn" onclick="setPeriodo('mes', this)">Mês atual</button>
+          <button class="filter-btn" onclick="setPeriodo('custom', this)">Personalizado</button>
+        </div>
+        <div class="custom-range" id="custom-range">
+          <span class="custom-range-label">De</span><input type="date" id="data-inicio">
+          <span class="custom-range-label">até</span><input type="date" id="data-fim">
+          <button class="custom-range-apply" onclick="aplicarPeriodoCustom()">Aplicar</button>
+        </div>
       </div>
-
-      <!--
-        Intervalo customizado: dois inputs de data + botão aplicar.
-        Só aparece (classe .show) quando "Personalizado" é clicado.
-      -->
-      <div class="custom-range" id="custom-range">
-        <span class="custom-range-label">De</span>
-        <input type="date" id="data-inicio">
-        <span class="custom-range-label">até</span>
-        <input type="date" id="data-fim">
-        <button class="custom-range-apply" onclick="aplicarPeriodoCustom()">Aplicar</button>
-      </div>
-
-    </div>
-
-    <div class="list-header">
-      <div class="ag3-list-heading"><span class="list-title">Movimentações recentes</span><span class="ag3-list-subtitle">Suas entradas e saídas em um só lugar</span></div>
-      <div style="display:flex; align-items:center; gap:10px;">
-        <span class="list-count" id="list-count"></span><button type="button" id="ag3-ver-todas" class="ag3-see-all" onclick="ag3AlternarMovimentacoes()">Ver todas ↗</button>
-        <!--
-          Dropdown de ordenação. onchange chama setOrdenacao()
-          que atualiza o estado e re-renderiza a lista.
-        -->
-        <select class="sort-select" id="sort-select" onchange="setOrdenacao(this.value)">
-          <option value="recente">Mais recente</option>
-          <option value="antigo">Mais antigo</option>
-          <option value="maior">Maior valor</option>
-          <option value="menor">Menor valor</option>
-        </select>
-      </div>
-    </div>
+    </section>
 
     <!--
       SKELETON da lista:
@@ -3461,6 +3498,12 @@ function ordenarDados(dados) {
 }
 
 
+function ag4SelecionarPeriodo(chave) {
+  const botao = [...document.querySelectorAll('#filtros-periodo .filter-btn')].find(b =>
+    b.getAttribute('onclick')?.includes("setPeriodo('" + chave + "'")
+  );
+  if (botao) setPeriodo(chave, botao);
+}
 let ag3MovimentacoesExpandidas = false;
 function ag3AlternarMovimentacoes() {
   ag3MovimentacoesExpandidas = !ag3MovimentacoesExpandidas;
@@ -3510,7 +3553,7 @@ function renderLista() {
   const botaoVerTodas = document.getElementById('ag3-ver-todas');
   if (botaoVerTodas) {
     botaoVerTodas.hidden = sorted.length <= 5 && !ag3MovimentacoesExpandidas;
-    botaoVerTodas.textContent = ag3MovimentacoesExpandidas ? 'Mostrar menos ↑' : 'Ver todas ↗';
+    botaoVerTodas.textContent = ag3MovimentacoesExpandidas ? 'Mostrar menos ↑' : 'Ver todas →';
     botaoVerTodas.setAttribute('aria-expanded', String(ag3MovimentacoesExpandidas));
   }
   const totalPaginas = Math.max(1, Math.ceil(sorted.length / itensPorPagina));
