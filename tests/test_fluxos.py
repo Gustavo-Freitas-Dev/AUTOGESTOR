@@ -118,7 +118,7 @@ def test_codigo_invalido_duplicidade_e_limite(client, dois_usuarios):
     assert client.post("/espacos/entrar", json={"codigo": codigo}, headers=hc).status_code == 409
 
 
-def test_membro_ve_apenas_as_proprias_movimentacoes_no_compartilhado(client, dois_usuarios):
+def test_membro_ve_movimentacoes_do_espaco_compartilhado(client, dois_usuarios):
     (_, ha), (_, hb) = dois_usuarios
     espaco = criar_compartilhado(client, ha)
     client.post("/espacos/entrar", json={"codigo": espaco["codigo_acesso"]}, headers=hb)
@@ -127,13 +127,14 @@ def test_membro_ve_apenas_as_proprias_movimentacoes_no_compartilhado(client, doi
 
     lista_b = client.get(f"/espacos/{espaco['id']}/movimentacoes/", headers=hb)
     assert lista_b.status_code == 200
-    assert lista_b.json() == []
+    assert len(lista_b.json()) == 1
+    assert lista_b.json()[0]['id'] == criada.json()['id']
 
     leitura_cruzada = client.get(
         f"/espacos/{espaco['id']}/movimentacoes/{criada.json()['id']}",
         headers=hb,
     )
-    assert leitura_cruzada.status_code == 404
+    assert leitura_cruzada.status_code == 200
 
     _, hc = cadastrar(client, "Caio", "caio2@example.com")
     assert client.get(f"/espacos/{espaco['id']}/movimentacoes/", headers=hc).status_code == 403
