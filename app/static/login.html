@@ -344,6 +344,102 @@
     padding: 11px;
     cursor: pointer;
   }
+
+/* AutoGestor · Login Dark Premium 2026 — visual only; auth logic preserved */
+:root {
+  --bg: #090a13;
+  --surface: #10121e;
+  --card: #121522;
+  --border: #24283d;
+  --border2: #323650;
+  --text: #f6f7ff;
+  --muted: #a2a8c1;
+  --dim: #747b98;
+  --accent: #625df5;
+  --accent2: #aaa7ff;
+}
+html { min-height: 100%; }
+body {
+  display: block;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: radial-gradient(ellipse at 12% 8%, rgba(99,93,245,.17), transparent 42%),
+              radial-gradient(ellipse at 90% 90%, rgba(60,45,143,.12), transparent 36%), var(--bg);
+}
+.bg-glow { opacity: .045 !important; }
+.auth-layout {
+  width: min(1200px, calc(100% - 72px));
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin: auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(360px, .95fr);
+  align-items: center;
+  gap: clamp(32px, 7vw, 112px);
+  position: relative;
+  z-index: 1;
+  padding: 48px 0;
+}
+.auth-intro { min-height: 650px; align-self: stretch; display: flex; flex-direction: column; justify-content: space-between; }
+.intro-brand { font-size: 23px; font-weight: 800; letter-spacing: -.8px; }
+.intro-brand > span:last-child, .brand-name span { color: var(--accent2); }
+.intro-mark, .brand-icon {
+  background: linear-gradient(145deg, #7773ff, #5047d9);
+  box-shadow: 0 14px 40px rgba(91,83,241,.23);
+}
+.intro-mark { display: inline-grid; place-items: center; width: 38px; height: 38px; border-radius: 12px; margin-right: 10px; color: white; font-size: 27px; vertical-align: middle; }
+.intro-content { max-width: 540px; }
+.intro-eyebrow { display: inline-flex; align-items: center; gap: 9px; padding: 10px 14px; border-radius: 999px; border: 1px solid #292a4d; background: #17172e; color: #d7d5ff; font-size: 12px; font-weight: 600; }
+.intro-dot { width: 8px; height: 8px; border-radius: 50%; background: #817bff; }
+.intro-content h1 { font-size: clamp(36px, 4vw, 57px); letter-spacing: -2.4px; line-height: 1.12; margin: 26px 0 18px; font-weight: 800; }
+.intro-content h1 em { font-style: normal; color: #8c83ff; }
+.intro-content > p { font-size: 16px; line-height: 1.8; color: #aeb3cb; max-width: 490px; }
+.intro-features { display: grid; gap: 23px; margin-top: 35px; }
+.intro-feature { display: flex; gap: 14px; align-items: center; }
+.feature-icon { display: grid; place-items: center; width: 47px; height: 47px; flex: none; border-radius: 13px; background: #1b1b39; color: #a9a4ff; font-size: 27px; }
+.intro-feature strong { display: block; font-size: 13px; margin-bottom: 5px; }
+.intro-feature small { display: block; color: #9da4bc; font-size: 12px; line-height: 1.5; }
+.intro-bottom { font-size: 10px; color: #717896; font-weight: 700; letter-spacing: 2px; }
+.intro-bottom span { padding: 0 8px; }
+.auth-wrap { max-width: 470px; justify-self: end; }
+.brand { margin-bottom: 25px; gap: 8px; }
+.brand-icon { width: 58px; height: 58px; border-radius: 17px; font-size: 35px; }
+.brand-name { font-size: 25px; letter-spacing: -.9px; }
+.brand-sub { font-size: 12px; color: #a4aac3; text-align: center; }
+.auth-card { padding: 34px; border-radius: 22px; border-color: #292c42; background: linear-gradient(145deg, rgba(24,26,42,.98), rgba(17,19,32,.98)); box-shadow: 0 28px 90px rgba(0,0,0,.35); }
+.auth-toggle { margin-bottom: 28px; padding: 5px; border-radius: 12px; background: #0e101b; }
+.auth-toggle button { padding: 12px; color: #aab0c9; }
+.auth-toggle button.active { background: linear-gradient(100deg, #625cf2, #746bff); box-shadow: 0 4px 16px rgba(95,87,240,.25); }
+.field { margin-bottom: 18px; }
+.field label { font-size: 11px; font-weight: 700; color: #b2b8d0; letter-spacing: .065em; margin-bottom: 9px; }
+.field input { background: #0c0e19; border-color: #30334a; min-height: 50px; padding: 13px 15px; font-size: 14px; }
+.field input::placeholder { color: #737993; }
+.toggle-password { top: 38px; color: #b2b8d0; }
+.btn-submit { min-height: 51px; background: linear-gradient(105deg, #625cf2, #7169ff); box-shadow: 0 9px 26px rgba(93,86,245,.2); font-weight: 700; }
+.auth-link { margin: 4px 0 14px; }
+.auth-link button { color: #b3adff; }
+.auth-footer { color: #8d93ad; line-height: 1.6; }
+.modal-card { background: #151827; }
+@media (max-width: 900px) {
+  .auth-layout { width: min(480px, calc(100% - 36px)); display: flex; flex-direction: column; justify-content: center; gap: 0; padding: 36px 0 26px; }
+  .auth-intro { display: none; }
+  .auth-wrap { max-width: 100%; width: 100%; }
+  .brand { margin-bottom: 28px; }
+  .auth-card { padding: clamp(22px, 5vw, 32px); }
+}
+@media (max-width: 420px) {
+  .auth-layout { width: calc(100% - 28px); padding-top: 24px; }
+  .auth-card { padding: 22px 18px; border-radius: 19px; }
+  .brand-icon { width: 54px; height: 54px; }
+  .brand-name { font-size: 23px; }
+  .auth-toggle button { padding: 11px 6px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
+}
 </style>
 </head>
 <body>
@@ -351,12 +447,27 @@
 <div class="bg-glow one"></div>
 <div class="bg-glow two"></div>
 
+<main class="auth-layout">
+<section class="auth-intro" aria-label="Apresentação do AutoGestor">
+  <div class="intro-brand"><span class="intro-mark" aria-hidden="true">◈</span> Auto<span>Gestor</span></div>
+  <div class="intro-content">
+    <span class="intro-eyebrow"><span class="intro-dot"></span> Seu dinheiro, com mais clareza</span>
+    <h1>Controle suas finanças de forma <em>simples e inteligente.</em></h1>
+    <p>Organize receitas, despesas e contas em um só lugar. Entenda seus resultados e tenha mais tranquilidade para decidir.</p>
+    <div class="intro-features">
+      <div class="intro-feature"><span class="feature-icon" aria-hidden="true">▥</span><div><strong>Acompanhe seus resultados</strong><small>Seus números mais importantes em um painel.</small></div></div>
+      <div class="intro-feature"><span class="feature-icon" aria-hidden="true">▤</span><div><strong>Organize suas movimentações</strong><small>Registre ganhos e gastos com praticidade.</small></div></div>
+      <div class="intro-feature"><span class="feature-icon" aria-hidden="true">◇</span><div><strong>Planeje com confiança</strong><small>Visualize sua evolução financeira.</small></div></div>
+    </div>
+  </div>
+  <div class="intro-bottom">AUTOGESTOR <span>·</span> SEU CONTROLE FINANCEIRO</div>
+</section>
 <div class="auth-wrap">
 
   <div class="brand">
-    <div class="brand-icon">💼</div>
-    <div class="brand-name">AutoGestor</div>
-    <div class="brand-sub">Controle financeiro pessoal</div>
+    <div class="brand-icon" aria-hidden="true">◈</div>
+    <div class="brand-name">Auto<span>Gestor</span></div>
+    <div class="brand-sub">Seu espaço para organizar suas finanças</div>
   </div>
 
   <div class="auth-card">
@@ -440,11 +551,9 @@
 
   </div>
 
-  <div class="auth-footer">
-    AutoGestor © 2026 — seus dados ficam só com você
-  </div>
-
+  <div class="auth-footer">AutoGestor © 2026 · Controle financeiro em suas mãos</div>
 </div>
+</main>
 
 <div class="modal-backdrop" id="modal-recuperacao" aria-hidden="true">
   <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-recuperacao-title">
