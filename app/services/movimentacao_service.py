@@ -212,7 +212,7 @@ def service_resumo_por_categoria(
     agregados: dict[str, Decimal] = {}
     for categoria, tipo, valor in db.execute(stmt).all():
         atual = agregados.get(categoria, Decimal("0.00"))
-        if str(tipo) == "GASTO":
+        if tipo.value == "GASTO":
             agregados[categoria] = atual - Decimal(valor)
         else:
             agregados[categoria] = atual + Decimal(valor)
