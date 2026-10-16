@@ -45,7 +45,10 @@ def resumo_mensal(
         data_fim = date(ano + 1, 1, 1)
     else:
         data_fim = date(ano, mes + 1, 1)
-    movimentos = service_buscar_periodo(db, data_inicio, data_fim, espaco_id)
+    # O primeiro dia do mês seguinte é exclusivo.
+    movimentos = service_buscar_periodo(
+        db, data_inicio, data_fim, espaco_id, fim_exclusivo=True
+    )
 
     ganhos = sum(mov.valor for mov in movimentos if str(mov.tipo) == 'GANHO')
     gastos = sum(mov.valor for mov in movimentos if str(mov.tipo) == 'GASTO')
