@@ -344,6 +344,250 @@
     padding: 11px;
     cursor: pointer;
   }
+
+/* AutoGestor · Login Dark Premium 2026 — visual only; auth logic preserved */
+:root {
+  --bg: #090a13;
+  --surface: #10121e;
+  --card: #121522;
+  --border: #24283d;
+  --border2: #323650;
+  --text: #f6f7ff;
+  --muted: #a2a8c1;
+  --dim: #747b98;
+  --accent: #625df5;
+  --accent2: #aaa7ff;
+}
+html { min-height: 100%; }
+body {
+  display: block;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: radial-gradient(ellipse at 12% 8%, rgba(99,93,245,.17), transparent 42%),
+              radial-gradient(ellipse at 90% 90%, rgba(60,45,143,.12), transparent 36%), var(--bg);
+}
+.bg-glow { opacity: .045 !important; }
+.auth-layout {
+  width: min(1200px, calc(100% - 72px));
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin: auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(360px, .95fr);
+  align-items: center;
+  gap: clamp(32px, 7vw, 112px);
+  position: relative;
+  z-index: 1;
+  padding: 48px 0;
+}
+.auth-intro { min-height: 650px; align-self: stretch; display: flex; flex-direction: column; justify-content: space-between; }
+.intro-brand { font-size: 23px; font-weight: 800; letter-spacing: -.8px; }
+.intro-brand > span:last-child, .brand-name span { color: var(--accent2); }
+.intro-mark, .brand-icon {
+  background: linear-gradient(145deg, #7773ff, #5047d9);
+  box-shadow: 0 14px 40px rgba(91,83,241,.23);
+}
+.intro-mark { display: inline-grid; place-items: center; width: 38px; height: 38px; border-radius: 12px; margin-right: 10px; color: white; font-size: 27px; vertical-align: middle; }
+.intro-content { max-width: 540px; }
+.intro-eyebrow { display: inline-flex; align-items: center; gap: 9px; padding: 10px 14px; border-radius: 999px; border: 1px solid #292a4d; background: #17172e; color: #d7d5ff; font-size: 12px; font-weight: 600; }
+.intro-dot { width: 8px; height: 8px; border-radius: 50%; background: #817bff; }
+.intro-content h1 { font-size: clamp(36px, 4vw, 57px); letter-spacing: -2.4px; line-height: 1.12; margin: 26px 0 18px; font-weight: 800; }
+.intro-content h1 em { font-style: normal; color: #8c83ff; }
+.intro-content > p { font-size: 16px; line-height: 1.8; color: #aeb3cb; max-width: 490px; }
+.intro-features { display: grid; gap: 23px; margin-top: 35px; }
+.intro-feature { display: flex; gap: 14px; align-items: center; }
+.feature-icon { display: grid; place-items: center; width: 47px; height: 47px; flex: none; border-radius: 13px; background: #1b1b39; color: #a9a4ff; font-size: 27px; }
+.intro-feature strong { display: block; font-size: 13px; margin-bottom: 5px; }
+.intro-feature small { display: block; color: #9da4bc; font-size: 12px; line-height: 1.5; }
+.intro-bottom { font-size: 10px; color: #717896; font-weight: 700; letter-spacing: 2px; }
+.intro-bottom span { padding: 0 8px; }
+.auth-wrap { max-width: 470px; justify-self: end; }
+.brand { margin-bottom: 25px; gap: 8px; }
+.brand-icon { width: 58px; height: 58px; border-radius: 17px; font-size: 35px; }
+.brand-name { font-size: 25px; letter-spacing: -.9px; }
+.brand-sub { font-size: 12px; color: #a4aac3; text-align: center; }
+.auth-card { padding: 34px; border-radius: 22px; border-color: #292c42; background: linear-gradient(145deg, rgba(24,26,42,.98), rgba(17,19,32,.98)); box-shadow: 0 28px 90px rgba(0,0,0,.35); }
+.auth-toggle { margin-bottom: 28px; padding: 5px; border-radius: 12px; background: #0e101b; }
+.auth-toggle button { padding: 12px; color: #aab0c9; }
+.auth-toggle button.active { background: linear-gradient(100deg, #625cf2, #746bff); box-shadow: 0 4px 16px rgba(95,87,240,.25); }
+.field { margin-bottom: 18px; }
+.field label { font-size: 11px; font-weight: 700; color: #b2b8d0; letter-spacing: .065em; margin-bottom: 9px; }
+.field input { background: #0c0e19; border-color: #30334a; min-height: 50px; padding: 13px 15px; font-size: 14px; }
+.field input::placeholder { color: #737993; }
+.toggle-password { top: 38px; color: #b2b8d0; }
+.btn-submit { min-height: 51px; background: linear-gradient(105deg, #625cf2, #7169ff); box-shadow: 0 9px 26px rgba(93,86,245,.2); font-weight: 700; }
+.auth-link { margin: 4px 0 14px; }
+.auth-link button { color: #b3adff; }
+.auth-footer { color: #8d93ad; line-height: 1.6; }
+.modal-card { background: #151827; }
+@media (max-width: 900px) {
+  .auth-layout { width: min(480px, calc(100% - 36px)); display: flex; flex-direction: column; justify-content: center; gap: 0; padding: 36px 0 26px; }
+  .auth-intro { display: none; }
+  .auth-wrap { max-width: 100%; width: 100%; }
+  .brand { margin-bottom: 28px; }
+  .auth-card { padding: clamp(22px, 5vw, 32px); }
+}
+@media (max-width: 420px) {
+  .auth-layout { width: calc(100% - 28px); padding-top: 24px; }
+  .auth-card { padding: 22px 18px; border-radius: 19px; }
+  .brand-icon { width: 54px; height: 54px; }
+  .brand-name { font-size: 23px; }
+  .auth-toggle button { padding: 11px 6px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
+}
+
+/* Pixel-directed 2026 login layout — aligned with approved reference */
+:root { --bg:#080913; --surface:#0e0f1b; --card:#131422; --border:#272941; --border2:#30314c; --text:#f5f5fc; --muted:#a3a5bd; --dim:#737791; --accent:#625cff; --accent2:#8b80ff; }
+body { background:radial-gradient(ellipse at 16% 2%,#17173b 0%,transparent 43%),#090a14; overflow-x:hidden; }
+.bg-glow { display:none; }
+.auth-layout { width:min(1420px,calc(100% - 80px)); grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:clamp(55px,8vw,145px); min-height:100dvh; padding:50px 12px; }
+.auth-intro { min-height:760px; }
+.intro-brand { display:flex; align-items:center; gap:15px; font-size:27px; }
+.intro-brand strong { color:#7f74ff; }
+.intro-brand .brand-icon.small { width:44px; height:44px; border-radius:12px; font-size:22px; margin:0; }
+.intro-content { max-width:550px; }
+.intro-eyebrow { padding:9px 13px; background:#17162f; border-color:#242443; }
+.intro-content h1 { font-size:clamp(42px,4.2vw,65px); letter-spacing:-2px; line-height:1.13; margin:24px 0 18px; }
+.intro-content h1 em { color:#857aff; }
+.intro-content > p { max-width:490px; font-size:17px; line-height:1.7; }
+.intro-features { gap:22px; margin-top:30px; }
+.intro-feature { gap:15px; }
+.intro-feature strong { font-size:14px; }
+.intro-feature small { font-size:12px; }
+.feature-icon { width:52px; height:52px; background:#211e49; border-radius:13px; color:#9b8cff; font-weight:800; }
+.intro-dots { display:flex; gap:10px; }
+.intro-dots span { height:10px; width:10px; border-radius:50%; background:#3d405d; }
+.intro-dots span.selected { background:#756aff; }
+.auth-wrap { max-width:480px; width:100%; }
+.auth-card { padding:36px 37px 28px; border:1px solid #292b45; border-radius:19px; background:linear-gradient(155deg,#171827,#11121f); }
+.brand { margin-bottom:30px; }
+.brand-icon { font-size:26px; }
+.brand-name { font-size:26px; }
+.brand-sub { font-size:13px; }
+.auth-toggle { margin-bottom:28px; }
+.field { margin-bottom:17px; }
+.field label { color:#c1c3d6; }
+.input-shell { position:relative; }
+.input-shell > svg { position:absolute; left:15px; top:50%; transform:translateY(-50%); width:19px; height:19px; fill:none; stroke:#e0e0f1; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; pointer-events:none; z-index:1; }
+.input-shell input { padding-left:45px; }
+.field.password-field .input-shell input { padding-right:45px; }
+.toggle-password { top:38px; right:12px; }
+.login-options { display:flex; justify-content:space-between; align-items:center; gap:10px; margin:8px 0 18px; }
+.remember { display:flex; align-items:center; gap:8px; font-size:12px; white-space:nowrap; color:#e2e1f1; cursor:pointer; }
+.remember input { width:15px; height:15px; accent-color:#675cff; cursor:pointer; }
+.login-options .auth-link { margin:0; }
+.login-options .auth-link button { white-space:nowrap; }
+.btn-submit { min-height:49px; }
+.btn-submit > span:last-child { font-size:21px; font-weight:400; line-height:1; }
+.social-area { margin-top:22px; }
+.social-divider { display:flex; align-items:center; gap:15px; color:#a5a8bf; font-size:12px; white-space:nowrap; margin-bottom:20px; }
+.social-divider:before,.social-divider:after { content:""; height:1px; background:#32344b; flex:1; }
+.social-buttons { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.social-buttons button { min-height:49px; border:1px solid #3a3c59; border-radius:11px; background:#10111e; color:#f4f4fa; display:flex; align-items:center; justify-content:center; gap:10px; font-size:13px; font-weight:600; font-family:inherit; opacity:.65; cursor:not-allowed; }
+.google-g { font-size:22px; font-weight:800; color:#4285f4; text-shadow:-2px -1px #ea4335,2px 1px #34a853; }
+.apple-mark { font-size:23px; color:#fff; }
+.card-footer { margin-top:26px; text-align:center; color:#9c9db6; font-size:11px; }
+.auth-footer { display:none; }
+.mobile-benefits { display:none; }
+@media (max-width:900px) {
+  .auth-layout { width:min(480px,calc(100% - 32px)); padding:36px 0 0; justify-content:center; min-height:100dvh; }
+  .auth-intro { display:none; }
+  .auth-wrap { width:100%; }
+  .auth-card { padding:25px 22px 24px; }
+  .brand { margin-bottom:27px; }
+  .card-footer { display:none; }
+  .auth-footer { display:block; margin-top:18px; }
+  .mobile-benefits { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:34px; padding:20px 10px 28px; border-radius:50% 50% 0 0 / 22% 22% 0 0; background:linear-gradient(145deg,rgba(35,30,94,.85),rgba(16,16,41,.6)); text-align:center; }
+  .mobile-benefits div { font-size:11px; line-height:1.4; color:#d5d5eb; }
+  .mobile-benefits span { display:grid; place-items:center; width:37px; height:37px; margin:0 auto 9px; border-radius:11px; background:#27235b; color:#aa9dff; font-size:22px; }
+}
+@media (max-width:420px) {
+  .auth-layout { width:calc(100% - 24px); padding-top:24px; }
+  .auth-card { padding:21px 17px; }
+  .brand-icon { width:51px; height:51px; }
+  .brand-name { font-size:23px; }
+  .social-buttons { gap:8px; }
+  .login-options { gap:6px; }
+  .remember,.login-options .auth-link button { font-size:11px; }
+}
+@media (max-height:730px) and (max-width:900px) { .auth-layout { justify-content:flex-start; } .mobile-benefits { margin-top:20px; } }
+
+/* Visual refinement: reference-aligned desktop and landscape viewport */
+body {
+  background:
+    radial-gradient(ellipse 55% 48% at 43% -12%, rgba(95,53,235,.38), transparent 76%),
+    radial-gradient(ellipse 40% 45% at 105% 90%, rgba(75,46,199,.22), transparent 78%),
+    #090a16;
+}
+body::before, body::after {
+  content:""; position:fixed; pointer-events:none; z-index:0;
+  border:1px solid rgba(114,81,255,.38); border-radius:50%;
+  transform:rotate(-19deg);
+}
+body::before { width:1000px; height:570px; top:-445px; left:10%; box-shadow:0 0 0 36px rgba(82,53,192,.075),0 0 0 74px rgba(82,53,192,.045); }
+body::after { width:900px; height:470px; bottom:-410px; left:-200px; box-shadow:0 0 0 50px rgba(87,54,210,.09),0 0 0 90px rgba(87,54,210,.04); }
+.auth-layout {
+  width:min(1380px,calc(100% - 96px));
+  min-height:100vh; min-height:100dvh;
+  padding:clamp(28px,4vh,64px) 0;
+  gap:clamp(44px,6vw,105px);
+  align-items:center;
+}
+.auth-intro { min-height:0; height:auto; align-self:stretch; padding:0; }
+.intro-content { margin:auto 0; padding:32px 0; }
+.intro-content h1 { font-size:clamp(35px,3.65vw,59px); letter-spacing:-1.8px; }
+.intro-content > p { font-size:clamp(13px,1.05vw,16px); line-height:1.65; }
+.intro-features { gap:clamp(10px,1.8vh,19px); margin-top:25px; }
+.intro-feature .feature-icon { width:49px; height:49px; }
+.intro-dots { display:none !important; }
+.auth-wrap { justify-self:end; max-width:500px; }
+.auth-card { padding:clamp(22px,2.4vw,36px); box-shadow:0 22px 70px rgba(0,0,0,.36),0 0 50px rgba(86,71,218,.06); }
+.brand { margin-bottom:25px; }
+.auth-toggle { margin-bottom:23px; }
+.social-buttons button { border-color:#39365f; }
+.social-buttons button:disabled { opacity:.58; }
+@media (min-width:901px) and (max-height:780px) {
+  .auth-layout { align-items:start; }
+  .auth-intro { min-height:660px; }
+  .intro-content { padding:20px 0; }
+  .auth-card { padding:20px 26px; }
+  .brand { margin-bottom:14px; }
+  .brand-icon { width:48px; height:48px; }
+  .auth-toggle { margin-bottom:16px; }
+  .field { margin-bottom:12px; }
+  .field input { min-height:44px; }
+  .login-options { margin:5px 0 12px; }
+  .social-area { margin-top:15px; }
+  .social-divider { margin-bottom:12px; }
+  .card-footer { margin-top:15px; }
+}
+@media (max-width:900px) {
+  body::before { width:560px; height:400px; top:-335px; left:-160px; }
+  body::after { width:550px; height:300px; bottom:-270px; left:-150px; }
+  .auth-layout { width:min(480px,calc(100% - 28px)); padding:30px 0 0; min-height:100dvh; justify-content:center; }
+  .auth-wrap { justify-self:auto; }
+  .auth-card { padding:24px 20px; }
+}
+
+/* Social identity correction: genuine vector marks, consistent visual contrast */
+.social-buttons button,
+.social-buttons button:disabled {
+  opacity: 1;
+  background: linear-gradient(155deg,#171828,#10111d);
+  border: 1px solid #3a3b60;
+  color: #f5f5ff;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.025);
+}
+.social-buttons button:disabled { cursor: not-allowed; }
+.social-buttons .social-icon { display: block; width: 22px; height: 22px; flex: 0 0 22px; }
+.social-buttons .apple-icon { color: #fff; width: 25px; height: 25px; flex-basis: 25px; }
 </style>
 </head>
 <body>
@@ -351,100 +595,66 @@
 <div class="bg-glow one"></div>
 <div class="bg-glow two"></div>
 
-<div class="auth-wrap">
-
-  <div class="brand">
-    <div class="brand-icon">💼</div>
-    <div class="brand-name">AutoGestor</div>
-    <div class="brand-sub">Controle financeiro pessoal</div>
+<main class="auth-layout">
+<section class="auth-intro" aria-label="Apresentação do AutoGestor">
+  <div class="intro-brand"><span class="brand-icon small" aria-hidden="true">💼</span><span>Auto<strong>Gestor</strong></span></div>
+  <div class="intro-content">
+    <span class="intro-eyebrow"><span class="intro-dot"></span> Seus dados sempre com você</span>
+    <h1>Controle<br>suas finanças<br>de forma <em>simples<br>e inteligente</em></h1>
+    <p>Organize seus ganhos, gastos e contas em um só lugar. Tenha clareza da sua vida financeira e tome melhores decisões todos os dias.</p>
+    <div class="intro-features">
+      <div class="intro-feature"><span class="feature-icon" aria-hidden="true">▥</span><div><strong>Acompanhe seus resultados</strong><small>Veja saldo, receitas e despesas em tempo real</small></div></div>
+      <div class="intro-feature"><span class="feature-icon" aria-hidden="true">▰</span><div><strong>Organize suas contas</strong><small>Bancos, carteiras e separação por ambiente</small></div></div>
+      <div class="intro-feature"><span class="feature-icon" aria-hidden="true">◆</span><div><strong>Classifique seus gastos</strong><small>Categorias personalizadas para sua rotina</small></div></div>
+      <div class="intro-feature"><span class="feature-icon" aria-hidden="true">⬟</span><div><strong>Seus dados protegidos</strong><small>Acesso seguro e privacidade garantida</small></div></div>
+    </div>
   </div>
-
+</section>
+<section class="auth-wrap" aria-label="Acesso à conta">
   <div class="auth-card">
-
-    <!-- Toggle Entrar / Criar conta -->
+    <div class="brand">
+      <div class="brand-icon" aria-hidden="true">💼</div>
+      <div class="brand-name">Auto<span>Gestor</span></div>
+      <div class="brand-sub">Controle financeiro pessoal</div>
+    </div>
     <div class="auth-toggle">
       <button type="button" class="active" id="tab-login" onclick="trocarAba('login')">Entrar</button>
       <button type="button" id="tab-cadastro" onclick="trocarAba('cadastro')">Criar conta</button>
     </div>
-
-    <!-- Mensagem de erro genérica, reaproveitada pelos dois formulários -->
-    <div class="auth-error" id="auth-error">
-      <span>⚠</span>
-      <span id="auth-error-text">Erro</span>
-    </div>
-    <div class="auth-info" id="auth-info">
-      <span>⏳</span>
-      <span id="auth-info-text">Aguarde...</span>
-    </div>
-
-    <!-- ═══════════════ FORMULÁRIO DE LOGIN ═══════════════ -->
+    <div class="auth-error" id="auth-error" role="alert"><span>⚠</span><span id="auth-error-text">Erro</span></div>
+    <div class="auth-info" id="auth-info"><span>⏳</span><span id="auth-info-text">Aguarde...</span></div>
     <form id="form-login" onsubmit="return false;">
       <div class="field">
-        <label>E-mail</label>
-        <input type="email" id="login-email" placeholder="seu@email.com" autocomplete="email">
+        <label for="login-email">E-MAIL</label>
+        <div class="input-shell"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg><input type="email" id="login-email" placeholder="seu@email.com" autocomplete="email"></div>
       </div>
       <div class="field password-field">
-        <label>Senha</label>
-        <input type="password" id="login-senha" placeholder="••••••••" autocomplete="current-password">
+        <label for="login-senha">SENHA</label>
+        <div class="input-shell"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><input type="password" id="login-senha" placeholder="••••••••" autocomplete="current-password"></div>
         <button type="button" class="toggle-password" aria-label="Mostrar ou ocultar senha" onclick="alternarSenha('login-senha', this)">👁</button>
       </div>
-
-      <div class="auth-link">
-        <button type="button" onclick="abrirModalRecuperacao()">Esqueci minha senha</button>
-      </div>
-
-      <button type="button" class="btn-submit" id="btn-login" onclick="fazerLogin()">
-        <span class="spinner" id="spinner-login"></span>
-        <span id="btn-login-text">Entrar</span>
-      </button>
+      <div class="login-options"><label class="remember"><input type="checkbox" id="remember-email"> Lembrar de mim</label><div class="auth-link"><button type="button" onclick="abrirModalRecuperacao()">Esqueci minha senha</button></div></div>
+      <button type="button" class="btn-submit" id="btn-login" onclick="fazerLogin()"><span class="spinner" id="spinner-login"></span><span id="btn-login-text">Entrar</span><span aria-hidden="true">→</span></button>
     </form>
-
-    <!-- ═══════════════ FORMULÁRIO DE CADASTRO ═══════════════ -->
     <form id="form-cadastro" style="display:none;" onsubmit="return false;">
-      <div class="field">
-        <label>Nome</label>
-        <input type="text" id="cad-nome" placeholder="Seu nome completo" autocomplete="name">
+      <div class="field"><label for="cad-nome">NOME</label><input type="text" id="cad-nome" placeholder="Seu nome completo" autocomplete="name"></div>
+      <div class="field"><label for="cad-email">E-MAIL</label><input type="email" id="cad-email" placeholder="seu@email.com" autocomplete="email"></div>
+      <div class="field password-field"><label for="cad-senha">SENHA</label><input type="password" id="cad-senha" placeholder="Mínimo 6 caracteres" autocomplete="new-password" oninput="atualizarForcaSenha(this.value)"><button type="button" class="toggle-password" aria-label="Mostrar ou ocultar senha" onclick="alternarSenha('cad-senha', this)">👁</button>
+        <div class="strength-wrap" id="strength-wrap"><div class="strength-bars"><div class="strength-bar" id="bar-1"></div><div class="strength-bar" id="bar-2"></div><div class="strength-bar" id="bar-3"></div></div><span class="strength-label" id="strength-label">Fraca</span></div>
       </div>
-      <div class="field">
-        <label>E-mail</label>
-        <input type="email" id="cad-email" placeholder="seu@email.com" autocomplete="email">
-      </div>
-      <div class="field password-field">
-        <label>Senha</label>
-        <input type="password" id="cad-senha" placeholder="Mínimo 6 caracteres" autocomplete="new-password" oninput="atualizarForcaSenha(this.value)">
-        <button type="button" class="toggle-password" aria-label="Mostrar ou ocultar senha" onclick="alternarSenha('cad-senha', this)">👁</button>
-
-        <!-- Indicador de força da senha — aparece ao digitar -->
-        <div class="strength-wrap" id="strength-wrap">
-          <div class="strength-bars">
-            <div class="strength-bar" id="bar-1"></div>
-            <div class="strength-bar" id="bar-2"></div>
-            <div class="strength-bar" id="bar-3"></div>
-          </div>
-          <span class="strength-label" id="strength-label">Fraca</span>
-        </div>
-      </div>
-
-      <div class="field password-field">
-        <label for="cad-confirmar-senha">Confirmar senha</label>
-        <input type="password" id="cad-confirmar-senha" autocomplete="new-password" placeholder="Repita sua senha" oninput="validarConfirmacaoSenha()">
-        <button type="button" class="toggle-password" aria-label="Mostrar ou ocultar confirmacao de senha" onclick="alternarSenha('cad-confirmar-senha', this)">👁</button>
-        <span class="field-error" id="cad-confirmar-erro" role="alert">As senhas não coincidem.</span>
-      </div>
-
-      <button type="button" class="btn-submit" id="btn-cadastro" onclick="fazerCadastro()">
-        <span class="spinner" id="spinner-cadastro"></span>
-        <span id="btn-cadastro-text">Criar conta</span>
-      </button>
+      <div class="field password-field"><label for="cad-confirmar-senha">CONFIRMAR SENHA</label><input type="password" id="cad-confirmar-senha" autocomplete="new-password" placeholder="Repita sua senha" oninput="validarConfirmacaoSenha()"><button type="button" class="toggle-password" aria-label="Mostrar ou ocultar confirmação de senha" onclick="alternarSenha('cad-confirmar-senha', this)">👁</button><span class="field-error" id="cad-confirmar-erro" role="alert">As senhas não coincidem.</span></div>
+      <button type="button" class="btn-submit" id="btn-cadastro" onclick="fazerCadastro()"><span class="spinner" id="spinner-cadastro"></span><span id="btn-cadastro-text">Criar conta</span></button>
     </form>
-
+    <div class="social-area" id="social-area"><div class="social-divider"><span>ou continue com</span></div><div class="social-buttons">
+      <button type="button" disabled aria-label="Entrar com Google — em breve" title="Login com Google em breve"><svg class="social-icon google-icon" aria-hidden="true" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.28 5.48-4.82 7.18l7.73 6C44.36 38.03 46.98 31.88 46.98 24.55z"/><path fill="#FBBC05" d="M10.53 28.59A14.41 14.41 0 0 1 9.75 24c0-1.59.27-3.13.76-4.59l-7.98-6.2A23.91 23.91 0 0 0 0 24c0 3.87.93 7.51 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.9-5.8l-7.73-6c-2.15 1.45-4.92 2.3-8.17 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.97 6.19C6.51 42.62 14.62 48 24 48z"/></svg><span>Google</span></button>
+      <button type="button" disabled aria-label="Entrar com Apple — em breve" title="Login com Apple em breve"><svg class="social-icon apple-icon" aria-hidden="true" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M17.05 12.54c.02 2.11 1.86 2.81 1.88 2.82-.02.05-.29 1.01-.97 2-.59.86-1.2 1.72-2.16 1.74-.95.02-1.26-.56-2.35-.56-1.1 0-1.44.54-2.34.58-.94.03-1.66-.95-2.26-1.8-1.23-1.77-2.17-5.01-.91-7.19a3.5 3.5 0 0 1 2.96-1.8c.92-.02 1.79.63 2.35.63.56 0 1.62-.78 2.73-.67.46.02 1.76.19 2.6 1.41-.07.05-1.55.9-1.53 2.84zM15.3 6.5c.5-.6.84-1.44.75-2.28-.72.03-1.59.48-2.11 1.08-.47.54-.88 1.39-.77 2.21.8.06 1.62-.41 2.13-1.01z" transform="translate(0 -1) scale(1.14)"/></svg><span>Apple</span></button>
+    </div></div>
+    <div class="card-footer">AutoGestor © 2026 — seus dados ficam só com você</div>
   </div>
-
-  <div class="auth-footer">
-    AutoGestor © 2026 — seus dados ficam só com você
-  </div>
-
-</div>
+  <div class="auth-footer">AutoGestor © 2026 — seus dados ficam só com você</div>
+  <div class="mobile-benefits" aria-label="Benefícios"><div><span>▥</span>Organize<br>seus ganhos</div><div><span>▰</span>Controle<br>seus gastos</div><div><span>⬟</span>Tenha seus<br>dados seguros</div></div>
+</section>
+</main>
 
 <div class="modal-backdrop" id="modal-recuperacao" aria-hidden="true">
   <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-recuperacao-title">
@@ -744,6 +954,9 @@ async function fazerLogin() {
       return;
     }
 
+    const remember = document.getElementById('remember-email');
+    if (remember?.checked) localStorage.setItem('autogestor_ultimo_email', email);
+    else localStorage.removeItem('autogestor_ultimo_email');
     salvarSessao(corpo);
     redirecionarAposLogin();
 
@@ -831,6 +1044,12 @@ async function fazerCadastro() {
     esconderInfo();
     setCarregando('btn-cadastro', 'spinner-cadastro', 'btn-cadastro-text', false, 'Criar conta');
   }
+}
+
+const ultimoEmail = localStorage.getItem('autogestor_ultimo_email');
+if (ultimoEmail) {
+  document.getElementById('login-email').value = ultimoEmail;
+  document.getElementById('remember-email').checked = true;
 }
 
 // Permite enviar o formulário de login apertando Enter no campo de senha
