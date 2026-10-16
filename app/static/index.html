@@ -1101,6 +1101,10 @@
     padding: 0 4px;
   }
 
+.ag3-loading-status:not([hidden]) {grid-column:1/-1;display:flex;align-items:center;flex-wrap:wrap;gap:12px;padding:15px 18px;border:1px solid #8c5866;border-radius:12px;background:#39202c;color:#ffe4e6;font-size:12px;}
+.ag3-loading-status strong {font-size:13px;}
+.ag3-loading-status span {flex:1;min-width:170px;}
+.ag3-loading-status button,.ag3-loading-status a {border:1px solid #a89cff;border-radius:8px;padding:8px 11px;background:#6b59f3;color:white;font:600 12px Inter,sans-serif;text-decoration:none;cursor:pointer;}
 /* AutoGestor Dashboard 3.0 — presentation only; existing API and data remain unchanged */
 :root { --bg:#0b0d19;--surface:#101321;--card:#161929;--border:#292d43;--border2:#343950;--muted:#a0a6bd;--accent:#6857f5;--accent2:#9d90ff;--radius:16px; }
 body {background:radial-gradient(ellipse at 48% -22%,rgba(92,69,228,.17),transparent 55%),var(--bg);}
@@ -1476,6 +1480,7 @@ header {background:rgba(13,16,29,.96);border-bottom-color:#25283d;}
 </div>
 
 <div class="container">
+  <div id="ag3-loading-status" class="ag3-loading-status" hidden role="alert"></div>
   <section class="ag3-welcome" aria-label="Visão geral financeira">
     <div><h1>Seu dinheiro, com clareza.</h1><p>Acompanhe seus resultados e organize suas movimentações.</p></div>
     <button type="button" class="ag3-new" onclick="ag3AbrirRegistro()">＋ Nova movimentação</button>
@@ -2404,12 +2409,31 @@ async function excluirEspaco(espacoId) {
 }
 
 async function inicializarAplicacao() {
+  // Never leave the dashboard in a permanent loading state on a preview domain.
+  const status = document.getElementById('ag3-loading-status');
   try {
     await carregarEspacos();
+    if (status) status.hidden = true;
     await carregar();
   } catch (erro) {
     revelarUI();
-    toast(erro.message || 'Não foi possível iniciar o aplicativo.', 'error');
+    const seletor = document.getElementById('seletor-espaco-nome');
+    if (seletor) seletor.textContent = 'Indisponível';
+    const mensagem = erro?.message === 'request_timeout'
+      ? 'O servidor demorou para responder.'
+      : erro?.message === 'network_error'
+      ? 'Não foi possível conectar ao servidor.'
+      : erro?.message || 'Não foi possível iniciar o aplicativo.';
+    if (status) {
+      status.hidden = false;
+      status.innerHTML = '<strong>Não foi possível carregar seus dados.</strong><span>' +
+        escaparHtml(mensagem) +
+        '</span><button type="button" onclick="inicializarAplicacao()">Tentar novamente</button>' +
+        '<a href="/static/login.html">Entrar novamente</a>';
+    }
+    const lista = document.getElementById('lista');
+    if (lista) lista.innerHTML = '<div class="empty"><div class="empty-text">Os lançamentos não foram carregados. Nenhum dado foi alterado.</div></div>';
+    toast(mensagem, 'error');
   }
 }
 
