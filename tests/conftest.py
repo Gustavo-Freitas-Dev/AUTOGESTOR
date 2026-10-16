@@ -1,8 +1,11 @@
+import os
+import tempfile
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import StaticPool
+from sqlalchemy.pool import NullPool
 
 from app.database.base import Base
 from app.database.dependencies import get_db
@@ -11,8 +14,12 @@ from main import app
 
 @pytest.fixture()
 def db():
+    db_fd, db_path = tempfile.mkstemp(suffix=".db")
+    os.close(db_fd)
     engine = create_engine(
-        "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool
+        f"sqlite:///{db_path}",
+        connect_args={"check_same_thread": False},
+        poolclass=NullPool,
     )
     Base.metadata.create_all(engine)
     session = sessionmaker(bind=engine, autoflush=False, autocommit=False)()
@@ -20,7 +27,9 @@ def db():
         yield session
     finally:
         session.close()
+        engine.dispose()
         Base.metadata.drop_all(engine)
+        os.unlink(db_path)
 
 
 @pytest.fixture()
