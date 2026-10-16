@@ -160,16 +160,12 @@ def service_deletar_movimentacao(db: Session, id: int, espaco_id: int, usuario_i
 
 
 def service_buscar_id(db: Session, id: int, espaco_id: int, usuario_id: int):
-    """
-    Mesma proteção: busca por id, mas só dentro das movimentações
-    daquele usuário.
-    """
+    """Consulta por ID para membros autorizados do espaço."""
     movimentacao = (
         db.query(Movimentacao)
         .filter(
             Movimentacao.id == id,
             Movimentacao.espaco_id == espaco_id,
-            Movimentacao.criado_por_id == usuario_id,
         )
         .first()
     )
