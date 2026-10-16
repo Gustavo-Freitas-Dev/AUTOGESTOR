@@ -87,8 +87,8 @@ def service_listar_movimentacoes(
 
     stmt = select(Movimentacao).where(
         Movimentacao.espaco_id == espaco_id,
-        Movimentacao.criado_por_id == usuario_id,
     )
+    # A rota valida a participação no espaço; membros podem consultar o extrato completo.
     stmt = _apply_filters(stmt, tipo, categoria, descricao, data_inicio, data_fim)
     stmt = _apply_ordering(stmt, ordenar_por, ordem)
     stmt = stmt.offset(offset).limit(limite)
@@ -202,7 +202,6 @@ def service_resumo_por_categoria(
         Movimentacao.valor,
     ).where(
         Movimentacao.espaco_id == espaco_id,
-        Movimentacao.criado_por_id == usuario_id,
     )
 
     if data_inicio:
