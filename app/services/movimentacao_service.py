@@ -6,6 +6,7 @@ from sqlalchemy import Select, asc, desc, select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
+from app.models.conta_financeira import ContaFinanceira
 from app.models.movimentacao import Movimentacao
 from app.schemas.movimentacao_schemas import (
     AtualizarMovimentacao,
@@ -20,7 +21,14 @@ def service_criar_movimentacao(
     usuario_id: int,
     espaco_id: int,
 ) -> Movimentacao:
+    if dado.conta_id is not None:
+        conta = db.query(ContaFinanceira.id).filter_by(
+            id=dado.conta_id, espaco_id=espaco_id
+        ).first()
+        if conta is None:
+            raise HTTPException(status_code=422, detail="Conta inválida para este espaço.")
     movimentacao = Movimentacao(
+        conta_id=dado.conta_id,
         espaco_id=espaco_id,
         criado_por_id=usuario_id,
         tipo=dado.tipo,
@@ -118,6 +126,13 @@ def service_atualizar_movimentacao(
             detail="Você não possui permissão para editar esta movimentação.",
         )
 
+    if dado.conta_id is not None:
+        conta = db.query(ContaFinanceira.id).filter_by(
+            id=dado.conta_id, espaco_id=espaco_id
+        ).first()
+        if conta is None:
+            raise HTTPException(status_code=422, detail="Conta inválida para este espaço.")
+    movimentacao.conta_id = dado.conta_id
     movimentacao.tipo = dado.tipo
     movimentacao.categoria = dado.categoria
     movimentacao.descricao = dado.descricao
