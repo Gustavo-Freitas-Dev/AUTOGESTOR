@@ -95,7 +95,8 @@ def buscar_periodo(
     db: Session,
     data_inicio: date,
     data_fim: date,
-    espaco_id: int
+    espaco_id: int,
+    fim_exclusivo: bool = False,
 ):
 
     if data_inicio > data_fim:
@@ -108,7 +109,7 @@ def buscar_periodo(
         db.query(Movimentacao)
         .filter(
             Movimentacao.data >= data_inicio,
-            Movimentacao.data <= data_fim,
+            (Movimentacao.data < data_fim if fim_exclusivo else Movimentacao.data <= data_fim),
             Movimentacao.espaco_id == espaco_id
         )
         .all()

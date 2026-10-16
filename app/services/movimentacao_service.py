@@ -87,8 +87,8 @@ def service_listar_movimentacoes(
 
     stmt = select(Movimentacao).where(
         Movimentacao.espaco_id == espaco_id,
-        Movimentacao.criado_por_id == usuario_id,
     )
+    # A rota valida a participação no espaço; membros podem consultar o extrato completo.
     stmt = _apply_filters(stmt, tipo, categoria, descricao, data_inicio, data_fim)
     stmt = _apply_ordering(stmt, ordenar_por, ordem)
     stmt = stmt.offset(offset).limit(limite)
@@ -160,16 +160,12 @@ def service_deletar_movimentacao(db: Session, id: int, espaco_id: int, usuario_i
 
 
 def service_buscar_id(db: Session, id: int, espaco_id: int, usuario_id: int):
-    """
-    Mesma proteção: busca por id, mas só dentro das movimentações
-    daquele usuário.
-    """
+    """Consulta por ID para membros autorizados do espaço."""
     movimentacao = (
         db.query(Movimentacao)
         .filter(
             Movimentacao.id == id,
             Movimentacao.espaco_id == espaco_id,
-            Movimentacao.criado_por_id == usuario_id,
         )
         .first()
     )
@@ -202,7 +198,6 @@ def service_resumo_por_categoria(
         Movimentacao.valor,
     ).where(
         Movimentacao.espaco_id == espaco_id,
-        Movimentacao.criado_por_id == usuario_id,
     )
 
     if data_inicio:
@@ -213,7 +208,7 @@ def service_resumo_por_categoria(
     agregados: dict[str, Decimal] = {}
     for categoria, tipo, valor in db.execute(stmt).all():
         atual = agregados.get(categoria, Decimal("0.00"))
-        if str(tipo) == "GASTO":
+        if tipo.value == "GASTO":
             agregados[categoria] = atual - Decimal(valor)
         else:
             agregados[categoria] = atual + Decimal(valor)
