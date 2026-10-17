@@ -1101,6 +1101,111 @@
     font-size: 12px;
     padding: 0 4px;
   }
+  /* Dashboard: shared blue palette, clear hierarchy and responsive composition. */
+  :root { color-scheme: dark; --bg:#0b1019; --surface:#101824; --card:#141e2c; --border:#253142; --border2:#36455a; --text:#edf2fa; --muted:#9baac0; --dim:#7e90a9; --accent:#3579ed; --accent2:#8bb6ff; --green:#72c6af; --red:#f0939b; --radius:18px; --sk-base:#1c293b; --sk-shine:#28394f; }
+  [hidden] { display:none !important; }
+  body { background:var(--bg); line-height:1.5; }
+  header { background:rgba(11,16,25,.96); padding:14px max(24px,calc((100vw - 1280px)/2)); }
+  .logo-icon,.profile-avatar { background:var(--accent); box-shadow:none; }
+  .container { display:flex; flex-direction:column; max-width:1280px; padding:36px 28px 60px; gap:24px; }
+  .container > * { width:100%; min-width:0; }
+  .dashboard-heading { display:flex; align-items:center; justify-content:space-between; gap:20px; }
+  .eyebrow { color:var(--accent2); font-size:10px; font-weight:700; letter-spacing:.15em; }
+  h1 { font-size:32px; line-height:1.25; letter-spacing:-1px; margin:6px 0 8px; }
+  .dashboard-heading p { font-size:13px; color:var(--muted); }
+  .new-entry-button,.view-all,.load-error button { border:1px solid var(--border2); border-radius:10px; background:var(--surface); color:var(--text); padding:11px 16px; cursor:pointer; font:600 12px 'Inter',sans-serif; min-height:44px; }
+  .new-entry-button { background:var(--accent); border-color:var(--accent); color:#fff; }
+  .period-panel { display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+  .period-label { color:var(--muted); font-size:12px; }
+  .filter-row { margin:0; gap:5px; flex-wrap:wrap; }
+  .filter-btn { min-height:38px; border-radius:8px; padding:8px 12px; font-size:12px; }
+  .filter-btn.active,.filter-btn.ganho-filter.active,.filter-btn.gasto-filter.active { background:#233d62; color:#d7e7ff; border-color:#41648f; }
+  .custom-range { flex-basis:100%; }
+  .saldo-grid { gap:16px; margin:0; }
+  .saldo-card { border-radius:16px; padding:24px; background:var(--card); }
+  .saldo-card:last-child { background:linear-gradient(120deg,#193457,#14243a); border-color:#355783; }
+  .saldo-label { text-transform:none; letter-spacing:0; font-size:13px; font-weight:500; margin-bottom:12px; }
+  .saldo-value { font-size:clamp(22px,2.4vw,32px); letter-spacing:-1px; overflow-wrap:anywhere; }
+  .saldo-value.green,.saldo-value.red,.saldo-value.positive { color:var(--text); }
+  .saldo-value.negative { color:var(--red); }
+  .metric-note { margin-top:7px; color:var(--muted); font-size:11px; }
+  .dashboard-columns { display:grid; grid-template-columns:minmax(0,1fr) 330px; gap:24px; align-items:start; }
+  .main,.sidebar { min-width:0; display:flex; flex-direction:column; gap:20px; }
+  .card { padding:24px; box-shadow:0 8px 28px #0000000d; }
+  .card-label { color:var(--text); text-transform:none; letter-spacing:-.2px; font-size:15px; font-weight:650; margin-bottom:18px; }
+  .section-description { font-size:12px; color:var(--muted); margin:-10px 0 20px; }
+  .evolucao-wrap { min-height:160px; display:flex; flex-direction:column; justify-content:center; }
+  .field { margin-bottom:16px; }
+  .field label { text-transform:none; letter-spacing:0; font-size:12px; margin-bottom:7px; }
+  .field input { min-width:0; min-height:44px; font-size:14px; }
+  .field-row > * { min-width:0; }
+  .btn-primary.ganho,.btn-primary.gasto { background:var(--accent); min-height:46px; }
+  .tipo-btn.ganho.active,.tipo-btn.gasto.active { color:#d7e7ff; border-color:#41648f; background:#233d62; }
+  .tipo-btn { min-height:42px; }
+  .list-header { gap:12px; flex-wrap:wrap; margin:0 0 18px; }
+  .list-title { font-size:15px; font-weight:650; color:var(--text); }
+  .list-count { font-size:11px; }
+  .transaction-tools { display:flex; gap:12px; flex-wrap:wrap; justify-content:space-between; margin-bottom:14px; }
+  .search-field { flex:1; min-width:180px; }
+  .search-field input { width:100%; min-height:40px; border:1px solid var(--border2); border-radius:9px; background:var(--surface); padding:10px 12px; color:var(--text); font:12px 'Inter',sans-serif; }
+  .filter-bar { gap:3px; }
+  .mov-item { border:0; border-bottom:1px solid var(--border); border-radius:0; background:transparent; padding:16px 0; margin:0; gap:12px; }
+  .mov-item:hover { background:#ffffff03; border-color:var(--border); transform:none; }
+  .mov-left { min-width:0; gap:12px; }
+  .mov-left > div:last-child { min-width:0; }
+  .mov-desc { font-size:13px; overflow-wrap:anywhere; }
+  .mov-icon { border-radius:10px; width:36px; height:36px; flex-shrink:0; }
+  .mov-right { gap:8px; flex-shrink:0; }
+  .mov-value { font-size:14px; }
+  .mov-badge { background:transparent; padding:0; color:var(--muted); font-size:11px; }
+  .mov-date { color:var(--muted); font-size:11px; }
+  .btn-edit,.btn-delete { opacity:1; width:34px; height:34px; color:var(--muted); border:1px solid var(--border); border-radius:8px; }
+  .list-footer { display:flex; align-items:center; justify-content:center; gap:12px; flex-wrap:wrap; margin-top:16px; }
+  .pagination { margin:0; flex-wrap:wrap; }
+  .page-btn { min-width:38px; height:38px; }
+  .view-all { color:var(--accent2); background:transparent; }
+  .load-error { padding:14px 18px; border:1px solid #78505a; border-radius:12px; font-size:13px; background:#2a1c25; }
+  .load-error button { margin-left:12px; }
+  .meta-add-row { grid-template-columns:minmax(0,1fr) 90px 38px; }
+  .meta-add-row input { min-width:0; }
+  .meta-add-row button { width:38px; min-height:40px; }
+  .sr-only { position:absolute; width:1px; height:1px; padding:0; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+  button:focus-visible,input:focus-visible,select:focus-visible { outline:2px solid var(--accent2); outline-offset:3px; }
+  @media(min-width:761px) and (max-width:1050px) { .dashboard-columns { grid-template-columns:minmax(0,1fr) 300px; gap:18px; } .container { padding:28px 20px; } .card { padding:18px; } .mov-right { flex-wrap:wrap; max-width:135px; justify-content:flex-end; } }
+  @media(max-width:760px) {
+    header { padding:12px 16px; gap:12px; }
+    .container { padding:24px 16px 40px; gap:20px; }
+    .dashboard-heading { align-items:flex-start; }
+    h1 { font-size:27px; }
+    .dashboard-heading p { max-width:240px; font-size:12px; }
+    .new-entry-button { font-size:0; min-width:44px; padding:10px; }
+    .new-entry-button::after { content:'+'; font-size:24px; line-height:20px; }
+    .period-panel { gap:8px; }
+    .period-label { flex-basis:100%; }
+    .filter-btn { padding:8px 10px; font-size:11px; min-height:40px; }
+    .saldo-grid { grid-template-columns:1fr 1fr; gap:10px; }
+    .saldo-card { padding:18px 16px; }
+    .saldo-card:last-child { grid-column:1/-1; grid-row:1; }
+    .saldo-card:last-child .saldo-value { font-size:32px; }
+    .saldo-label { font-size:12px; margin-bottom:8px; }
+    .saldo-value { font-size:23px; }
+    .dashboard-columns { grid-template-columns:1fr; gap:20px; }
+    .card { padding:20px 16px; }
+    .transaction-tools { gap:10px; }
+    .search-field { flex-basis:100%; }
+    .mov-item { display:flex; flex-wrap:wrap; }
+    .mov-left { flex:1; }
+    .mov-right { gap:6px; }
+    .mov-right > div { min-width:85px; }
+    .btn-edit,.btn-delete { width:36px; height:40px; }
+    .mov-value { font-size:13px; }
+    .mov-meta { flex-wrap:wrap; gap:5px; }
+    .mov-icon { display:none; }
+    .sort-select { min-height:40px; font-size:11px; }
+    .field input,.search-field input,.meta-add-row input { font-size:16px; }
+  }
+  @media(prefers-reduced-motion:reduce) { *,*::before,*::after { animation:none !important; transition:none !important; scroll-behavior:auto !important; } }
+
 </style>
 
 <!--
@@ -1390,22 +1495,22 @@
     </div>
 
     <div class="modal-field">
-      <label>Categoria</label>
+      <label for="categoria">Categoria</label>
       <input type="text" id="edit-categoria" placeholder="Ex: Freelance, Alimentação…">
     </div>
 
     <div class="modal-field">
-      <label>Descrição <span style="color:var(--dim)">(opcional)</span></label>
+      <label for="descricao">Descrição <span style="color:var(--dim)">(opcional)</span></label>
       <input type="text" id="edit-descricao" placeholder="Detalhe a movimentação">
     </div>
 
     <div class="modal-field-row">
       <div class="modal-field">
-        <label>Valor (R$)</label>
+        <label for="valor">Valor (R$)</label>
         <input type="number" id="edit-valor" placeholder="0,00" step="0.01" min="0">
       </div>
       <div class="modal-field">
-        <label>Data</label>
+        <label for="data">Data</label>
         <input type="date" id="edit-data">
       </div>
     </div>
@@ -1426,111 +1531,53 @@
   </div>
 </div>
 
-<div class="container">
-
-  <!-- SIDEBAR -->
-  <div class="sidebar">
-
-    <!-- FORM (nunca tem skeleton — o form é local, não depende da API) -->
-    <div class="card">
-      <div class="card-label">Nova movimentação</div>
-      <div class="tipo-toggle">
-        <button class="tipo-btn ganho active" id="btn-ganho" onclick="setTipo('GANHO')">↑ Ganho</button>
-        <button class="tipo-btn gasto" id="btn-gasto" onclick="setTipo('GASTO')">↓ Gasto</button>
+<main class="container" id="dashboard">
+ <div class="dashboard-heading"><div><span class="eyebrow">SEU DINHEIRO, COM CLAREZA</span><h1>Visão geral</h1><p>Acompanhe seu resultado e mantenha as contas em dia.</p></div><button class="new-entry-button" onclick="document.getElementById('novo-lancamento').scrollIntoView({block:'center'});document.getElementById('valor').focus({preventScroll:true})">+ Nova movimentação</button></div>
+ <section class="period-panel" aria-label="Período do dashboard"><span class="period-label">Período</span><div class="filter-row" id="filtros-periodo">
+        <button class="filter-btn active" onclick="setPeriodo('tudo', this)">Todo o histórico</button>
+        <button class="filter-btn" onclick="setPeriodo('hoje', this)">Hoje</button>
+        <button class="filter-btn" onclick="setPeriodo('7d', this)">7 dias</button>
+        <button class="filter-btn" onclick="setPeriodo('mes', this)">Mês atual</button>
+        <div class="filter-divider"></div>
+        <button class="filter-btn" onclick="setPeriodo('custom', this)">Personalizado</button>
+      </div><div class="custom-range" id="custom-range">
+        <span class="custom-range-label">De</span>
+        <input type="date" id="data-inicio">
+        <span class="custom-range-label">até</span>
+        <input type="date" id="data-fim">
+        <button class="custom-range-apply" onclick="aplicarPeriodoCustom()">Aplicar</button>
+      </div></section>
+ <div id="load-error" class="load-error" role="alert" hidden>Não foi possível atualizar seus dados. <button onclick="inicializarAplicacao()">Tentar novamente</button></div>
+<div id="sk-saldo" class="saldo-grid">
+      <div class="sk-saldo-card">
+        <div class="sk sk-text" style="width:50%"></div>
+        <div class="sk sk-title" style="width:80%"></div>
       </div>
-      <div class="field">
-        <label>Categoria</label>
-        <input type="text" id="categoria" placeholder="Ex: Freelance, Alimentação…">
+      <div class="sk-saldo-card">
+        <div class="sk sk-text" style="width:50%"></div>
+        <div class="sk sk-title" style="width:80%"></div>
       </div>
-      <div class="field">
-        <label>Descrição <span style="color:var(--dim)">(opcional)</span></label>
-        <input type="text" id="descricao" placeholder="Detalhe a movimentação">
+      <div class="sk-saldo-card">
+        <div class="sk sk-text" style="width:55%"></div>
+        <div class="sk sk-title" style="width:75%"></div>
       </div>
-      <div class="field-row">
-        <div class="field">
-          <label>Valor (R$)</label>
-          <input type="number" id="valor" placeholder="0,00" step="0.01" min="0">
-        </div>
-        <div class="field">
-          <label>Data</label>
-          <input type="date" id="data">
-        </div>
+    </div><div id="real-saldo" class="saldo-grid" style="display:none;">
+      <div class="saldo-card">
+        <div class="saldo-label">↑ Entradas</div>
+        <div class="saldo-value green" id="saldo-ganhos">R$ 0,00</div><p class="metric-note">Receitas registradas</p>
       </div>
-      <button class="btn-primary ganho" id="btn-salvar" onclick="salvar()">Registrar ganho</button>
+      <div class="saldo-card">
+        <div class="saldo-label">↓ Saídas</div>
+        <div class="saldo-value red" id="saldo-gastos">R$ 0,00</div><p class="metric-note">Despesas registradas</p>
+      </div>
+      <div class="saldo-card">
+        <div class="saldo-label">Resultado do período</div>
+        <div class="saldo-value neutral" id="saldo-liquido">R$ 0,00</div><p class="metric-note">Entradas − saídas</p>
+      </div>
     </div>
-
-    <!--
-      SKELETON da sidebar:
-      Mostramos enquanto a API não responde.
-      Quando os dados chegam, removemos este bloco e
-      mostramos os cards reais de stats + chart.
-    -->
-    <div id="sk-sidebar">
-
-      <!-- Simula o card de "Visão geral" com 3 stat-cards -->
-      <div class="card" style="margin-bottom:16px;">
-        <div class="card-label">Visão geral</div>
-        <div class="stats-grid">
-          <div class="sk-stat">
-            <div class="sk sk-text" style="width:55%"></div>
-            <div class="sk sk-title" style="width:75%"></div>
-            <div class="sk sk-text" style="width:40%"></div>
-          </div>
-          <div class="sk-stat">
-            <div class="sk sk-text" style="width:55%"></div>
-            <div class="sk sk-title" style="width:75%"></div>
-            <div class="sk sk-text" style="width:40%"></div>
-          </div>
-          <div class="sk-stat" style="grid-column:1/-1">
-            <div class="sk sk-text" style="width:50%"></div>
-            <div class="sk sk-title" style="width:60%"></div>
-            <div class="sk sk-text" style="width:45%"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Simula o card do gráfico de barras -->
-      <div class="card">
-        <div class="card-label">Gastos por categoria</div>
-        <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px;">
-          <!-- Cada linha = uma barra do gráfico -->
-          <!-- larguras diferentes = parecem categorias reais -->
-          <div style="display:flex;align-items:center;gap:10px;">
-            <div class="sk sk-text" style="width:70px;flex-shrink:0"></div>
-            <div class="sk" style="flex:1;height:7px;border-radius:99px;"></div>
-          </div>
-          <div style="display:flex;align-items:center;gap:10px;">
-            <div class="sk sk-text" style="width:70px;flex-shrink:0"></div>
-            <div class="sk" style="width:70%;height:7px;border-radius:99px;"></div>
-          </div>
-          <div style="display:flex;align-items:center;gap:10px;">
-            <div class="sk sk-text" style="width:70px;flex-shrink:0"></div>
-            <div class="sk" style="width:50%;height:7px;border-radius:99px;"></div>
-          </div>
-          <div style="display:flex;align-items:center;gap:10px;">
-            <div class="sk sk-text" style="width:70px;flex-shrink:0"></div>
-            <div class="sk" style="width:35%;height:7px;border-radius:99px;"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Skeleton simplificado para os cards de evolução e metas -->
-      <div class="card" style="margin-top:16px;">
-        <div class="card-label">Evolução do saldo</div>
-        <div class="sk" style="height:90px;border-radius:8px;"></div>
-      </div>
-      <div class="card" style="margin-top:16px;">
-        <div class="card-label">Metas de gasto (mensal)</div>
-        <div class="sk sk-text" style="width:100%;margin-bottom:8px;"></div>
-        <div class="sk sk-text" style="width:100%;"></div>
-      </div>
-
-    </div>
-    <!-- /sk-sidebar -->
-
-    <!-- Cards reais: ocultos até a API responder -->
-    <div id="real-sidebar" style="display:none; flex-direction:column; gap:16px;">
-      <div class="card">
+ <div class="dashboard-columns"><div class="main">
+ <div id="sk-sidebar"><div class="card"><div class="sk" style="height:180px"></div></div></div>
+ <div id="real-sidebar" style="display:none;flex-direction:column;gap:20px"><div class="card" hidden>
         <div class="card-label">Visão geral</div>
         <div class="stats-grid">
           <div class="stat-card">
@@ -1549,160 +1596,31 @@
             <div class="stat-sub">sobre todos os lançamentos</div>
           </div>
         </div>
-      </div>
-      <div class="card">
-        <div class="card-label">Gastos por categoria</div>
-        <div class="chart-area" id="chart-area">
-          <div style="color:var(--muted);font-size:12px;text-align:center;padding:12px 0;">Sem dados</div>
-        </div>
-      </div>
-
-      <!--
-        CARD: Evolução do saldo
-        ─────────────────────────
-        SVG gerado dinamicamente pelo JS (função renderEvolucao).
-        evolucao-wrap precisa de position:relative para o tooltip
-        flutuante se posicionar corretamente sobre o gráfico.
-      -->
-      <div class="card">
-        <div class="card-label">Evolução do saldo</div>
-        <div class="evolucao-wrap" id="evolucao-wrap">
+      </div><div class="card">
+        <div class="card-label">Evolução do resultado</div>
+        <p class="section-description">Entradas menos saídas, acumuladas no período.</p><div class="evolucao-wrap" id="evolucao-wrap">
           <div style="color:var(--muted);font-size:12px;text-align:center;padding:20px 0;">Sem dados suficientes</div>
         </div>
-      </div>
-
-      <!--
-        CARD: Metas de gasto por categoria
-        ─────────────────────────────────────
-        Dados guardados em localStorage (ver função salvarMetas()).
-        O formulário no fim do card permite adicionar uma nova meta:
-        categoria + valor limite mensal.
-      -->
-      <div class="card">
-        <div class="card-label">Metas de gasto (mensal)</div>
-        <div id="metas-lista">
-          <div class="meta-empty">Nenhuma meta cadastrada ainda</div>
-        </div>
-        <div class="meta-add-row">
-          <input type="text" id="meta-categoria" placeholder="Categoria">
-          <input type="number" id="meta-valor" placeholder="Limite R$" step="0.01" min="0">
-          <button onclick="adicionarMeta()" title="Adicionar meta">+</button>
-        </div>
-      </div>
-    </div>
-    <!-- /real-sidebar -->
-
-  </div>
-  <!-- /sidebar -->
-
-
-  <!-- ÁREA PRINCIPAL -->
-  <div class="main">
-
-    <!--
-      SKELETON dos saldo-cards:
-      3 blocos que simulam Entradas / Saídas / Saldo Líquido.
-      Ficam visíveis até a API responder.
-    -->
-    <div id="sk-saldo" class="saldo-grid">
-      <div class="sk-saldo-card">
-        <div class="sk sk-text" style="width:50%"></div>
-        <div class="sk sk-title" style="width:80%"></div>
-      </div>
-      <div class="sk-saldo-card">
-        <div class="sk sk-text" style="width:50%"></div>
-        <div class="sk sk-title" style="width:80%"></div>
-      </div>
-      <div class="sk-saldo-card">
-        <div class="sk sk-text" style="width:55%"></div>
-        <div class="sk sk-title" style="width:75%"></div>
-      </div>
-    </div>
-
-    <!-- Saldo real: oculto até a API responder -->
-    <div id="real-saldo" class="saldo-grid" style="display:none;">
-      <div class="saldo-card">
-        <div class="saldo-label">↑ Entradas</div>
-        <div class="saldo-value green" id="saldo-ganhos">R$ 0,00</div>
-      </div>
-      <div class="saldo-card">
-        <div class="saldo-label">↓ Saídas</div>
-        <div class="saldo-value red" id="saldo-gastos">R$ 0,00</div>
-      </div>
-      <div class="saldo-card">
-        <div class="saldo-label">Saldo líquido</div>
-        <div class="saldo-value neutral" id="saldo-liquido">R$ 0,00</div>
-      </div>
-    </div>
-
-    <!-- Filtros e cabeçalho da lista -->
-    <div class="top-bar" style="flex-direction:column; align-items:stretch; gap:10px;">
-
-      <!-- Linha 1: filtro por TIPO (já existia) -->
-      <div class="filter-bar" id="filtros">
-        <button class="filter-btn active" onclick="setFiltro('TODOS', this)">Todos</button>
-        <button class="filter-btn ganho-filter" onclick="setFiltro('GANHO', this)">↑ Ganhos</button>
-        <button class="filter-btn gasto-filter" onclick="setFiltro('GASTO', this)">↓ Gastos</button>
-      </div>
-
-      <!--
-        Linha 2: filtro por PERÍODO.
-        Cada botão chama setPeriodo(chave, elemento).
-        A chave ('hoje', '7d', 'mes', 'tudo', 'custom') é usada
-        em filtrarPorPeriodo() para calcular o intervalo de datas.
-      -->
-      <div class="filter-row" id="filtros-periodo">
-        <button class="filter-btn active" onclick="setPeriodo('tudo', this)">Tudo</button>
-        <button class="filter-btn" onclick="setPeriodo('hoje', this)">Hoje</button>
-        <button class="filter-btn" onclick="setPeriodo('7d', this)">7 dias</button>
-        <button class="filter-btn" onclick="setPeriodo('mes', this)">Mês atual</button>
-        <div class="filter-divider"></div>
-        <button class="filter-btn" onclick="setPeriodo('custom', this)">📅 Personalizado</button>
-      </div>
-
-      <!--
-        Intervalo customizado: dois inputs de data + botão aplicar.
-        Só aparece (classe .show) quando "Personalizado" é clicado.
-      -->
-      <div class="custom-range" id="custom-range">
-        <span class="custom-range-label">De</span>
-        <input type="date" id="data-inicio">
-        <span class="custom-range-label">até</span>
-        <input type="date" id="data-fim">
-        <button class="custom-range-apply" onclick="aplicarPeriodoCustom()">Aplicar</button>
-      </div>
-
-    </div>
-
-    <div class="list-header">
-      <span class="list-title">Movimentações</span>
+      </div></div>
+ <section class="card transactions" aria-label="Movimentações"><div class="list-header">
+      <span class="list-title">Movimentações recentes</span>
       <div style="display:flex; align-items:center; gap:10px;">
         <span class="list-count" id="list-count"></span>
-        <!--
-          Dropdown de ordenação. onchange chama setOrdenacao()
-          que atualiza o estado e re-renderiza a lista.
-        -->
-        <select class="sort-select" id="sort-select" onchange="setOrdenacao(this.value)">
+
+        <select class="sort-select" aria-label="Ordenar movimentações" id="sort-select" onchange="setOrdenacao(this.value)">
           <option value="recente">Mais recente</option>
           <option value="antigo">Mais antigo</option>
           <option value="maior">Maior valor</option>
           <option value="menor">Menor valor</option>
         </select>
       </div>
-    </div>
+    </div><div class="transaction-tools"><div class="filter-bar" id="filtros">
+        <button class="filter-btn active" onclick="setFiltro('TODOS', this)">Todos</button>
+        <button class="filter-btn ganho-filter" onclick="setFiltro('GANHO', this)">↑ Ganhos</button>
+        <button class="filter-btn gasto-filter" onclick="setFiltro('GASTO', this)">↓ Gastos</button>
+      </div><label class="search-field"><span class="sr-only">Buscar movimentações</span><input type="search" id="busca-movimentacoes" placeholder="Buscar descrição ou categoria" oninput="paginaAtual=1;renderLista()"></label></div><div id="sk-lista">
 
-    <!--
-      SKELETON da lista:
-      5 itens falsos que replicam o layout de .mov-item:
-        [ícone quadrado] [linha larga / linha curta + badge] [valor / label]
 
-      O nth-child com animation-delay nos itens cria a
-      "onda" — cada item começa o shimmer 100ms depois do anterior.
-      Isso é definido no CSS com .sk-item:nth-child(N).
-    -->
-    <div id="sk-lista">
-      <!-- Geramos 5 itens skeleton idênticos em estrutura -->
-      <!-- O CSS cuida do delay de cada um via nth-child  -->
       <div class="sk-item">
         <div class="sk sk-circle" style="width:36px;height:36px;flex-shrink:0;"></div>
         <div class="sk-item-body">
@@ -1773,23 +1691,49 @@
           <div class="sk sk-text" style="width:36px;"></div>
         </div>
       </div>
-    </div>
-    <!-- /sk-lista -->
-
-    <!-- Lista real: oculta até a API responder -->
-    <div id="lista" style="display:none;"></div>
-
-    <!--
-      Controles de paginação.
-      Gerados dinamicamente pelo JS (função renderPaginacao),
-      ficam escondidos quando há só 1 página de resultados.
-    -->
-    <div class="pagination" id="paginacao"></div>
-
-  </div>
-  <!-- /main -->
-
-</div>
+    </div><div id="lista" style="display:none;"></div><div class="list-footer"><button id="ver-todas" class="view-all" onclick="alternarListaCompleta()" hidden>Ver todas as movimentações</button><div class="pagination" id="paginacao"></div></div></section>
+ </div><aside class="sidebar" aria-label="Registro e planejamento"><div class="card quick-entry" id="novo-lancamento">
+      <div class="card-label">Registro rápido</div>
+      <div class="tipo-toggle">
+        <button class="tipo-btn ganho active" id="btn-ganho" onclick="setTipo('GANHO')">↑ Ganho</button>
+        <button class="tipo-btn gasto" id="btn-gasto" onclick="setTipo('GASTO')">↓ Gasto</button>
+      </div>
+      <div class="field">
+        <label>Categoria</label>
+        <input type="text" id="categoria" placeholder="Ex: Freelance, Alimentação…">
+      </div>
+      <div class="field">
+        <label>Descrição <span style="color:var(--dim)">(opcional)</span></label>
+        <input type="text" id="descricao" placeholder="Detalhe a movimentação">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Valor (R$)</label>
+          <input type="number" id="valor" placeholder="0,00" step="0.01" min="0">
+        </div>
+        <div class="field">
+          <label>Data</label>
+          <input type="date" id="data">
+        </div>
+      </div>
+      <button class="btn-primary ganho" id="btn-salvar" onclick="salvar()">Registrar ganho</button>
+    </div><div class="card">
+        <div class="card-label">Gastos por categoria</div>
+        <div class="chart-area" id="chart-area">
+          <div style="color:var(--muted);font-size:12px;text-align:center;padding:12px 0;">Sem dados</div>
+        </div>
+      </div><div class="card">
+        <div class="card-label">Limites mensais</div>
+        <p class="section-description">Seus limites ficam salvos neste navegador.</p><div id="metas-lista">
+          <div class="meta-empty">Nenhuma meta cadastrada ainda</div>
+        </div>
+        <div class="meta-add-row">
+          <input type="text" aria-label="Categoria do limite" id="meta-categoria" placeholder="Categoria">
+          <input type="number" aria-label="Limite mensal em reais" id="meta-valor" placeholder="Limite R$" step="0.01" min="0">
+          <button onclick="adicionarMeta()" title="Adicionar meta">+</button>
+        </div>
+      </div></aside></div>
+</main>
 
 <script>
 /*
@@ -2356,6 +2300,8 @@ async function inicializarAplicacao() {
     await carregar();
   } catch (erro) {
     revelarUI();
+    document.getElementById('load-error').hidden = false;
+    ['saldo-ganhos', 'saldo-gastos', 'saldo-liquido'].forEach(id => document.getElementById(id).textContent = '—');
     toast(erro.message || 'Não foi possível iniciar o aplicativo.', 'error');
   }
 }
@@ -2386,7 +2332,8 @@ let ordenacaoAtiva = 'recente';
 
 // ── ESTADO DE PAGINAÇÃO ──────────────────────────────────────
 let paginaAtual = 1;
-const ITENS_POR_PAGINA = 8; // ajustável: quantos itens aparecem por página
+let listaCompleta = false;
+const ITENS_POR_PAGINA = 5; // ajustável: quantos itens aparecem por página
 
 function fmt(v) {
   return 'R$ ' + Math.abs(v).toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
@@ -2739,8 +2686,8 @@ function renderEvolucao() {
   });
 
   // ── Configuração do SVG ──
-  const largura = 300;
-  const altura = 90;
+  const largura = Math.max(240, wrap.clientWidth);
+  const altura = 160;
   const paddingY = 10;
 
   const valores = pontos.map(p => p.saldo);
@@ -2767,7 +2714,7 @@ function renderEvolucao() {
 
   // Cor da linha: verde se terminou positivo, vermelho se negativo
   const saldoFinal = pontos[pontos.length - 1].saldo;
-  const corLinha = saldoFinal >= 0 ? 'var(--green)' : 'var(--red)';
+  const corLinha = saldoFinal >= 0 ? 'var(--accent2)' : 'var(--red)';
 
   /*
     Círculos invisíveis maiores sobre cada ponto real (raio 8) servem
@@ -2781,7 +2728,7 @@ function renderEvolucao() {
   `).join('');
 
   wrap.innerHTML = `
-    <svg class="evolucao-svg-wrap" viewBox="0 0 ${largura} ${altura}" style="width:100%;height:${altura}px;">
+    <svg role="img" aria-label="Resultado acumulado no período" class="evolucao-svg-wrap" viewBox="0 0 ${largura} ${altura}" style="width:100%;height:${altura}px;">
       ${mostrarLinhaZero ? `<line x1="0" y1="${yZero}" x2="${largura}" y2="${yZero}" stroke="var(--border2)" stroke-width="1" stroke-dasharray="3,3" />` : ''}
       <polyline points="${pontosSVG}" fill="none" stroke="${corLinha}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
       ${circulosHover}
@@ -3187,6 +3134,7 @@ async function salvar() {
 }
 
 async function carregar() {
+  document.getElementById("load-error").hidden = true;
   /*
     Na primeira chamada (page load), o skeleton já está visível no HTML.
     Nas chamadas seguintes (após salvar/deletar), a UI real já foi revelada,
@@ -3205,21 +3153,18 @@ async function carregar() {
 
     atualizarTudo();
   } catch(e) {
-    // Erro: esconde skeletons e mostra mensagem de erro na lista
     revelarUI();
-    document.getElementById('lista').innerHTML = `
-      <div class="empty">
-        <div class="empty-icon">🔌</div>
-        <div class="empty-text">Não foi possível conectar à API.<br>
-        Verifique se o servidor está rodando em <code style="color:var(--accent2)">127.0.0.1:8000</code></div>
-      </div>`;
+    document.getElementById('load-error').hidden = false;
+    if (!todos.length) {
+      ['saldo-ganhos', 'saldo-gastos', 'saldo-liquido'].forEach(id => document.getElementById(id).textContent = '—');
+      document.getElementById('lista').innerHTML = '<div class="empty"><div class="empty-text">Seus dados ainda não foram carregados. Tente novamente.</div></div>';
+    }
   }
 }
 
 function renderSaldo() {
-  // Antes usava 'todos' direto — agora usa os dados já filtrados
-  // por tipo + período, para que o saldo reflita o que está visível.
-  const dados = getDadosFiltrados();
+  // Indicadores refletem o período; filtros da lista não alteram o resultado financeiro.
+  const dados = todos.filter(m => dentroDoPeriodo(m.data));
   const ganhos = dados.filter(m => m.tipo === 'GANHO').reduce((s, m) => s + m.valor, 0);
   const gastos = dados.filter(m => m.tipo === 'GASTO').reduce((s, m) => s + m.valor, 0);
   const liquido = ganhos - gastos;
@@ -3233,7 +3178,7 @@ function renderSaldo() {
 }
 
 function renderStats() {
-  const dados = getDadosFiltrados();
+  const dados = todos.filter(m => dentroDoPeriodo(m.data));
   const ganhos = dados.filter(m => m.tipo === 'GANHO');
   const gastos = dados.filter(m => m.tipo === 'GASTO');
   const totalG  = ganhos.reduce((s, m) => s + m.valor, 0);
@@ -3285,9 +3230,20 @@ function ordenarDados(dados) {
   }
 }
 
+function alternarListaCompleta() {
+  listaCompleta = !listaCompleta;
+  paginaAtual = 1;
+  renderLista();
+}
+
 function renderLista() {
   // getDadosFiltrados() já aplica tipo + período juntos
-  const dados = getDadosFiltrados();
+  const busca = document.getElementById('busca-movimentacoes').value.trim().toLocaleLowerCase('pt-BR');
+  const dados = getDadosFiltrados().filter(m => `${m.descricao || ''} ${m.categoria || ''}`.toLocaleLowerCase('pt-BR').includes(busca));
+  const verTodas = document.getElementById('ver-todas');
+  verTodas.hidden = dados.length <= ITENS_POR_PAGINA;
+  verTodas.textContent = listaCompleta ? 'Mostrar apenas 5' : `Ver todas (${dados.length})`;
+  if (!listaCompleta) paginaAtual = 1;
   const lista = document.getElementById('lista');
   document.getElementById('list-count').textContent = dados.length + ' item' + (dados.length !== 1 ? 's' : '');
   lista.innerHTML = '';
@@ -3344,18 +3300,18 @@ function renderLista() {
           data-valor="${m.valor}"
           data-tipo="${m.tipo}"
           data-data="${m.data}"
-          title="Editar">✎</button>
+          aria-label="Editar movimentação" title="Editar">✎</button>
         <button class="btn-delete btn-del-item"
           data-id="${m.id}"
           data-desc="${escaparHtml(m.descricao || m.categoria)}"
           data-valor="${m.valor}"
           data-tipo="${m.tipo}"
-          title="Excluir">✕</button>
+          aria-label="Excluir movimentação" title="Excluir">✕</button>
       </div>`;
     lista.appendChild(div);
   });
 
-  renderPaginacao(totalPaginas);
+  renderPaginacao(listaCompleta ? totalPaginas : 1);
 }
 
 /*
@@ -3429,7 +3385,7 @@ function irParaPagina(numero) {
 
 function renderChart() {
   const area = document.getElementById('chart-area');
-  const gastos = getDadosFiltrados().filter(m => m.tipo === 'GASTO');
+  const gastos = todos.filter(m => dentroDoPeriodo(m.data) && m.tipo === 'GASTO');
 
   if (!gastos.length) {
     area.innerHTML = '<div style="color:var(--muted);font-size:12px;text-align:center;padding:12px 0;">Sem gastos registrados</div>';
@@ -3438,16 +3394,16 @@ function renderChart() {
 
   const totais = {};
   gastos.forEach(g => { totais[g.categoria] = (totais[g.categoria] || 0) + g.valor; });
-  const max = Math.max(...Object.values(totais));
+  const totalGastos = Object.values(totais).reduce((soma, valor) => soma + valor, 0);
   const sorted = Object.entries(totais).sort((a, b) => b[1] - a[1]).slice(0, 6);
 
   area.innerHTML = sorted.map(([cat, val]) => {
-    const pct = Math.round((val / max) * 100);
+    const pct = Math.round((val / totalGastos) * 100);
     return `
       <div class="chart-row">
         <div class="chart-cat">${escaparHtml(cat)}</div>
         <div class="chart-bar-bg">
-          <div class="chart-bar-fill" data-pct="${pct}" style="background:var(--red);opacity:${0.4 + pct/160};"></div>
+          <div class="chart-bar-fill" data-pct="${pct}" style="background:var(--accent);"></div>
         </div>
         <div class="chart-pct">${pct}%</div>
       </div>`;
@@ -3694,6 +3650,11 @@ document.addEventListener('keydown', function(e) {
   }
 });
 
+let resizeDashboardTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeDashboardTimer);
+  resizeDashboardTimer = setTimeout(() => { if (todos.length) renderEvolucao(); }, 120);
+});
 inicializarAplicacao();
 </script>
 </body>
