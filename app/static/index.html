@@ -1303,6 +1303,48 @@ header {background:rgba(13,16,29,.96);border-bottom-color:#25283d;}
  #lista .mov-icon {width:36px;height:36px;}
 }
 
+/* AutoGestor Ocean refinements — coherent dashboard hierarchy and responsive behavior */
+#real-saldo {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;}
+#real-saldo .saldo-card:last-child {grid-column:1/-1;grid-row:1;isolation:isolate;overflow:hidden;}
+#real-saldo .saldo-card:last-child .saldo-label {font-size:12px!important;color:#c7dcff!important;}
+#real-saldo .saldo-card:last-child .saldo-value {font-size:clamp(32px,4vw,44px)!important;line-height:1.25;}
+#real-saldo .saldo-card:not(:last-child) .saldo-value {font-size:clamp(20px,2.6vw,28px)!important;}
+.ag4-section {border-radius:18px 18px 0 0!important;}
+.ag4-filters {padding:4px 0 0!important;}
+#lista {border-top:1px solid #263a58!important;}
+#lista .mov-item {border-radius:0!important;min-width:0;}
+#lista .mov-left {min-width:0;}
+#lista .mov-right {align-items:center;}
+#lista .mov-value {white-space:nowrap;font-variant-numeric:tabular-nums;}
+#lista .mov-icon {flex-shrink:0;}
+#lista .mov-item:focus-within {background:#152944!important;}
+.ag3-item-menu:focus-visible,.ag3-see-all:focus-visible,.filter-btn:focus-visible {outline:2px solid #65a7ff!important;outline-offset:2px;}
+@media(min-width:950px) {
+ #real-saldo {grid-template-columns:1.15fr 1fr 1fr;}
+ #real-saldo .saldo-card:last-child {grid-column:1;grid-row:1;}
+ #real-saldo .saldo-card:first-child {grid-column:2;grid-row:1;}
+ #real-saldo .saldo-card:nth-child(2) {grid-column:3;grid-row:1;}
+ #real-saldo .saldo-card:last-child .saldo-value {font-size:35px!important;}
+}
+@media(max-width:700px) {
+ .ag4-filters .filter-bar {max-width:100%;width:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));}
+ .ag4-filters .filter-btn {padding:10px 5px!important;font-size:11px!important;}
+ .ag4-filter-right {display:grid;grid-template-columns:1fr 1fr;width:100%;gap:8px;}
+ .ag4-filter-right select {width:100%;max-width:none;min-width:0;padding:10px 8px!important;}
+ .ag4-heading {gap:9px;}
+ .ag4-header-actions {margin-left:0;align-self:center;}
+ #lista .mov-item {gap:8px!important;}
+ #lista .mov-right {gap:5px!important;}
+ #lista .mov-desc {max-width:min(42vw,250px)!important;}
+ #lista .mov-value {font-size:12px!important;}
+ #lista .mov-icon {width:36px!important;height:36px!important;}
+}
+@media(max-width:360px) {
+ .ag4-heading .ag3-list-subtitle {display:none;}
+ #lista .mov-desc {max-width:125px!important;}
+ #lista .mov-date {font-size:9px!important;}
+}
+
 /* AutoGestor Ocean — premium navy and electric-blue design */
 :root {--bg:#081324;--surface:#0e1c30;--card:#101e34;--border:#213450;--border2:#263a59;--text:#f0f5ff;--muted:#9baccc;--dim:#8296b6;--accent:#2476f5;--accent2:#408bff;--green:#22c99b;--red:#ff6573;--sk-base:#14243a;--sk-shine:#1d304d;}
 body {background:radial-gradient(ellipse 60% 470px at 70% 4%,#102c56 0%,transparent 90%),#081324!important;color:#eef4ff!important;}
@@ -3655,8 +3697,8 @@ function renderLista() {
   const totalPaginas = Math.max(1, Math.ceil(sorted.length / itensPorPagina));
   if (paginaAtual > totalPaginas) paginaAtual = totalPaginas;
 
-  const inicio = (paginaAtual - 1) * ITENS_POR_PAGINA;
-  const fim = inicio + ITENS_POR_PAGINA;
+  const inicio = (paginaAtual - 1) * itensPorPagina;
+  const fim = inicio + itensPorPagina;
   const paginaDeItens = sorted.slice(inicio, fim);
 
   paginaDeItens.forEach(m => {
