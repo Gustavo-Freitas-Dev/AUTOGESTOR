@@ -265,19 +265,27 @@ def atualizar_perfil(
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
 
-    try:
-        autenticado = autenticar_usuario(db, usuario.email, dado.senha_atual)
-    except AuthServiceUnavailableError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="auth_service_unavailable",
-        ) from exc
-
-    if not autenticado:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Senha atual incorreta.",
-        )
+    # Nome pode ser alterado com a sessão autenticada. Mudanças sensíveis
+    # continuam exigindo a senha atual, sem enfraquecer o fluxo existente.
+    mudanca_sensivel = email_normalizado != usuario.email or bool(dado.nova_senha)
+    if mudanca_sensivel:
+        if not dado.senha_atual:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Confirme sua identidade para alterar e-mail ou senha.",
+            )
+        try:
+            autenticado = autenticar_usuario(db, usuario.email, dado.senha_atual)
+        except AuthServiceUnavailableError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="auth_service_unavailable",
+            ) from exc
+        if not autenticado:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Senha atual incorreta.",
+            )
 
     email_em_uso = buscar_usuario_por_email(db, email_normalizado)
     if email_em_uso and email_em_uso.id != usuario.id:
