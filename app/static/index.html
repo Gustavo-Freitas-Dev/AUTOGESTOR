@@ -1206,6 +1206,71 @@
   }
   @media(prefers-reduced-motion:reduce) { *,*::before,*::after { animation:none !important; transition:none !important; scroll-behavior:auto !important; } }
 
+
+  /* Refinement: tablet header, compact activity and readable chart scales. */
+  header { grid-template-columns:minmax(140px,1fr) minmax(180px,260px) auto; gap:20px; }
+  .space-switcher,.space-select-wrap { min-width:0; }
+  .space-select-wrap { flex:1; }
+  .space-select-trigger { min-width:0; }
+  #seletor-espaco-nome { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .header-actions { min-width:0; }
+  .profile-trigger { min-width:0; max-width:230px; }
+  .dashboard-heading { padding-bottom:4px; }
+  .saldo-card { padding:22px; }
+  .card { border-color:#263141; box-shadow:none; }
+  .chart-unit { font-size:9px; color:var(--muted); letter-spacing:.08em; margin-bottom:8px; }
+  .chart-reading { min-height:26px; font-size:12px; color:var(--text); text-align:right; font-variant-numeric:tabular-nums; padding-top:8px; }
+  .chart-empty { text-align:center; font-size:14px; color:var(--text); padding:28px 12px; }
+  .chart-empty span { display:block; color:var(--muted); font-size:12px; margin-top:8px; }
+  .evo-hover-point { cursor:pointer; }
+  .evo-hover-point:focus { outline:none; stroke:var(--accent2); stroke-width:1.5; }
+  .list-header > div { gap:8px !important; }
+  .transaction-tools { display:grid; grid-template-columns:1fr; gap:12px; }
+  .search-field { min-width:0; }
+  .mov-item,.mov-item.ganho-item,.mov-item.gasto-item { border-left:0; padding:14px 0; min-height:82px; }
+  .mov-left { flex:1; }
+  .mov-desc { font-size:13px; line-height:1.4; }
+  .mov-badge { border:0; text-transform:none; letter-spacing:0; font-weight:400; }
+  .mov-date::before { content:'·'; margin-right:6px; }
+  .mov-right { max-width:none; display:flex; flex-wrap:nowrap; gap:12px; align-items:center; }
+  .mov-value { white-space:nowrap; font-size:13px; }
+  .mov-value-label { display:none; }
+  .mov-actions { display:flex; gap:4px; }
+  .mov-actions .btn-edit,.mov-actions .btn-delete { width:32px; height:36px; border-color:transparent; border-radius:7px; }
+  .mov-actions button:hover { background:var(--surface); border-color:var(--border2); }
+  .mov-icon { width:30px; height:30px; font-size:14px; }
+  .meta-empty { padding:12px 0 18px; text-align:left; line-height:1.6; }
+  .meta-add-row { margin-top:8px; }
+  .quick-entry .field label { letter-spacing:0; }
+  @media(min-width:761px) and (max-width:1100px) {
+    header { grid-template-columns:minmax(130px,1fr) minmax(170px,230px) auto; gap:14px; }
+    .profile-copy { display:none; }
+    .profile-trigger { width:auto; }
+    .dashboard-columns { grid-template-columns:minmax(0,1fr) 300px; }
+    .mov-icon { display:none; }
+    .mov-right { gap:8px; }
+    .mov-actions { flex-direction:column; gap:0; }
+    .mov-actions .btn-edit,.mov-actions .btn-delete { width:30px; height:30px; }
+  }
+  @media(min-width:1101px) { .transaction-tools { grid-template-columns:auto minmax(160px,1fr); } }
+  @media(max-width:760px) {
+    header { grid-template-columns:36px minmax(0,1fr) auto; gap:10px; }
+    .space-switcher { width:100%; }
+    .space-select-wrap { min-width:0; }
+    .profile-trigger { padding:4px; }
+    .profile-chevron { display:none; }
+    .mov-item { flex-wrap:nowrap; gap:10px; }
+    .mov-right { gap:6px; }
+    .mov-right > div { min-width:0; }
+    .mov-actions { flex-direction:column; gap:0; }
+    .mov-actions .btn-edit,.mov-actions .btn-delete { width:34px; height:34px; }
+    .mov-desc { font-size:12px; }
+    .mov-meta { font-size:10px; }
+    .mov-date,.mov-badge { font-size:10px; }
+    .saldo-card { padding:18px 16px; }
+    .section-description { line-height:1.6; }
+  }
+
 </style>
 
 <!--
@@ -1603,7 +1668,7 @@
         </div>
       </div></div>
  <section class="card transactions" aria-label="Movimentações"><div class="list-header">
-      <span class="list-title">Movimentações recentes</span>
+      <span class="list-title" id="movimentacoes-titulo">Movimentações recentes</span>
       <div style="display:flex; align-items:center; gap:10px;">
         <span class="list-count" id="list-count"></span>
 
@@ -1618,7 +1683,7 @@
         <button class="filter-btn active" onclick="setFiltro('TODOS', this)">Todos</button>
         <button class="filter-btn ganho-filter" onclick="setFiltro('GANHO', this)">↑ Ganhos</button>
         <button class="filter-btn gasto-filter" onclick="setFiltro('GASTO', this)">↓ Gastos</button>
-      </div><label class="search-field"><span class="sr-only">Buscar movimentações</span><input type="search" id="busca-movimentacoes" placeholder="Buscar descrição ou categoria" oninput="paginaAtual=1;renderLista()"></label></div><div id="sk-lista">
+      </div><label class="search-field"><span class="sr-only">Buscar movimentações</span><input type="search" id="busca-movimentacoes" placeholder="Buscar movimentação" oninput="paginaAtual=1;renderLista()"></label></div><div id="sk-lista">
 
 
       <div class="sk-item">
@@ -2657,112 +2722,50 @@ function toast(mensagem, tipo = 'info', duracaoMs = 3500) {
 */
 function renderEvolucao() {
   const wrap = document.getElementById('evolucao-wrap');
-
-  // Para a evolução, ignoramos o filtro de TIPO (ganho/gasto) —
-  // faz sentido mostrar sempre o saldo combinado, senão um
-  // gráfico "só de gastos" não seria uma evolução de saldo real.
-  // Mantemos apenas o filtro de PERÍODO.
   const dados = todos.filter(m => dentroDoPeriodo(m.data));
-
-  if (dados.length < 2) {
-    wrap.innerHTML = '<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px 0;">Sem dados suficientes para o gráfico</div>';
+  if (!dados.length) {
+    wrap.innerHTML = '<div class="chart-empty">Seu resultado começa aqui.<span>Registre uma entrada ou saída para acompanhar a evolução.</span></div>';
     return;
   }
-
-  // Agrupa por data: soma ganhos e subtrai gastos de cada dia
   const porDia = {};
   dados.forEach(m => {
-    const d = String(m.data).slice(0, 10);
-    if (!porDia[d]) porDia[d] = 0;
-    porDia[d] += m.tipo === 'GANHO' ? m.valor : -m.valor;
+    const dia = String(m.data).slice(0, 10);
+    porDia[dia] = (porDia[dia] || 0) + (m.tipo === 'GANHO' ? m.valor : -m.valor);
   });
-
-  // Ordena as datas cronologicamente e calcula o saldo acumulado
-  const datasOrdenadas = Object.keys(porDia).sort();
   let acumulado = 0;
-  const pontos = datasOrdenadas.map(d => {
-    acumulado += porDia[d];
-    return { data: d, saldo: acumulado };
-  });
-
-  // ── Configuração do SVG ──
+  const pontos = Object.keys(porDia).sort().map(data => ({ data, saldo: acumulado += porDia[data] }));
   const largura = Math.max(240, wrap.clientWidth);
-  const altura = 160;
-  const paddingY = 10;
-
-  const valores = pontos.map(p => p.saldo);
-  const max = Math.max(...valores, 0);
-  const min = Math.min(...valores, 0);
-  const range = (max - min) || 1; // evita divisão por zero se todos os saldos forem iguais
-
-  // Converte um índice de ponto + valor de saldo em coordenadas X,Y do SVG
-  function coordX(i) {
-    return pontos.length === 1 ? largura / 2 : (i / (pontos.length - 1)) * largura;
-  }
-  function coordY(saldo) {
-    // Inverte o eixo Y (SVG cresce para baixo, gráfico cresce para cima)
-    return altura - paddingY - ((saldo - min) / range) * (altura - paddingY * 2);
-  }
-
-  // Monta a string do atributo "points" da polyline
-  const pontosSVG = pontos.map((p, i) => `${coordX(i)},${coordY(p.saldo)}`).join(' ');
-
-  // Posição da linha do zero (eixo de referência) — só desenhamos
-  // se o zero estiver dentro do intervalo visível
-  const yZero = coordY(0);
-  const mostrarLinhaZero = min < 0 && max > 0;
-
-  // Cor da linha: verde se terminou positivo, vermelho se negativo
-  const saldoFinal = pontos[pontos.length - 1].saldo;
-  const corLinha = saldoFinal >= 0 ? 'var(--accent2)' : 'var(--red)';
-
-  /*
-    Círculos invisíveis maiores sobre cada ponto real (raio 8) servem
-    de área de hover para o tooltip — pontos visuais pequenos (raio 3)
-    seriam difíceis demais de acertar com o mouse.
-  */
-  const circulosHover = pontos.map((p, i) => `
-    <circle class="evo-hover-point" cx="${coordX(i)}" cy="${coordY(p.saldo)}" r="8"
-      fill="transparent" data-data="${p.data}" data-saldo="${p.saldo}" style="cursor:pointer;" />
-    <circle cx="${coordX(i)}" cy="${coordY(p.saldo)}" r="2.5" fill="${corLinha}" />
-  `).join('');
-
-  wrap.innerHTML = `
-    <svg role="img" aria-label="Resultado acumulado no período" class="evolucao-svg-wrap" viewBox="0 0 ${largura} ${altura}" style="width:100%;height:${altura}px;">
-      ${mostrarLinhaZero ? `<line x1="0" y1="${yZero}" x2="${largura}" y2="${yZero}" stroke="var(--border2)" stroke-width="1" stroke-dasharray="3,3" />` : ''}
-      <polyline points="${pontosSVG}" fill="none" stroke="${corLinha}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
-      ${circulosHover}
-    </svg>
-    <div class="evolucao-tooltip" id="evo-tooltip">
-      <div class="tt-data" id="evo-tt-data"></div>
-      <div class="tt-valor" id="evo-tt-valor"></div>
-    </div>
-  `;
-
-  // ── Eventos de hover para o tooltip ──
-  const tooltip = document.getElementById('evo-tooltip');
-  wrap.querySelectorAll('.evo-hover-point').forEach(circle => {
-    circle.addEventListener('mouseenter', (e) => {
-      const d = circle.dataset.data;
-      const saldo = parseFloat(circle.dataset.saldo);
-
-      document.getElementById('evo-tt-data').textContent = fmtData(d);
-      const ttValor = document.getElementById('evo-tt-valor');
-      ttValor.textContent = (saldo < 0 ? '- ' : '') + fmt(saldo);
-      ttValor.style.color = saldo >= 0 ? 'var(--green)' : 'var(--red)';
-
-      // Posiciona o tooltip próximo do ponto, usando coordenadas
-      // relativas ao wrap (que tem position:relative no CSS)
-      const rect = wrap.getBoundingClientRect();
-      const svgRect = wrap.querySelector('svg').getBoundingClientRect();
-      const px = ((parseFloat(circle.getAttribute('cx')) / largura) * svgRect.width);
-      const py = ((parseFloat(circle.getAttribute('cy')) / altura) * svgRect.height);
-
-      tooltip.style.left = Math.min(px + 8, svgRect.width - 100) + 'px';
-      tooltip.style.top  = Math.max(py - 40, 0) + 'px';
-      tooltip.classList.add('show');
-    });
-    circle.addEventListener('mouseleave', () => tooltip.classList.remove('show'));
+  const altura = 210;
+  const margem = { esquerda: 58, direita: 14, topo: 20, base: 34 };
+  const larguraUtil = largura - margem.esquerda - margem.direita;
+  const alturaUtil = altura - margem.topo - margem.base;
+  const max = Math.max(1, ...pontos.map(p => p.saldo));
+  const min = Math.min(0, ...pontos.map(p => p.saldo));
+  const amplitude = max - min || 1;
+  const dataNumero = data => Date.parse(data + 'T00:00:00Z');
+  const inicio = dataNumero(pontos[0].data);
+  const intervalo = dataNumero(pontos[pontos.length - 1].data) - inicio;
+  const x = p => margem.esquerda + (intervalo ? (dataNumero(p.data) - inicio) / intervalo : .5) * larguraUtil;
+  const y = valor => margem.topo + (max - valor) / amplitude * alturaUtil;
+  const moeda = valor => valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  const eixo = valor => valor.toLocaleString('pt-BR', { notation:'compact', maximumFractionDigits:1 });
+  const linha = pontos.map(p => `${x(p)},${y(p.saldo)}`).join(' ');
+  const grades = [max, min + amplitude / 2, min].map(valor => `<g><line x1="${margem.esquerda}" y1="${y(valor)}" x2="${largura - margem.direita}" y2="${y(valor)}" stroke="var(--border)" stroke-dasharray="3 5"/><text x="${margem.esquerda - 10}" y="${y(valor) + 4}" text-anchor="end" fill="var(--muted)" font-size="10">${eixo(valor)}</text></g>`).join('');
+  const indices = [...new Set(largura < 380 ? [0, pontos.length - 1] : [0, Math.floor((pontos.length - 1) / 2), pontos.length - 1])];
+  const datas = indices.map(i => `<text x="${x(pontos[i])}" y="${altura - 7}" text-anchor="${i === 0 ? 'start' : i === pontos.length - 1 ? 'end' : 'middle'}" fill="var(--muted)" font-size="10">${fmtData(pontos[i].data).slice(0,5)}</text>`).join('');
+  wrap.innerHTML = `<div class="chart-unit">RESULTADO ACUMULADO · R$</div>
+    <svg role="img" aria-label="Resultado acumulado por data, em reais" class="evolucao-svg-wrap" viewBox="0 0 ${largura} ${altura}" style="width:100%;height:${altura}px">
+      ${grades}
+      <polyline points="${linha}" fill="none" stroke="var(--accent2)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+      ${pontos.map((p, i) => `<circle cx="${x(p)}" cy="${y(p.saldo)}" r="3.5" fill="var(--accent2)"/><circle class="evo-hover-point" tabindex="0" role="button" aria-label="${fmtData(p.data)}: ${moeda(p.saldo)}" cx="${x(p)}" cy="${y(p.saldo)}" r="12" fill="transparent" data-index="${i}"/>`).join('')}
+      ${datas}
+    </svg><div class="chart-reading" aria-live="polite"></div>`;
+  const leitura = wrap.querySelector('.chart-reading');
+  const mostrar = ponto => { leitura.textContent = `${fmtData(ponto.data)} · ${moeda(ponto.saldo)}`; };
+  mostrar(pontos[pontos.length - 1]);
+  wrap.querySelectorAll('.evo-hover-point').forEach(el => {
+    ['mouseenter', 'focus', 'click'].forEach(evento => el.addEventListener(evento, () => mostrar(pontos[Number(el.dataset.index)])));
+    el.addEventListener('keydown', evento => { if (evento.key === 'Enter' || evento.key === ' ') { evento.preventDefault(); mostrar(pontos[Number(el.dataset.index)]); } });
   });
 }
 
@@ -3240,6 +3243,7 @@ function renderLista() {
   // getDadosFiltrados() já aplica tipo + período juntos
   const busca = document.getElementById('busca-movimentacoes').value.trim().toLocaleLowerCase('pt-BR');
   const dados = getDadosFiltrados().filter(m => `${m.descricao || ''} ${m.categoria || ''}`.toLocaleLowerCase('pt-BR').includes(busca));
+  document.getElementById('movimentacoes-titulo').textContent = listaCompleta || busca || filtroAtivo !== 'TODOS' ? 'Movimentações' : 'Movimentações recentes';
   const verTodas = document.getElementById('ver-todas');
   verTodas.hidden = dados.length <= ITENS_POR_PAGINA;
   verTodas.textContent = listaCompleta ? 'Mostrar apenas 5' : `Ver todas (${dados.length})`;
@@ -3293,20 +3297,20 @@ function renderLista() {
           <div class="mov-value ${isGanho ? 'green' : 'red'}">${isGanho ? '+' : '-'} ${fmt(m.valor)}</div>
           <div class="mov-value-label">${isGanho ? 'entrada' : 'saída'}</div>
         </div>
-        <button class="btn-edit btn-edit-item"
+        <div class="mov-actions"><button class="btn-edit btn-edit-item"
           data-id="${m.id}"
           data-categoria="${escaparHtml(m.categoria)}"
           data-descricao="${escaparHtml(m.descricao || '')}"
           data-valor="${m.valor}"
           data-tipo="${m.tipo}"
           data-data="${m.data}"
-          aria-label="Editar movimentação" title="Editar">✎</button>
+          aria-label="Editar movimentação" title="Editar"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m15 4 5 5M4 20l5-1L20 8a2 2 0 0 0-5-5L4 14v6Z"/></svg></button>
         <button class="btn-delete btn-del-item"
           data-id="${m.id}"
           data-desc="${escaparHtml(m.descricao || m.categoria)}"
           data-valor="${m.valor}"
           data-tipo="${m.tipo}"
-          aria-label="Excluir movimentação" title="Excluir">✕</button>
+          aria-label="Excluir movimentação" title="Excluir"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 10v7m4-7v7"/></svg></button></div>
       </div>`;
     lista.appendChild(div);
   });
@@ -3405,7 +3409,7 @@ function renderChart() {
         <div class="chart-bar-bg">
           <div class="chart-bar-fill" data-pct="${pct}" style="background:var(--accent);"></div>
         </div>
-        <div class="chart-pct">${pct}%</div>
+        <div class="chart-pct" title="${fmt(val)}">${pct}%</div>
       </div>`;
   }).join('');
 
