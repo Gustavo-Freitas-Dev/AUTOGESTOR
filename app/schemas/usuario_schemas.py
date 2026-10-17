@@ -45,7 +45,7 @@ class LoginUsuario(BaseModel):
 class AtualizarUsuario(BaseModel):
     nome: str = Field(..., min_length=2, max_length=80)
     email: EmailStr
-    senha_atual: str = Field(..., min_length=1, max_length=72)
+    senha_atual: str | None = Field(default=None, min_length=1, max_length=72)
     nova_senha: str | None = Field(default=None, min_length=6, max_length=72)
 
     @field_validator("email", mode="before")

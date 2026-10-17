@@ -187,6 +187,35 @@
   .photo-button.remove { color: var(--red); }
   .photo-hint { width: 100%; color: var(--muted); font-size: 9px; }
 
+
+/* Perfil premium responsivo */
+.account-dialog-premium { width:min(760px,calc(100% - 28px)); max-height:min(90dvh,900px); overflow-y:auto; border-radius:20px; }
+.account-form-premium { padding:26px; display:grid; gap:16px; }
+.account-topline { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; }
+.account-eyebrow { display:block; color:var(--accent); font-size:10px; font-weight:800; letter-spacing:1.4px; margin-bottom:8px; }
+.account-topline .account-title { font-size:25px; margin-bottom:5px; }
+.account-topline .account-help { font-size:13px; margin:0; line-height:1.5; }
+.account-close { color:var(--muted); border:1px solid var(--border2); background:var(--surface); border-radius:10px; padding:9px 12px; cursor:pointer; }
+.account-section { background:var(--surface); border:1px solid var(--border); border-radius:15px; padding:20px; min-width:0; }
+.account-section-heading { display:flex; align-items:center; gap:12px; margin-bottom:18px; }
+.account-section-heading strong { display:block; font-size:14px; margin-bottom:5px; }
+.account-section-heading small,.account-security-row small,.account-muted { display:block; color:var(--muted); font-size:11px; line-height:1.5; }
+.account-section-icon { display:grid; place-items:center; width:38px; height:38px; border-radius:11px; background:rgba(47,120,246,.16); color:var(--accent); font-size:21px; flex-shrink:0; }
+.account-form-premium .photo-editor { border:0; background:transparent; padding:0; margin:0; gap:20px; }
+.account-form-premium .photo-preview { width:88px; height:88px; flex-basis:88px; border-radius:50%; font-size:25px; }
+.account-form-premium .photo-controls { flex:1; gap:10px; }
+.photo-control-buttons { display:flex; gap:9px; flex-wrap:wrap; }
+.account-form-premium .photo-button { padding:10px 13px; font-size:12px; border-radius:9px; }
+.account-form-premium .photo-hint { font-size:11px; }
+.account-fields { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.account-fields .field { min-width:0; }
+.account-fields input[readonly] { opacity:.8; cursor:default; }
+.account-muted { margin-top:7px; }
+.account-security-row { display:flex; align-items:center; justify-content:space-between; gap:14px; border:1px solid var(--border); border-radius:11px; padding:14px; margin-top:10px; }
+.account-security-row strong { display:block; font-size:12px; margin-bottom:5px; }
+.account-security-row button { flex-shrink:0; }
+@media(max-width:600px) { .account-dialog-premium { width:calc(100% - 20px); max-height:94dvh; } .account-form-premium { padding:16px; gap:12px; } .account-topline .account-title { font-size:22px; } .account-section { padding:15px; } .account-fields { grid-template-columns:1fr; gap:4px; } .account-form-premium .photo-editor { flex-direction:column; text-align:center; } .account-form-premium .photo-controls { justify-content:center; } .photo-control-buttons { justify-content:center; } .account-form-premium .photo-hint { text-align:center; } .account-security-row { gap:8px; } .account-security-row button { font-size:11px; padding:8px; } .account-form-premium .account-actions { flex-wrap:wrap; } }
+
   /* LAYOUT */
   .container { max-width: 1060px; margin: 0 auto; padding: 28px 24px; display: grid; grid-template-columns: 360px 1fr; gap: 24px; align-items: start; }
 
@@ -1430,39 +1459,34 @@
   </form>
 </dialog>
 
-<dialog class="account-dialog" id="dialog-conta">
-  <form class="account-form" id="form-conta" onsubmit="salvarMinhaConta(event)">
-    <h2 class="account-title">Minha conta</h2>
-    <p class="account-help">Confirme sua senha atual para salvar as alterações.</p>
-    <div class="photo-editor">
-      <div class="photo-preview" id="foto-preview"><span id="foto-preview-iniciais">AG</span><img id="foto-preview-img" alt="Prévia da foto" hidden></div>
-      <div class="photo-controls">
-        <label class="photo-button" for="conta-foto">Escolher foto</label>
-        <input id="conta-foto" type="file" accept="image/jpeg,image/png,image/webp" hidden onchange="selecionarFoto(event)">
-        <button type="button" class="photo-button remove" onclick="removerFoto()">Remover</button>
-        <small class="photo-hint">JPG, PNG ou WebP de até 2 MB.</small>
+<dialog class="account-dialog account-dialog-premium" id="dialog-conta">
+  <form class="account-form account-form-premium" id="form-conta" onsubmit="salvarMinhaConta(event)">
+    <div class="account-topline"><div><span class="account-eyebrow">PERFIL E PREFERÊNCIAS</span><h2 class="account-title">Minha conta</h2><p class="account-help">Gerencie suas informações e a segurança da sua conta.</p></div><button type="button" class="account-close" onclick="fecharMinhaConta()" aria-label="Fechar">✕</button></div>
+    <section class="account-section">
+      <div class="account-section-heading"><span class="account-section-icon">◉</span><div><strong>Foto de perfil</strong><small>Essa foto será exibida no seu perfil.</small></div></div>
+      <div class="photo-editor">
+        <div class="photo-preview" id="foto-preview"><span id="foto-preview-iniciais">AG</span><img id="foto-preview-img" alt="Prévia da foto" hidden></div>
+        <div class="photo-controls"><div class="photo-control-buttons"><label class="photo-button" for="conta-foto">Alterar foto</label><input id="conta-foto" type="file" accept="image/jpeg,image/png,image/webp" hidden onchange="selecionarFoto(event)"><button type="button" class="photo-button remove" onclick="removerFoto()">Remover foto</button></div><small class="photo-hint">JPG, PNG ou WebP de até 2 MB.</small></div>
       </div>
-    </div>
-    <div class="field">
-      <label for="conta-nome">Nome</label>
-      <input id="conta-nome" type="text" minlength="2" maxlength="80" required autocomplete="name">
-    </div>
-    <div class="field">
-      <label for="conta-email">E-mail</label>
-      <input id="conta-email" type="email" required autocomplete="email">
-    </div>
-    <div class="field">
-      <label for="conta-senha-atual">Senha atual</label>
-      <input id="conta-senha-atual" type="password" required maxlength="72" autocomplete="current-password">
-    </div>
-    <div class="field">
-      <label for="conta-nova-senha">Nova senha (opcional)</label>
-      <input id="conta-nova-senha" type="password" minlength="6" maxlength="72" autocomplete="new-password">
-    </div>
-    <div class="account-actions">
-      <button type="button" class="btn-logout" onclick="fecharMinhaConta()">Cancelar</button>
-      <button type="submit" class="btn-primary ganho" id="btn-salvar-conta">Salvar alterações</button>
-    </div>
+    </section>
+    <section class="account-section">
+      <div class="account-section-heading"><span class="account-section-icon">♙</span><div><strong>Dados pessoais</strong><small>Mantenha suas informações atualizadas.</small></div></div>
+      <div class="account-fields"><div class="field"><label for="conta-nome">Nome</label><input id="conta-nome" type="text" minlength="2" maxlength="80" required autocomplete="name"></div><div class="field"><label for="conta-email">E-mail</label><input id="conta-email" type="email" readonly autocomplete="email" aria-describedby="conta-email-ajuda"><small id="conta-email-ajuda" class="account-muted">Para alterar seu e-mail, use a opção de segurança abaixo.</small></div></div>
+      <div class="account-actions"><button type="button" class="btn-logout" onclick="fecharMinhaConta()">Cancelar</button><button type="submit" class="btn-primary ganho" id="btn-salvar-conta">Salvar alterações</button></div>
+    </section>
+    <section class="account-section">
+      <div class="account-section-heading"><span class="account-section-icon">♢</span><div><strong>Segurança da conta</strong><small>Gerencie seu e-mail e sua senha.</small></div></div>
+      <div class="account-security-row"><div><strong>Alterar e-mail</strong><small>Protegido por confirmação de identidade.</small></div><button type="button" class="photo-button" onclick="abrirAlteracaoSensivel('email')">Alterar e-mail</button></div>
+      <div class="account-security-row"><div><strong>Alterar senha</strong><small>Receba um link seguro no e-mail cadastrado.</small></div><button type="button" class="photo-button" onclick="solicitarRedefinicaoConta(this)">Alterar senha</button></div>
+    </section>
+  </form>
+</dialog>
+<dialog class="account-dialog" id="dialog-conta-email">
+  <form class="account-form" onsubmit="salvarEmailConta(event)">
+    <h2 class="account-title">Alterar e-mail</h2><p class="account-help">Por segurança, confirme sua senha atual para alterar o e-mail.</p>
+    <div class="field"><label for="conta-email-novo">Novo e-mail</label><input id="conta-email-novo" type="email" required autocomplete="email"></div>
+    <div class="field"><label for="conta-email-senha">Senha atual</label><input id="conta-email-senha" type="password" required autocomplete="current-password"></div>
+    <div class="account-actions"><button type="button" class="btn-logout" onclick="document.getElementById('dialog-conta-email').close()">Cancelar</button><button class="btn-primary ganho" type="submit" id="btn-salvar-email">Atualizar e-mail</button></div>
   </form>
 </dialog>
 
@@ -2000,8 +2024,6 @@ function abrirMinhaConta() {
   fecharMenuPerfil();
   document.getElementById('conta-nome').value = USUARIO?.nome || '';
   document.getElementById('conta-email').value = USUARIO?.email || '';
-  document.getElementById('conta-senha-atual').value = '';
-  document.getElementById('conta-nova-senha').value = '';
   document.getElementById('conta-foto').value = '';
   FOTO_TEMP = USUARIO?.foto || null;
   atualizarPreviaFoto();
@@ -2022,14 +2044,60 @@ function fecharExcluirConta() {
   document.getElementById('dialog-excluir-conta').close();
 }
 
+function abrirAlteracaoSensivel(tipo) {
+  if (tipo !== 'email') return;
+  document.getElementById('conta-email-novo').value = USUARIO?.email || '';
+  document.getElementById('conta-email-senha').value = '';
+  document.getElementById('dialog-conta-email').showModal();
+}
+
+async function solicitarRedefinicaoConta(botao) {
+  if (!USUARIO?.email) { toast('E-mail da conta indisponível.', 'error'); return; }
+  botao.disabled = true;
+  try {
+    const resposta = await apiFetch(window.location.origin + '/auth/esqueci-senha', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: USUARIO.email })
+    });
+    if (!resposta.ok) throw new Error('Não foi possível solicitar o link.');
+    toast('Se o e-mail estiver cadastrado, você receberá um link para redefinir a senha.', 'success');
+  } catch (erro) { toast('Não foi possível solicitar o link agora.', 'error'); }
+  finally { botao.disabled = false; }
+}
+
+async function salvarEmailConta(event) {
+  event.preventDefault();
+  const botao = document.getElementById('btn-salvar-email');
+  botao.disabled = true;
+  try {
+    const resposta = await apiFetch(window.location.origin + '/auth/me', {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        nome: USUARIO.nome,
+        email: document.getElementById('conta-email-novo').value.trim(),
+        senha_atual: document.getElementById('conta-email-senha').value
+      })
+    });
+    const corpo = await resposta.json();
+    if (!resposta.ok) { toast(corpo.detail || 'Não foi possível alterar o e-mail.', 'error'); return; }
+    TOKEN = corpo.access_token;
+    USUARIO = { ...USUARIO, ...corpo.usuario };
+    localStorage.setItem('autogestor_token', TOKEN);
+    localStorage.setItem('autogestor_usuario', JSON.stringify(USUARIO));
+    document.getElementById('conta-email').value = USUARIO.email;
+    atualizarPerfilNoHeader();
+    document.getElementById('dialog-conta-email').close();
+    toast('E-mail atualizado.', 'success');
+  } catch (erro) { toast('Erro ao atualizar o e-mail.', 'error'); }
+  finally { botao.disabled = false; }
+}
+
 async function salvarMinhaConta(event) {
   event.preventDefault();
   const botao = document.getElementById('btn-salvar-conta');
   const dados = {
     nome: document.getElementById('conta-nome').value.trim(),
     email: document.getElementById('conta-email').value.trim(),
-    senha_atual: document.getElementById('conta-senha-atual').value,
-    nova_senha: document.getElementById('conta-nova-senha').value || null,
   };
 
   botao.disabled = true;
