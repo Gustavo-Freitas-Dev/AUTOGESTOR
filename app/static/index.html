@@ -140,11 +140,14 @@
   }
   .profile-trigger:hover, .profile-trigger[aria-expanded="true"] { border-color: var(--accent); background: rgba(99,102,241,.08); }
   .profile-avatar {
-    width: 34px; height: 34px; flex: 0 0 34px; display: grid; place-items: center;
-    border-radius: 10px; color: white; font-size: 12px; font-weight: 800;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    box-shadow: 0 5px 14px rgba(99,102,241,.25);
+    position: relative; overflow: hidden; display: block;
+    width: 36px; min-width: 36px; max-width: 36px;
+    height: 36px; min-height: 36px; max-height: 36px;
+    flex: 0 0 36px; border-radius: 50%;
+    background: var(--accent); color: white;
+    font-size: 12px; font-weight: 700; box-shadow: none;
   }
+  #profile-iniciais { position: absolute; inset: 0; display: grid; place-items: center; }
   .profile-avatar img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; min-width: 0; min-height: 0; border-radius: inherit; object-fit: cover; object-position: center; }
   .profile-copy { min-width: 0; flex: 1; }
   .profile-name { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 600 12px 'Inter', sans-serif; }
@@ -1273,6 +1276,10 @@
     .section-description { line-height:1.6; }
   }
 
+  /* The photo is clipped by its own fixed-size containing block. */
+  #profile-avatar > img { position: absolute; inset: 0; width: 36px; height: 36px; max-width: 36px; max-height: 36px; object-fit: cover; object-position: center; border-radius: 50%; }
+  #profile-trigger { align-items: center; min-height: 48px; gap: 10px; padding: 5px 10px 5px 6px; }
+  #profile-trigger .profile-chevron { display: block; flex: 0 0 auto; font-size: 10px; margin-left: 2px; }
 </style>
 
 <!--
@@ -1335,7 +1342,7 @@
       </div>
     </div>
     <div class="profile-menu" id="profile-menu">
-      <button type="button" class="profile-trigger" id="profile-trigger" onclick="alternarMenuPerfil(event)" aria-expanded="false" aria-haspopup="true">
+      <button type="button" class="profile-trigger" id="profile-trigger" aria-label="Abrir menu da conta" onclick="alternarMenuPerfil(event)" aria-expanded="false" aria-haspopup="true">
         <span class="profile-avatar" id="profile-avatar"><span id="profile-iniciais">AG</span><img id="profile-foto" alt="Foto do perfil" hidden></span>
         <span class="profile-copy">
           <span class="profile-name" id="usuario-logado"></span>
