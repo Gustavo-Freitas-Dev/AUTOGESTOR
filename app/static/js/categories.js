@@ -13,7 +13,7 @@
   const newField = document.getElementById('category-new');
   const add = document.getElementById('category-add');
   function customs() { try { const a=JSON.parse(localStorage.getItem(key)||'[]'); return Array.isArray(a)?a.filter(x=>typeof x==='string'):[]; } catch { return []; } }
-  function all() { return [...new Set([...base,...customs()])]; }
+  function all() { return [...new Set([...base,...customs()])].sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' })); }
   function render() {
     options.replaceChildren();
     const q=search.value.trim().toLocaleLowerCase('pt-BR');
