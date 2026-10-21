@@ -20,8 +20,21 @@
     const matches=all().filter(x=>x.toLocaleLowerCase('pt-BR').includes(q));
     if (!matches.length) { const p=document.createElement('p');p.className='category-hint';p.textContent='Nenhuma categoria encontrada';options.append(p); }
     matches.forEach(name => {
+      const row=document.createElement('div');row.className='category-option-row';
       const b=document.createElement('button');b.type='button';b.className='category-option';b.setAttribute('role','option');b.setAttribute('aria-selected',String(field.value===name));b.textContent=name;
-      b.addEventListener('click',()=>{field.value=name;selected.textContent=name;close();trigger.focus();});options.append(b);
+      b.addEventListener('click',()=>{field.value=name;selected.textContent=name;close();trigger.focus();});row.append(b);
+      const custom=customs().some(x=>x.toLocaleLowerCase('pt-BR')===name.toLocaleLowerCase('pt-BR'))&&!base.some(x=>x.toLocaleLowerCase('pt-BR')===name.toLocaleLowerCase('pt-BR'));
+      if(custom) {
+        const remove=document.createElement('button');remove.type='button';remove.className='category-delete';remove.textContent='×';remove.title='Excluir categoria '+name;remove.setAttribute('aria-label','Excluir categoria '+name);
+        remove.addEventListener('click',()=>{
+          if(!window.confirm('Excluir a categoria "'+name+'"? As movimentações existentes não serão apagadas.'))return;
+          try {localStorage.setItem(key,JSON.stringify(customs().filter(x=>x.toLocaleLowerCase('pt-BR')!==name.toLocaleLowerCase('pt-BR'))));}
+          catch {window.alert('Não foi possível excluir a categoria neste navegador.');return;}
+          if(field.value.toLocaleLowerCase('pt-BR')===name.toLocaleLowerCase('pt-BR')){field.value='';selected.textContent='Selecione uma categoria';}
+          render();
+        });row.append(remove);
+      }
+      options.append(row);
     });
   }
   function open() { menu.hidden=false;trigger.setAttribute('aria-expanded','true');render();search.focus(); }
