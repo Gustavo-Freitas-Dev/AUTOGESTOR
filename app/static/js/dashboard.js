@@ -387,6 +387,7 @@ async function selecionarEspaco(id) {
   ESPACO_ATUAL = ESPACOS.find(e => e.id === Number(id));
   if (!ESPACO_ATUAL) return;
   definirApiDoEspaco();
+  document.dispatchEvent(new Event('autogestor:space-changed'));
   atualizarSeletorEspacos();
   todos = [];
   paginaAtual = 1;

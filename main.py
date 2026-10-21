@@ -18,11 +18,13 @@ from app.core.errors import register_exception_handlers
 from app.core.request_context import request_metrics_var
 from app.database.db import engine
 from app.database.dependencies import get_db
+from app.models.categoria import Categoria  # noqa: F401
 from app.models.espaco_financeiro import EspacoFinanceiro  # noqa: F401
 from app.models.membro_espaco import MembroEspaco  # noqa: F401
 from app.models.movimentacao import Movimentacao  # noqa: F401
 from app.models.password_reset_token import PasswordResetToken  # noqa: F401
 from app.models.usuario_model import Usuario  # noqa: F401
+from app.routes.categorias import router as categorias_router
 from app.routes.auth import router as auth_router
 from app.routes.dashboard import router as dashboard_router
 from app.routes.espacos import router as espacos_router
@@ -104,6 +106,7 @@ static_dir = Path("app/static")
 if static_dir.exists():
     app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
 
+app.include_router(categorias_router)
 app.include_router(movimentacoes_router)
 app.include_router(dashboard_router)
 app.include_router(auth_router)
