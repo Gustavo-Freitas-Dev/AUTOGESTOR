@@ -40,6 +40,7 @@
   document.addEventListener('pointerdown',e=>{if(!root.contains(e.target))close();});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!menu.hidden){close();trigger.focus();}});
   // O fluxo original limpa o campo ao salvar; refletir essa mudança no botão.
+  document.addEventListener('autogestor:category-reset',()=>{selected.textContent='Selecione uma categoria';});
   const observer=new MutationObserver(()=>{if(!field.value&&selected.textContent!=='Selecione uma categoria')selected.textContent='Selecione uma categoria';});
   observer.observe(field,{attributes:true,attributeFilter:['value']});
   const save=document.getElementById('btn-salvar');
