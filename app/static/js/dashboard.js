@@ -1277,7 +1277,7 @@ async function salvar() {
   const data = document.getElementById('data').value;
 
   if (!categoria || !valor || valor <= 0 || !data) {
-    if (!categoria) document.getElementById('categoria').focus();
+    if (!categoria) (window.focusCategoriaRegistro?.() || document.getElementById('category-trigger')?.focus());
     else if (!data) document.getElementById('data').focus();
     else document.getElementById('valor').focus();
     return;
@@ -1322,6 +1322,7 @@ async function salvar() {
 
     const criada = normalizarMovimentacao(await res.json());
     document.getElementById('categoria').value = '';
+    document.dispatchEvent(new Event('autogestor:category-reset'));
     document.getElementById('descricao').value = '';
     document.getElementById('valor').value = '';
     inserirMovimentacaoLocal(criada);
