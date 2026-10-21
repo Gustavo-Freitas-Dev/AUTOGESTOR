@@ -13,6 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/static/css/dashboard.css">
+<link rel="stylesheet" href="/static/css/categories.css">
 
 <!--
   SheetJS (biblioteca "xlsx")
@@ -506,13 +507,16 @@
       </div>
       <div class="field">
         <label for="categoria">Categoria</label>
-        <input type="text" id="categoria" list="categorias-sugeridas" autocomplete="off" maxlength="80" placeholder="Digite ou escolha uma categoria">
-        <datalist id="categorias-sugeridas">
-          <option value="Alimentação"></option><option value="Mercado"></option><option value="Moradia"></option>
-          <option value="Transporte"></option><option value="Saúde"></option><option value="Educação"></option>
-          <option value="Lazer"></option><option value="Assinaturas"></option><option value="Salário"></option>
-          <option value="Freelance"></option><option value="Outros"></option>
-        </datalist>
+        <div class="category-picker" id="category-picker">
+          <button type="button" class="category-trigger" id="category-trigger" aria-haspopup="listbox" aria-expanded="false" aria-controls="category-menu"><span id="category-selected">Selecione uma categoria</span><span aria-hidden="true">⌄</span></button>
+          <input type="hidden" id="categoria" value="">
+          <div class="category-menu" id="category-menu" hidden>
+            <input type="search" id="category-search" placeholder="Buscar categoria..." aria-label="Buscar categoria" autocomplete="off">
+            <div id="category-options" class="category-options" role="listbox" aria-label="Categorias"></div>
+            <div class="category-create"><input id="category-new" maxlength="80" placeholder="Nova categoria" aria-label="Nome da nova categoria"><button type="button" id="category-add">+ Criar</button></div>
+            <p class="category-hint">Categorias personalizadas ficam neste navegador.</p>
+          </div>
+        </div>
       </div>
       <div class="field">
         <label>Descrição <span style="color:var(--dim)">(opcional)</span></label>
@@ -548,5 +552,6 @@
 </main>
 
 <script src="/static/js/dashboard.js"></script>
+<script src="/static/js/categories.js"></script>
 </body>
 </html>
