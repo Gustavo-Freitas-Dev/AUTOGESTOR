@@ -7,6 +7,7 @@ from sqlalchemy import engine_from_config, pool
 from alembic import context
 from app.core.config import get_settings
 from app.database.base import Base
+from app.models.categoria import Categoria  # noqa: F401
 from app.models.espaco_financeiro import EspacoFinanceiro  # noqa: F401
 from app.models.membro_espaco import MembroEspaco  # noqa: F401
 from app.models.movimentacao import Movimentacao  # noqa: F401
