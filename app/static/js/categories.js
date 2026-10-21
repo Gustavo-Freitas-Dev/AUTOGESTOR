@@ -1,6 +1,8 @@
 /* Categorias do registro rápido — sem alterar contratos da API. */
 (() => {
-  const base = ['Alimentação','Mercado','Moradia','Transporte','Saúde','Educação','Lazer','Assinaturas','Salário','Freelance','Outros'];
+  const baseByType = { GANHO: ['Salário','Freelance','Investimentos','Reembolso','Outros'], GASTO: ['Alimentação','Mercado','Moradia','Transporte','Saúde','Educação','Lazer','Assinaturas','Outros'] };
+  let activeType = 'GANHO';
+  const base = [...new Set([...baseByType.GANHO,...baseByType.GASTO])];
   const key = 'autogestor_categorias_personalizadas';
   const root = document.getElementById('category-picker');
   if (!root) return;
@@ -13,7 +15,7 @@
   const newField = document.getElementById('category-new');
   const add = document.getElementById('category-add');
   function customs() { try { const a=JSON.parse(localStorage.getItem(key)||'[]'); return Array.isArray(a)?a.filter(x=>typeof x==='string'):[]; } catch { return []; } }
-  function all() { return [...new Set([...base,...customs()])].sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' })); }
+  function all() { return [...new Set([...baseByType[activeType],...customs()])].sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' })); }
   function render() {
     options.replaceChildren();
     const q=search.value.trim().toLocaleLowerCase('pt-BR');
@@ -39,6 +41,9 @@
   }
   function open() { menu.hidden=false;trigger.setAttribute('aria-expanded','true');render();search.focus(); }
   function close() { menu.hidden=true;trigger.setAttribute('aria-expanded','false');search.value=''; }
+  document.getElementById('btn-ganho')?.addEventListener('click',()=>changeType('GANHO'));
+  document.getElementById('btn-gasto')?.addEventListener('click',()=>changeType('GASTO'));
+  function changeType(type) { if(activeType===type)return; activeType=type; if(field.value && !all().includes(field.value)) {field.value='';selected.textContent='Selecione uma categoria';} if(!menu.hidden)render(); }
   trigger.addEventListener('click',()=>menu.hidden?open():close());
   search.addEventListener('input',render);
   add.addEventListener('click',()=>{
