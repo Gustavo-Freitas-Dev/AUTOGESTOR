@@ -3,6 +3,7 @@ from datetime import UTC, datetime, timedelta
 from urllib.parse import parse_qs, urlparse
 
 from conftest import cadastrar
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 import app.routes.auth as auth_routes
@@ -190,7 +191,7 @@ def test_redefinir_html_tem_campos_e_higiene_de_token():
     assert "Token inválido ou já utilizado" in html
 
 
-def test_redefinicao_simultanea_consumo_unico_do_token(client, db, monkeypatch):
+def test_redefinicao_simultanea_consumo_unico_do_token(client, db, monkeypatch, tmp_path):
     rate_limiter.reset()
     cadastrar(client, "Ana", "concorrencia_reset@example.com")
 
@@ -200,7 +201,21 @@ def test_redefinicao_simultanea_consumo_unico_do_token(client, db, monkeypatch):
     client.post("/auth/esqueci-senha", json={"email": "concorrencia_reset@example.com"})
     token = _extrair_token_link(fake_email.payloads[0].reset_link)
 
-    SessionFactory = sessionmaker(bind=db.get_bind(), autoflush=False, autocommit=False)
+    engine = create_engine('sqlite:///' + str(tmp_path / 'reset.db'), connect_args=dict(check_same_thread=False, timeout=30))
+    from app.database.base import Base
+    from app.models.password_reset_token import PasswordResetToken
+    from app.models.usuario_model import Usuario
+    Base.metadata.create_all(engine)
+    from sqlalchemy.orm import Session
+    with Session(engine) as target:
+        from sqlalchemy import select
+        usuario = db.execute(select(Usuario).where(Usuario.email == 'concorrencia_reset@example.com')).scalar_one()
+        registro = db.execute(select(PasswordResetToken)).scalar_one()
+        target.add(Usuario(id=usuario.id, nome=usuario.nome, email=usuario.email, senha_hash=usuario.senha_hash, token_version=usuario.token_version))
+        target.flush()
+        target.add(PasswordResetToken(usuario_id=usuario.id, token_hash=registro.token_hash, expires_at=registro.expires_at))
+        target.commit()
+    SessionFactory = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 
     def tentativa(nova_senha: str):
         sessao = SessionFactory()
